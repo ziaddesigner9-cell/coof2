@@ -12,7 +12,7 @@ function getCart() {
     }
 }
 
-nfunction renderCart() {
+function renderCart() {
     const container = document.getElementById("cart-items");
     const totalEl = document.getElementById("cart-total");
     const cart = getCart();
@@ -66,7 +66,7 @@ function enableConfirmButton() {
     }
 }
 
-nasync function confirmOrder() {
+async function confirmOrder() {
     const btn = document.getElementById("confirm-btn");
     const supabaseClient =
         typeof window.getSupabaseClient === "function" ? window.getSupabaseClient() : null;

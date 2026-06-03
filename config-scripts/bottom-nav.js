@@ -5,7 +5,8 @@
 (function initBottomNav() {
     if (document.body.classList.contains("cart-page")) return;
 
-    const inFrontend = window.location.pathname.includes("/front-end/");
+    const pathLower = window.location.pathname.toLowerCase();
+    const inFrontend = pathLower.includes("/front-end/");
     const homeHref = inFrontend ? "../index.html" : "index.html";
     const menuBase = inFrontend ? "menu.html" : "front-end/menu.html";
     const cartHref = inFrontend ? "cart.html" : "front-end/cart.html";
@@ -13,8 +14,8 @@
     const params = new URLSearchParams(window.location.search);
     const currentCat = params.get("cat");
     const isHome =
-        !window.location.pathname.includes("menu.html") &&
-        !window.location.pathname.includes("cart.html");
+        !pathLower.includes("menu.html") &&
+        !pathLower.includes("cart.html");
 
     const activeClass = "font-bold scale-110";
     const activeStyle = "color:#f5d76e;text-shadow:0 0 10px rgba(245,215,110,0.5)";

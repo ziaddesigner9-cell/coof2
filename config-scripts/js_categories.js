@@ -15,7 +15,7 @@ const CATEGORY_ALIASES_MAP = {
     dessert: ["dessert", "حلى", "حلويات", "حلوى", "تحلية"],
 };
 
-nfunction normalizeMenuCategory(value) {
+function normalizeMenuCategory(value) {
     const c = String(value || "")
         .trim()
         .toLowerCase()
@@ -27,7 +27,7 @@ nfunction normalizeMenuCategory(value) {
     return null;
 }
 
-nfunction itemMatchesCategory(item, categoryKey) {
+function itemMatchesCategory(item, categoryKey) {
     return normalizeMenuCategory(item?.category) === categoryKey;
 }
 

@@ -26,9 +26,8 @@ async function loadMenu() {
     const category = urlParams.get("cat");
 
     if (!category || !MENU_CATEGORY_KEYS.includes(category)) {
-        window.location.replace(
-            window.location.pathname.includes("/front-end/") ? "../index.html" : "index.html"
-        );
+        const pathLower = window.location.pathname.toLowerCase();
+        window.location.replace(pathLower.includes("/front-end/") ? "../index.html" : "index.html");
         return;
     }
 
