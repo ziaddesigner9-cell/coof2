@@ -8,7 +8,7 @@ const AUTH_CONFIG = {
     WORKER_PASS: "0000",  // كلمة مرور العامل
 };
 
-/**
+n/**
  * دالة التحقق من الدخول
  * @param {string} password - كلمة المرور المدخلة
  * @param {string} type - نوع المستخدم ('admin' أو 'worker')
@@ -29,14 +29,14 @@ function verifyLogin(password, type) {
     return false;
 }
 
-/**
+n/**
  * دالة تسجيل الخروج (لمسح الجلسة)
  */
 function logout() {
     localStorage.removeItem('role');
 }
 
-/**
+n/**
  * دالة للتحقق مما إذا كان المستخدم مسجلاً للدخول بالفعل
  * @param {string} requiredRole - الدور المطلوب (مثلاً 'admin')
  * @returns {boolean}

@@ -28,4 +28,3 @@
         console.error("فشل تهيئة Supabase:", error);
     }
 })();
-

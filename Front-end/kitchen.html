@@ -6,12 +6,12 @@
     <title>لوحة العامل — المطبخ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="../Config%20&%20Scripts/dependencies.js?v=6"></script>
-    <script src="../Config%20&%20Scripts/js_auth_config.js"></script>
+    <script src="../config-scripts/dependencies.js?v=6"></script>
+    <script src="../config-scripts/js_auth_config.js"></script>
     <script>
         const role = localStorage.getItem("role");
         if (role !== "admin" && role !== "worker") {
-            window.location.href = "../Admin%20Panel/admin-login.html";
+            window.location.href = "../admin-panel/admin-login.html";
         }
     </script>
 </head>
@@ -39,6 +39,6 @@
         <a href="../index.html" class="block text-center mt-8 text-zinc-600 hover:text-amber-500 text-sm">العودة للرئيسية</a>
     </div>
 
-    <script src="../Config%20&%20Scripts/js_kitchen.js?v=7"></script>
+    <script src="../config-scripts/js_kitchen.js?v=7"></script>
 </body>
 </html>

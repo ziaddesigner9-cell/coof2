@@ -6,8 +6,8 @@
     <title>تفاصيل الطلب | مقهى السعادة</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="../Config%20&%20Scripts/dependencies.js?v=6"></script>
-    <script src="../Config%20&%20Scripts/js_app_settings.js"></script>
+    <script src="../config-scripts/dependencies.js?v=6"></script>
+    <script src="../config-scripts/js_app_settings.js"></script>
     <style>
         body {
             background: radial-gradient(ellipse at top, #1a1508 0%, #000 55%);
@@ -27,7 +27,7 @@
         </header>
 
         <div id="heroWrap" class="mt-4 rounded-2xl overflow-hidden gold-border border-2 hero-glow bg-black aspect-[4/3] relative hidden">
-            <img id="heroImage" src="" alt="صورة الطلب" class="w-full h-full object-cover opacity-90" />
+            <img id="heroImage" src="" alt="صورة الطلب" loading="lazy" class="w-full h-full object-cover opacity-90" />
             <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
             <div class="absolute bottom-0 right-0 left-0 p-4 text-center">
                 <p id="heroCaption" class="gold-text font-bold text-lg drop-shadow-lg"></p>
@@ -71,6 +71,18 @@
             const ar = document.getElementById("brand-ar");
             if (en) en.textContent = phrase(appSettings, "order_view_brand_en");
             if (ar) ar.textContent = phrase(appSettings, "order_view_brand_ar");
+        }
+
+        function applyLayoutSettings() {
+            const ui = appSettings?.ui || {};
+            // set gold color and font size
+            const goldColor = ui.gold_color || '#D4AF37';
+            document.querySelectorAll('.gold-text').forEach(el => el.style.color = goldColor);
+            // set CSS var for app font size
+            if (ui.text_font_size) document.documentElement.style.setProperty('--app-font-size', ui.text_font_size + 'px');
+            // hide or show order meta (code line) under options
+            const orderMeta = document.getElementById('orderMeta');
+            if (orderMeta) orderMeta.style.display = ui.show_code_text === false ? 'none' : '';
         }
 
         function parseItems(raw) {
@@ -142,7 +154,7 @@
                             "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=200&h=200&fit=crop";
                         return `
                         <li class="flex gap-3 items-center py-3 border-b border-zinc-800/80 last:border-0">
-                            <img src="${escapeHtml(img)}" alt="" class="w-14 h-14 rounded-xl object-cover border gold-border flex-shrink-0" />
+                            <img src="${escapeHtml(img)}" alt="صورة الصنف" loading="lazy" class="w-14 h-14 rounded-xl object-cover border gold-border flex-shrink-0" />
                             <div class="flex-1 min-w-0">
                                 <p class="font-bold gold-text truncate">${escapeHtml(item.name || "صنف")}</p>
                                 <p class="text-zinc-500 text-xs">${price} ر.س × ${qty}</p>
@@ -229,6 +241,7 @@
         async function init() {
             appSettings = await loadAppSettings();
             applyOrderViewBranding();
+            applyLayoutSettings();
             if (window.getSupabaseClient?.()) loadOrder();
         }
         window.addEventListener("supabaseReady", init);

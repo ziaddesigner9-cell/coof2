@@ -20,13 +20,13 @@ BEGIN
   END LOOP;
 END $$;
 
-CREATE POLICY "orders_select_public"
+nCREATE POLICY "orders_select_public"
 ON public.orders FOR SELECT TO anon, authenticated USING (true);
 
-CREATE POLICY "orders_insert_public"
+nCREATE POLICY "orders_insert_public"
 ON public.orders FOR INSERT TO anon, authenticated WITH CHECK (true);
 
-CREATE POLICY "orders_update_public"
+nCREATE POLICY "orders_update_public"
 ON public.orders FOR UPDATE TO anon, authenticated USING (true) WITH CHECK (true);
 
 -- تحقق: بعد التشغيل جرّب تحديث طلب من Table Editor أو من التطبيق

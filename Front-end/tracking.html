@@ -7,8 +7,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js?v=2"></script>
-    <script src="../Config%20&%20Scripts/dependencies.js?v=6"></script>
-    <script src="../Config%20&%20Scripts/js_app_settings.js"></script>
+    <script src="../config-scripts/dependencies.js?v=6"></script>
+    <script src="../config-scripts/js_app_settings.js"></script>
     <style>
         #qrBox {
             width: 14rem;
@@ -50,7 +50,7 @@
             <p class="text-amber-200 font-bold mb-2">⚠️ الرابط الحالي لا يعمل من الجوال</p>
             <p class="text-zinc-400 text-xs mb-2">أدخل عنوان جهازك على شبكة الواي فاي (من cmd اكتب: ipconfig)</p>
             <input id="publicBaseInput" type="text" dir="ltr"
-                placeholder="http://192.168.1.10:5500/Front-end/"
+                placeholder="http://192.168.1.10:5500/front-end/"
                 class="w-full p-2 rounded-lg bg-black border border-amber-700/50 text-amber-100 text-xs mb-2" />
             <button type="button" id="savePublicBaseBtn"
                 class="w-full py-2 rounded-lg bg-amber-600 text-black font-bold text-sm hover:bg-amber-500">
@@ -147,8 +147,12 @@
         function applyQrLabelStyle(status) {
             const label = document.getElementById("qrCodeLabel");
             if (!label) return;
-            label.classList.remove("text-yellow-400", "text-emerald-400");
-            label.classList.add(isQrReadyStatus(status) ? "text-emerald-400" : "text-yellow-400");
+            // use colors from app settings if available
+            const ui = appSettings?.ui || {};
+            const gold = ui.gold_color || '#D4AF37';
+            const silver = ui.silver_color || '#C0C0C0';
+            const color = isQrReadyStatus(status) ? (ui.green_color || '#22C55E') : gold;
+            label.style.color = color;
         }
 
         function applyTrackingPhrases() {
@@ -157,6 +161,25 @@
             if (t) t.textContent = phrase(appSettings, "tracking_title");
             if (scan) scan.textContent = phrase(appSettings, "tracking_scan_hint");
             if (subText && !currentOrder) subText.textContent = phrase(appSettings, "tracking_sub_pending");
+        }
+
+        function applyLayoutSettings() {
+            const ui = appSettings?.ui || {};
+            // move code label above QR box when gold_on_top
+            const qrBoxEl = document.getElementById('qrBox');
+            const qrLabel = document.getElementById('qrCodeLabel');
+            if (ui.gold_on_top) {
+                qrBoxEl.parentNode.insertBefore(qrLabel, qrBoxEl);
+            } else {
+                qrBoxEl.parentNode.insertBefore(qrLabel, qrBoxEl.nextSibling);
+            }
+            // hide or show the small explanation text under the code
+            const scanHint = document.getElementById('tracking-scan-hint');
+            if (scanHint) scanHint.style.display = ui.show_code_text === false ? 'none' : '';
+            // apply font size if provided
+            if (ui.text_font_size) document.documentElement.style.setProperty('--app-font-size', ui.text_font_size + 'px');
+            // apply QR label color immediately
+            applyQrLabelStyle(currentOrder?.status);
         }
 
         /** رابط صفحة الطلب — يجب أن يكون عاماً (ليس localhost) */
@@ -396,6 +419,7 @@
         async function init() {
             appSettings = await loadAppSettings();
             applyTrackingPhrases();
+            applyLayoutSettings();
             const saved = window.getCafePublicBase?.();
             if (saved) {
                 document.getElementById("publicBaseInput").value = saved;

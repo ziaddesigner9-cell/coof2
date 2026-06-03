@@ -6,9 +6,9 @@
     <title>مقهى السعادة</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="Config%20&%20Scripts/dependencies.js?v=6"></script>
-    <script src="Config%20&%20Scripts/js_app_settings.js"></script>
-    <link rel="stylesheet" href="Config%20&%20Scripts/theme.css" />
+    <script src="config-scripts/dependencies.js?v=6"></script>
+    <script src="config-scripts/js_app_settings.js"></script>
+    <link rel="stylesheet" href="config-scripts/theme.css" />
     <style>
         body.has-bottom-nav { padding-bottom: 5.5rem; }
         #app-bg-layer {
@@ -88,24 +88,35 @@
     <div id="app-bg-layer" class="hidden"></div>
     <div class="app-vignette absolute inset-0 pointer-events-none z-[1]"></div>
 
-    <button type="button" onclick="location.href='Admin%20Panel/admin-login.html'"
+    <button type="button" onclick="location.href='admin-panel/admin-login.html'"
         class="fixed top-4 left-4 z-50 text-amber-400 border border-amber-700/50 px-3 py-1.5 rounded-full text-xs">⚙️ المدير</button>
-    <a href="Admin%20Panel/admin-login.html"
+    <a href="admin-panel/admin-login.html"
         class="fixed top-4 right-4 z-50 text-amber-400 border border-amber-700/50 px-3 py-1.5 rounded-full text-xs">👨‍🍳 العامل</a>
 
     <div class="relative z-10 max-w-lg mx-auto px-4 pt-8 pb-4">
         <header class="text-center mb-8">
             <p id="home-brand" class="text-xs tracking-[0.45em] gold-text-soft">CAFE AL-SAADA</p>
-            <img id="app-logo" class="hidden w-20 h-20 mx-auto mt-3 mb-3 rounded-full object-contain bg-zinc-900 border-2 border-amber-600/50 shadow-lg" alt="الشعار" />
+            <img id="app-logo" loading="lazy" class="hidden w-20 h-20 mx-auto mt-3 mb-3 rounded-full object-contain bg-zinc-900 border-2 border-amber-600/50 shadow-lg" alt="الشعار" />
             <div id="app-logo-emoji" class="w-20 h-20 mx-auto mt-3 mb-3 rounded-full border-2 border-amber-600/50 bg-zinc-900 flex items-center justify-center text-3xl">☕</div>
             <h1 id="home-welcome-title" class="text-3xl gold-title">أهلاً بك</h1>
             <p id="home-welcome-sub" class="gold-text-soft text-sm mt-2 max-w-xs mx-auto leading-relaxed">اختر تصنيفاً واستمتع بتجربة فاخرة</p>
         </header>
 
+        <div class="grid grid-cols-2 gap-3 mb-4">
+            <a href="front-end/cart.html" class="rounded-2xl border border-amber-600/40 bg-amber-950/40 p-4 text-center transition hover:border-amber-400 hover:bg-amber-950/60">
+                <p class="text-sm gold-text-soft">السلة</p>
+                <p class="font-bold text-lg mt-2">اطلع على الطلب</p>
+            </a>
+            <a href="front-end/tracking.html" class="rounded-2xl border border-amber-600/40 bg-amber-950/40 p-4 text-center transition hover:border-amber-400 hover:bg-amber-950/60">
+                <p class="text-sm gold-text-soft">تتبع الطلب</p>
+                <p class="font-bold text-lg mt-2">ألقي نظرة الآن</p>
+            </a>
+        </div>
+
         <div class="space-y-4">
-            <a href="Front-end/menu.html?cat=hot" class="category-row" data-category-cover="hot">
+            <a href="front-end/menu.html?cat=hot" class="category-row" data-category-cover="hot">
                 <div class="category-img-wrap">
-                    <img class="category-cover-img" alt="" hidden />
+                    <img class="category-cover-img" alt="صورة التصنيف" loading="lazy" hidden />
                 </div>
                 <div class="category-row-content">
                     <div class="text-right w-full">
@@ -114,9 +125,9 @@
                     </div>
                 </div>
             </a>
-            <a href="Front-end/menu.html?cat=cold" class="category-row" data-category-cover="cold">
+            <a href="front-end/menu.html?cat=cold" class="category-row" data-category-cover="cold">
                 <div class="category-img-wrap">
-                    <img class="category-cover-img" alt="" hidden />
+                    <img class="category-cover-img" alt="صورة التصنيف" loading="lazy" hidden />
                 </div>
                 <div class="category-row-content">
                     <div class="text-right w-full">
@@ -125,9 +136,9 @@
                     </div>
                 </div>
             </a>
-            <a href="Front-end/menu.html?cat=dessert" class="category-row" data-category-cover="dessert">
+            <a href="front-end/menu.html?cat=dessert" class="category-row" data-category-cover="dessert">
                 <div class="category-img-wrap">
-                    <img class="category-cover-img" alt="" hidden />
+                    <img class="category-cover-img" alt="صورة التصنيف" loading="lazy" hidden />
                 </div>
                 <div class="category-row-content">
                     <div class="text-right w-full">
@@ -139,9 +150,9 @@
         </div>
     </div>
 
-    <script src="Config%20&%20Scripts/js_categories.js"></script>
-    <script src="Config%20&%20Scripts/js_home.js"></script>
-    <script src="Config%20&%20Scripts/bottom-nav.js"></script>
+    <script src="config-scripts/js_categories.js"></script>
+    <script src="config-scripts/js_home.js"></script>
+    <script src="config-scripts/bottom-nav.js"></script>
     <script>
         async function bootHome() {
             const s = await loadAppSettings();

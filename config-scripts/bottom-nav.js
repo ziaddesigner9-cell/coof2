@@ -5,10 +5,10 @@
 (function initBottomNav() {
     if (document.body.classList.contains("cart-page")) return;
 
-    const inFrontend = window.location.pathname.includes("/Front-end/");
+    const inFrontend = window.location.pathname.includes("/front-end/");
     const homeHref = inFrontend ? "../index.html" : "index.html";
-    const menuBase = inFrontend ? "menu.html" : "Front-end/menu.html";
-    const cartHref = inFrontend ? "cart.html" : "Front-end/cart.html";
+    const menuBase = inFrontend ? "menu.html" : "front-end/menu.html";
+    const cartHref = inFrontend ? "cart.html" : "front-end/cart.html";
 
     const params = new URLSearchParams(window.location.search);
     const currentCat = params.get("cat");

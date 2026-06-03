@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="../Config%20&%20Scripts/js_auth_config.js"></script>
+    <script src="../config-scripts/js_auth_config.js"></script>
 </head>
 <body class="bg-gray-100 flex items-center justify-center h-screen">
     <div class="bg-white p-8 rounded-xl shadow-md w-96 text-center">
@@ -25,7 +25,7 @@
             else if (verifyLogin(pass, 'worker')) {
                 localStorage.setItem('role', 'worker');
                 // هذا هو التعديل الوحيد المطلوب: توجيه العامل للمطبخ مباشرة
-                window.location.href = "../Front-end/kitchen.html";
+                window.location.href = "../front-end/kitchen.html";
             } 
             else {
                 alert("كلمة المرور غير صحيحة!");

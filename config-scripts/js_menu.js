@@ -2,6 +2,15 @@
  * قائمة الأصناف حسب التصنيف: hot | cold | dessert
  */
 
+function escapeHtml(value) {
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
 async function loadMenu() {
     const menuContainer = document.getElementById("menu-items");
     if (!menuContainer) return;
@@ -18,7 +27,7 @@ async function loadMenu() {
 
     if (!category || !MENU_CATEGORY_KEYS.includes(category)) {
         window.location.replace(
-            window.location.pathname.includes("/Front-end/") ? "../index.html" : "index.html"
+            window.location.pathname.includes("/front-end/") ? "../index.html" : "index.html"
         );
         return;
     }
@@ -46,25 +55,30 @@ async function loadMenu() {
 
         menuContainer.innerHTML = filtered
             .map(
-                (item) => `
+                (item) => {
+                    const safeName = escapeHtml(item.name || "غير معروف");
+                    const safePrice = escapeHtml(parseFloat(item.price || 0).toFixed(2));
+                    const safeImage = escapeHtml(item.image_url || "https://via.placeholder.com/150");
+                    return `
         <div class="menu-card menu-item p-4 rounded-2xl flex items-center gap-4 transition">
-            <img src="${item.image_url || "https://via.placeholder.com/150"}" alt="${item.name}" 
-                 class="w-20 h-20 object-cover rounded-xl border border-amber-500/50 flex-shrink-0">
+              <img src="${safeImage}" alt="${safeName}" loading="lazy"
+                  class="w-20 h-20 object-cover rounded-xl border border-amber-500/50 flex-shrink-0">
             <div class="flex-grow min-w-0">
-                <h3 class="font-bold gold-title text-lg leading-tight">${item.name || "غير معروف"}</h3>
-                <p class="gold-text font-bold mt-1 text-base">${parseFloat(item.price || 0)} ريال</p>
+                <h3 class="font-bold gold-title text-lg leading-tight">${safeName}</h3>
+                <p class="gold-text font-bold mt-1 text-base">${safePrice} ريال</p>
             </div>
             <button class="add-to-cart-btn bg-gradient-to-b from-amber-400 to-amber-600 text-black p-3 rounded-full hover:from-amber-300 hover:to-amber-500 transition flex-shrink-0 shadow-md shadow-amber-900/40" 
-                    data-id="${item.id}" 
-                    data-name="${item.name}" 
-                    data-price="${item.price}" 
-                    data-image="${item.image_url || ""}">
+                    data-id="${escapeHtml(item.id)}" 
+                    data-name="${safeName}" 
+                    data-price="${escapeHtml(item.price)}" 
+                    data-image="${safeImage}">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
             </button>
         </div>
-        `
+        `;
+                }
             )
             .join("");
 
@@ -97,7 +111,6 @@ function updateCartCount() {
     }
     if (typeof window.updateCartBadge === "function") window.updateCartBadge();
 }
-
 document.addEventListener("DOMContentLoaded", () => {
     loadMenu();
     window.addEventListener("supabaseReady", loadMenu);

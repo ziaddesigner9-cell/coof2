@@ -32,6 +32,16 @@ const DEFAULT_APP_SETTINGS = {
         order_view_ready_msg: "✓ الطلب جاهز — تفضّل بالاستلام",
         order_view_completed_msg: "✓ شكراً لزيارتكم",
     },
+    /* UI / typography and code display settings */
+    ui: {
+        text_font_size: 16,
+        box_width: 220,
+        box_height: 220,
+        gold_color: "#D4AF37",
+        silver_color: "#C0C0C0",
+        gold_on_top: true,
+        show_code_text: true
+    }
 };
 
 function mergeSettings(raw) {
@@ -45,6 +55,8 @@ function mergeSettings(raw) {
     if (raw.phrases && typeof raw.phrases === "object") {
         base.phrases = { ...base.phrases, ...raw.phrases };
     }
+    // merge ui settings
+    if (raw.ui && typeof raw.ui === "object") base.ui = { ...base.ui, ...raw.ui };
     return base;
 }
 
@@ -102,6 +114,8 @@ function phrase(settings, key, fallback = "") {
 /** عرض الصورة كاملة داخل الإطار دون قص (object-fit: contain) */
 function setCategoryRowImage(row, url) {
     if (!row) return;
+    const catKey = row.getAttribute("data-category-cover") || "تصنيف";
+    const altText = `صورة ${catKey}`;
     let wrap = row.querySelector(".category-img-wrap");
     if (!wrap) {
         wrap = document.createElement("div");
@@ -114,8 +128,10 @@ function setCategoryRowImage(row, url) {
     if (!img) {
         img = document.createElement("img");
         img.className = "category-cover-img";
-        img.alt = "";
+        img.alt = altText;
         wrap.appendChild(img);
+    } else {
+        img.alt = altText;
     }
     if (url) {
         img.src = url;
