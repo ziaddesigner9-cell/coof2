@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>مقهى السعادة</title>
     <script src="https://cdn.tailwindcss.com?v=9"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2?v=11"></script>
-    <script src="config-scripts/dependencies.js?v=11"></script>
-    <script src="config-scripts/js_app_settings.js?v=11"></script>
-    <link rel="stylesheet" href="config-scripts/theme.css?v=11" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2?v=12"></script>
+    <script src="config-scripts/dependencies.js?v=12"></script>
+    <script src="config-scripts/js_app_settings.js?v=12"></script>
+    <link rel="stylesheet" href="config-scripts/theme.css?v=12" />
     <style>
         body.has-bottom-nav { padding-bottom: 5.5rem; }
         #app-bg-layer {
@@ -102,11 +102,12 @@
         </header>
 
         <div class="grid grid-cols-2 gap-3 mb-4">
-            <a href="Front-end/cart.html" class="rounded-2xl border border-amber-600/40 bg-amber-950/40 p-4 text-center transition hover:border-amber-400 hover:bg-amber-950/60">
+            <a href="Front-end/cart.html" class="relative rounded-2xl border border-amber-600/40 bg-amber-950/40 p-4 text-center transition hover:border-amber-400 hover:bg-amber-950/60">
+                <span id="home-cart-badge" class="absolute -top-2 -left-2 bg-amber-500 text-black text-xs font-bold rounded-full min-w-[1.2rem] h-[1.2rem] hidden items-center justify-center px-1 border border-black">0</span>
                 <p class="text-sm gold-text-soft">السلة</p>
                 <p class="font-bold text-lg mt-2">اطلع على الطلب</p>
             </a>
-            <a href="Front-end/tracking.html" class="rounded-2xl border border-amber-600/40 bg-amber-950/40 p-4 text-center transition hover:border-amber-400 hover:bg-amber-950/60">
+            <a id="home-tracking-link" href="Front-end/tracking.html" class="rounded-2xl border border-amber-600/40 bg-amber-950/40 p-4 text-center transition hover:border-amber-400 hover:bg-amber-950/60">
                 <p class="text-sm gold-text-soft">تتبع الطلب</p>
                 <p class="font-bold text-lg mt-2">ألقي نظرة الآن</p>
             </a>
@@ -156,18 +157,28 @@
         async function bootHome() {
             const s = await loadAppSettings();
             applyHomeSettings(s);
-            updateHomeBadge();
+            updateHomeState();
         }
-        function updateHomeBadge() {
+        function updateHomeState() {
+            // تحديث تنبيه السلة
             const badge = document.getElementById("home-cart-badge");
-            if (!badge) return;
+            // تحديث رابط التتبع بآخر طلب
+            const trackLink = document.getElementById("home-tracking-link");
+            const lastOrder = localStorage.getItem("lastOrderId");
+
+            if (lastOrder && trackLink) {
+                trackLink.href = `Front-end/tracking.html?orderId=${encodeURIComponent(lastOrder)}`;
+            }
+
             try {
                 const cart = JSON.parse(localStorage.getItem("cart") || "[]");
                 const count = cart.reduce((s, i) => s + (parseInt(i.quantity) || 0), 0);
-                badge.textContent = count;
-                badge.style.display = count > 0 ? "flex" : "none";
+                if (badge) {
+                    badge.textContent = count;
+                    badge.style.display = count > 0 ? "flex" : "none";
+                }
             } catch {
-                badge.style.display = "none";
+                if (badge) badge.style.display = "none";
             }
         }
         window.addEventListener("supabaseReady", bootHome);

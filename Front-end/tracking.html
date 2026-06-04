@@ -273,9 +273,8 @@
         async function renderQr(order) {
             const url = buildOrderPageUrl(order);
             const fillColor = getQrFillColor(order.status);
-
             const priceDisplay = `${parseFloat(order.total_price || 0).toFixed(2)} ريال`;
-            document.getElementById("qrCodeLabel").textContent = priceDisplay;
+            document.getElementById("qrCodeLabel").textContent = priceDisplay; // السعر الفخم تحت الـ QR
             applyQrLabelStyle(order.status);
             qrHost.innerHTML = "";
 

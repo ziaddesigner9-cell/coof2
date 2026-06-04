@@ -10,14 +10,20 @@
     const isInFrontend = pathLower.includes("/front-end/");
 
     const homeHref = isInSubFolder ? "../index.html" : "./index.html";
-    const menuBase = isInFrontend ? "./menu.html" : (isInSubFolder ? "../Front-end/menu.html?v=" + Date.now() : "./Front-end/menu.html");
-    const cartHref = isInFrontend ? "./cart.html" : (isInSubFolder ? "../Front-end/cart.html?v=" + Date.now() : "./Front-end/cart.html");
+    const menuBase = isInFrontend ? "./menu.html" : (isInSubFolder ? "../Front-end/menu.html?v=12" : "./Front-end/menu.html");
+    const cartHref = isInFrontend ? "./cart.html" : (isInSubFolder ? "../Front-end/cart.html?v=12" : "./Front-end/cart.html");
+    const trackHref = isInFrontend ? "./tracking.html" : (isInSubFolder ? "../Front-end/tracking.html" : "./Front-end/tracking.html");
 
     const params = new URLSearchParams(window.location.search);
     const currentCat = params.get("cat");
     const isHome =
         !pathLower.includes("menu.html") &&
         !pathLower.includes("cart.html");
+
+    // جلب آخر طلب محفوظ لربط زر التتبع
+    const lastOrderId = localStorage.getItem("lastOrderId");
+    const trackUrl = lastOrderId ? `${trackHref}?orderId=${encodeURIComponent(lastOrderId)}` : trackHref;
+    const isTracking = pathLower.includes("tracking.html");
 
     const activeClass = "font-bold scale-110";
     const activeStyle = "color:#f5d76e;text-shadow:0 0 10px rgba(245,215,110,0.5)";
@@ -42,7 +48,10 @@
         <a href="${menuBase}?cat=dessert" class="flex flex-col items-center gap-0.5 text-[10px] ${currentCat === "dessert" ? activeClass : idleClass}" style="${currentCat === "dessert" ? activeStyle : idleStyle}" data-nav="dessert">
             <span class="text-lg">🍰</span><span>حلى</span>
         </a>
-        <a href="${cartHref}" class="relative flex flex-col items-center gap-0.5 text-[10px] ${idleClass}" style="${idleStyle}" data-nav="cart">
+        <a href="${trackUrl}" class="flex flex-col items-center gap-0.5 text-[10px] ${isTracking ? activeClass : idleClass} ${!lastOrderId ? 'opacity-40 grayscale' : ''}" style="${isTracking ? activeStyle : idleStyle}" data-nav="track">
+            <span class="text-lg">📋</span><span>طلبي</span>
+        </a>
+        <a href="${cartHref}" class="relative flex flex-col items-center gap-0.5 text-[10px] ${pathLower.includes("cart.html") ? activeClass : idleClass}" style="${pathLower.includes("cart.html") ? activeStyle : idleStyle}" data-nav="cart">
             <span class="text-lg">🛒</span><span>السلة</span>
             <span id="cart-badge" class="absolute -top-1 -left-1 bg-amber-500 text-black text-[10px] font-bold rounded-full min-w-[1.1rem] h-[1.1rem] flex items-center justify-center px-1">0</span>
         </a>

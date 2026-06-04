@@ -124,6 +124,7 @@ async function confirmOrder() {
 
         localStorage.removeItem("cart");
         const orderId = data?.id;
+        // حفظ آخر طلب في الذاكرة المحلية لربط زر التتبع في الرئيسية
         if (orderId) localStorage.setItem("lastOrderId", orderId);
         const redirectUrl = orderId
             ? `tracking.html?orderId=${encodeURIComponent(orderId)}`
