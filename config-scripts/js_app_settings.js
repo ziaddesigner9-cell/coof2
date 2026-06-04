@@ -13,6 +13,7 @@ const DEFAULT_APP_SETTINGS = {
     category_dessert_image: "",
     phrases: {
         brand_tagline: "CAFE AL-SAADA",
+        home_slogan: "Welcome to the Distinguished Cafe",
         home_welcome_title: "أهلاً بك",
         home_welcome_sub: "اختر تصنيفاً واستمتع بتجربة فاخرة",
         category_hot_label: "المشروبات الساخنة",
@@ -184,6 +185,9 @@ function applyHomeSettings(settings) {
         const emoji = document.getElementById("app-logo-emoji");
         if (emoji) emoji.classList.add("hidden");
     }
+
+    const slogan = document.getElementById("app-slogan");
+    if (slogan) slogan.textContent = phrase(s, "home_slogan");
 
     const brand = document.getElementById("home-brand");
     if (brand) brand.textContent = phrase(s, "brand_tagline");
