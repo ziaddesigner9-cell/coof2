@@ -158,6 +158,16 @@ function categoryRowHasImage(row) {
 
 function applyHomeSettings(settings) {
     const s = mergeSettings(settings);
+    
+    // تطبيق الألوان وحجم الخط برمجياً عبر متغيرات CSS
+    const ui = s.ui || {};
+    if (ui.gold_color) {
+        document.documentElement.style.setProperty('--app-gold', ui.gold_color);
+    }
+    if (ui.text_font_size) {
+        document.documentElement.style.setProperty('--app-font-size', ui.text_font_size + 'px');
+    }
+
     const bg = document.getElementById("app-bg-layer");
     if (bg && s.background_image) {
         bg.style.backgroundImage = `url('${s.background_image}')`;

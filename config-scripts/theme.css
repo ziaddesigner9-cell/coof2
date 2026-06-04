@@ -1,11 +1,13 @@
 /* ثيم ذهبي نحاسي مشرق */
 :root {
-    --gold-bright: #f5d76e;
+    --app-gold: #f5d76e; /* المتغير الذي نتحكم به من المدير */
+    --gold-bright: var(--app-gold);
     --gold-copper: #e8b84a;
     --gold-warm: #d4af37;
     --gold-glow: rgba(245, 215, 110, 0.45);
     --surface-card: #1c1c22;
     --surface-elevated: #252530;
+    --app-font-size: 16px;
 }
 
 body.app-theme {

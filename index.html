@@ -162,10 +162,11 @@
         function updateHomeState() {
             // تحديث تنبيه السلة
             const badge = document.getElementById("home-cart-badge");
+            if (!badge) return;
+
             // تحديث رابط التتبع بآخر طلب
             const trackLink = document.getElementById("home-tracking-link");
             const lastOrder = localStorage.getItem("lastOrderId");
-
             if (lastOrder && trackLink) {
                 trackLink.href = `Front-end/tracking.html?orderId=${encodeURIComponent(lastOrder)}`;
             }
@@ -173,17 +174,20 @@
             try {
                 const cart = JSON.parse(localStorage.getItem("cart") || "[]");
                 const count = cart.reduce((s, i) => s + (parseInt(i.quantity) || 0), 0);
-                if (badge) {
-                    badge.textContent = count;
-                    badge.style.display = count > 0 ? "flex" : "none";
-                }
+                badge.textContent = count;
+                // إزالة كلاس hidden وإظهار العنصر فقط إذا كان هناك أصناف
+                badge.classList.toggle("hidden", count === 0);
+                if (count > 0) badge.style.display = "flex";
             } catch {
-                if (badge) badge.style.display = "none";
+                badge.classList.add("hidden");
             }
         }
+        // التشغيل الفوري لضمان عمل السلة حتى قبل تحميل Supabase
+        document.addEventListener("DOMContentLoaded", () => {
+            updateHomeState();
+            bootHome();
+        });
         window.addEventListener("supabaseReady", bootHome);
-        if (window.getSupabaseClient?.()) bootHome();
-        else applyHomeSettings(mergeSettings(null));
     </script>
 </body>
 </html>
