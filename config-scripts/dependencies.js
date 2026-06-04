@@ -54,24 +54,19 @@
     };
 
     window.getSupabaseClient = function getSupabaseClient() {
-        if (window.supabaseClient?.from) {
+        if (window.supabaseClient && typeof window.supabaseClient.from === "function") {
             return window.supabaseClient;
         }
-        // التحقق من وجود نسخة مهيأة مسبقاً في النطاق العالمي
-        if (window.supabase?.from && typeof window.supabase.createClient !== "function") {
+        if (window.supabase && typeof window.supabase.from === "function") {
             window.supabaseClient = window.supabase;
             return window.supabase;
         }
         const lib = window.supabaseLib || window.supabase;
         if (lib && typeof lib.createClient === "function") {
-            try {
-                const client = lib.createClient(SUPABASE_URL, SUPABASE_KEY);
-                window.supabaseClient = client;
-                window.supabase = client;
-                return client;
-            } catch (e) {
-                console.error("فشل إنشاء عميل Supabase:", e);
-            }
+            const client = lib.createClient(SUPABASE_URL, SUPABASE_KEY);
+            window.supabaseClient = client;
+            window.supabase = client;
+            return client;
         }
         return null;
     };
@@ -79,7 +74,6 @@
     try {
         const client = window.getSupabaseClient();
         if (client) {
-            window.isSupabaseReady = true;
             window.dispatchEvent(new Event("supabaseReady"));
             console.log("تم تهيئة Supabase بنجاح.");
         } else {
