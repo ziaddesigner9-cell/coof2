@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>مكتبة الصور</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../config-scripts/supabase-js.min.js"></script>
     <script src="../config-scripts/dependencies.js?v=6"></script>
     <script src="../config-scripts/js_auth_config.js"></script>
     <script>if (localStorage.getItem("role") !== "admin") location.href = "admin-login.html";</script>
@@ -54,20 +54,20 @@
         async function loadGallery() {
             const client = window.getSupabaseClient?.();
             const grid = document.getElementById("galleryGrid");
-            if (!client) {
+            if (!client && grid) {
                 grid.innerHTML = '<p class="col-span-full text-red-400 text-sm text-center">تعذر الاتصال بقاعدة البيانات</p>';
                 return;
             }
             const { data, error } = await client.from("gallery").select("id, name, image_url").order("id", { ascending: false });
-            if (error) {
+            if (error && grid) {
                 grid.innerHTML = `<p class="col-span-full text-red-400 text-sm text-center">${escapeHtml(error.message)}</p>`;
                 return;
             }
-            if (!data?.length) {
+            if (!data?.length && grid) {
                 grid.innerHTML = '<p class="col-span-full text-zinc-500 text-sm text-center py-6">لا توجد صور بعد — ارفع أول صورة</p>';
                 return;
             }
-            grid.innerHTML = data
+            if (grid) grid.innerHTML = data
                 .map(
                     (g) => `
                 <div class="relative rounded-xl overflow-hidden border border-amber-800/30 bg-zinc-900 group">
@@ -143,7 +143,7 @@
 
         async function uploadImage() {
             const fileInput = document.getElementById("fileInput");
-            let file = fileInput.files[0];
+            let file = (fileInput && fileInput.files) ? fileInput.files[0] : null;
             const btn = document.getElementById("uploadBtn");
             const client = window.getSupabaseClient?.();
 
@@ -178,14 +178,14 @@
                 if (dbError) throw dbError;
 
                 alert("تم رفع الصورة وإضافتها للمكتبة بنجاح!");
-                fileInput.value = "";
+                if (fileInput) fileInput.value = "";
                 loadGallery();
             } catch (err) {
                 console.error(err);
                 alert("فشل العملية: " + err.message);
             } finally {
-                btn.disabled = false;
-                btn.textContent = "رفع إلى المكتبة";
+                if (btn) btn.disabled = false;
+                if (btn) btn.textContent = "رفع إلى المكتبة";
             }
         }
 

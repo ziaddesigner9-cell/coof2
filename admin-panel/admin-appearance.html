@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>تعديل المظهر</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../config-scripts/supabase-js.min.js"></script>
     <script src="../config-scripts/dependencies.js?v=6"></script>
     <script src="../config-scripts/js_app_settings.js"></script>
     <script src="../config-scripts/js_auth_config.js"></script>
@@ -141,13 +141,21 @@
             try {
                 // read UI controls into settings.ui
                 settings.ui = settings.ui || {};
-                settings.ui.text_font_size = parseInt(document.getElementById('ui_font_size').value || settings.ui.text_font_size || 16, 10);
-                settings.ui.box_width = parseInt(document.getElementById('ui_box_width').value || settings.ui.box_width || 220, 10);
-                settings.ui.box_height = parseInt(document.getElementById('ui_box_height').value || settings.ui.box_height || 220, 10);
-                settings.ui.gold_color = document.getElementById('ui_gold_color').value || settings.ui.gold_color || '#D4AF37';
-                settings.ui.silver_color = document.getElementById('ui_silver_color').value || settings.ui.silver_color || '#C0C0C0';
-                settings.ui.gold_on_top = document.getElementById('ui_gold_on_top').checked;
-                settings.ui.show_code_text = document.getElementById('ui_show_code_text').checked;
+                const fsEl = document.getElementById('ui_font_size');
+                const bwEl = document.getElementById('ui_box_width');
+                const bhEl = document.getElementById('ui_box_height');
+                const gcEl = document.getElementById('ui_gold_color');
+                const scEl = document.getElementById('ui_silver_color');
+                const gotEl = document.getElementById('ui_gold_on_top');
+                const sctEl = document.getElementById('ui_show_code_text');
+
+                settings.ui.text_font_size = fsEl ? parseInt(fsEl.value || 16, 10) : 16;
+                settings.ui.box_width = bwEl ? parseInt(bwEl.value || 220, 10) : 220;
+                settings.ui.box_height = bhEl ? parseInt(bhEl.value || 220, 10) : 220;
+                settings.ui.gold_color = gcEl ? gcEl.value : '#D4AF37';
+                settings.ui.silver_color = scEl ? scEl.value : '#C0C0C0';
+                settings.ui.gold_on_top = gotEl ? gotEl.checked : false;
+                settings.ui.show_code_text = sctEl ? sctEl.checked : false;
 
                 await saveAppSettings(settings);
                 alert("تم حفظ المظهر بنجاح!");

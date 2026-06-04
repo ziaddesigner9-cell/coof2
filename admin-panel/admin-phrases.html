@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>تعديل العبارات</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../config-scripts/supabase-js.min.js"></script>
     <script src="../config-scripts/dependencies.js?v=6"></script>
     <script src="../config-scripts/js_app_settings.js"></script>
     <script>
@@ -136,11 +136,17 @@
 
             // مزامنة إعدادات المظهر
             settings.ui = settings.ui || {};
-            settings.ui.text_font_size = parseInt(document.getElementById('ui_font_size').value, 10);
-            settings.ui.box_width = parseInt(document.getElementById('ui_box_width').value, 10);
-            settings.ui.box_height = parseInt(document.getElementById('ui_box_height').value, 10);
-            settings.ui.border_width = parseInt(document.getElementById('ui_border_width').value, 10);
-            settings.ui.gold_color = document.getElementById('ui_gold_color').value;
+            const fsEl = document.getElementById('ui_font_size');
+            const bwEl = document.getElementById('ui_box_width');
+            const bhEl = document.getElementById('ui_box_height');
+            const brEl = document.getElementById('ui_border_width');
+            const gcEl = document.getElementById('ui_gold_color');
+
+            settings.ui.text_font_size = fsEl ? parseInt(fsEl.value, 10) : 16;
+            settings.ui.box_width = bwEl ? parseInt(bwEl.value, 10) : 220;
+            settings.ui.box_height = bhEl ? parseInt(bhEl.value, 10) : 220;
+            settings.ui.border_width = brEl ? parseInt(brEl.value, 10) : 1;
+            settings.ui.gold_color = gcEl ? gcEl.value : '#D4AF37';
 
             const btn = isModal ? document.getElementById("modalSaveBtn") : document.getElementById("saveBtn");
             const originalText = btn.textContent;
@@ -166,11 +172,17 @@
         // populate UI controls from settings when loaded
         function populateUiControls() {
             const ui = settings.ui || {};
-            document.getElementById('ui_font_size').value = ui.text_font_size || 16;
-            document.getElementById('ui_box_width').value = ui.box_width || 220;
-            document.getElementById('ui_box_height').value = ui.box_height || 220;
-            document.getElementById('ui_border_width').value = ui.border_width || 1;
-            document.getElementById('ui_gold_color').value = ui.gold_color || '#D4AF37';
+            const fsEl = document.getElementById('ui_font_size');
+            const bwEl = document.getElementById('ui_box_width');
+            const bhEl = document.getElementById('ui_box_height');
+            const brEl = document.getElementById('ui_border_width');
+            const gcEl = document.getElementById('ui_gold_color');
+
+            if (fsEl) fsEl.value = ui.text_font_size || 16;
+            if (bwEl) bwEl.value = ui.box_width || 220;
+            if (bhEl) bhEl.value = ui.box_height || 220;
+            if (brEl) brEl.value = ui.border_width || 1;
+            if (gcEl) gcEl.value = ui.gold_color || '#D4AF37';
         }
 
         window.addEventListener("supabaseReady", init);

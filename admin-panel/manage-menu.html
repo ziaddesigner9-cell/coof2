@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>إدارة القائمة</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../config-scripts/supabase-js.min.js"></script>
     <script src="../config-scripts/dependencies.js?v=6"></script>
     <script src="../config-scripts/js_categories.js"></script>
     <script src="../config-scripts/js_auth_config.js"></script>
@@ -50,6 +50,7 @@
             if (error) return console.error("خطأ في جلب الصور:", error);
 
             const grid = document.getElementById("galleryGrid");
+            if (!grid) return;
             grid.innerHTML = "";
             (data || []).forEach((img) => {
                 grid.innerHTML += `
@@ -76,10 +77,13 @@
             try {
                 const client = window.getSupabaseClient?.();
                 if (!client) throw new Error("قاعدة البيانات غير متصلة");
+                const nameEl = document.getElementById('name');
+                const priceEl = document.getElementById('price');
+                const catEl = document.getElementById('category');
                 const { error } = await client.from("items").insert([{
-                    name: document.getElementById('name').value,
-                    price: parseFloat(document.getElementById('price').value),
-                    category: document.getElementById("category").value,
+                    name: nameEl ? nameEl.value : "",
+                    price: priceEl ? parseFloat(priceEl.value) : 0,
+                    category: catEl ? catEl.value : "hot",
                     image_url: selectedImageUrl,
                     is_available: true
                 }]);

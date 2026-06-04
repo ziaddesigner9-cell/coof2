@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>تعديل الأصناف</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../config-scripts/supabase-js.min.js"></script>
     <script src="../config-scripts/dependencies.js?v=6"></script>
     <script src="../config-scripts/js_categories.js"></script>
     <script src="../config-scripts/js_auth_config.js"></script>
@@ -177,19 +177,29 @@
             if (!editingItem) return;
 
             selectedEditImage = editingItem.image_url || "";
-            document.getElementById("edit-id").value = editingItem.id;
-            document.getElementById("edit-name").value = editingItem.name || "";
-            document.getElementById("edit-price").value = editingItem.price ?? "";
-            document.getElementById("edit-category").value = categoryKey(editingItem) || "hot";
-            document.getElementById("edit-current-img").src = selectedEditImage;
-            document.getElementById("edit-available").checked = editingItem.is_available !== false;
+            const idEl = document.getElementById("edit-id");
+            if (idEl) idEl.value = editingItem.id;
+            const nameEl = document.getElementById("edit-name");
+            if (nameEl) nameEl.value = editingItem.name || "";
+            const priceEl = document.getElementById("edit-price");
+            if (priceEl) priceEl.value = editingItem.price ?? "";
+            const catEl = document.getElementById("edit-category");
+            if (catEl) catEl.value = categoryKey(editingItem) || "hot";
+
+            const currentImg = document.getElementById("edit-current-img");
+            if (currentImg) currentImg.src = selectedEditImage;
+
+            const availEl = document.getElementById("edit-available");
+            if (availEl) availEl.checked = editingItem.is_available !== false;
 
             renderGalleryGrid(selectedEditImage);
-            document.getElementById("edit-modal").classList.remove("hidden");
+            const modal = document.getElementById("edit-modal");
+            if (modal) modal.classList.remove("hidden");
         }
 
         function closeEdit() {
-            document.getElementById("edit-modal").classList.add("hidden");
+            const modal = document.getElementById("edit-modal");
+            if (modal) modal.classList.add("hidden");
             editingItem = null;
         }
 
@@ -220,10 +230,14 @@
             const client = window.getSupabaseClient?.();
             if (!client || !editingItem) return;
 
-            const name = document.getElementById("edit-name").value.trim();
-            const price = parseFloat(document.getElementById("edit-price").value);
-            const category = document.getElementById("edit-category").value;
-            const is_available = document.getElementById("edit-available").checked;
+            const nameEl = document.getElementById("edit-name");
+            const name = nameEl ? nameEl.value.trim() : "";
+            const priceEl = document.getElementById("edit-price");
+            const price = priceEl ? parseFloat(priceEl.value) : 0;
+            const catEl = document.getElementById("edit-category");
+            const category = catEl ? catEl.value : "hot";
+            const availEl = document.getElementById("edit-available");
+            const is_available = availEl ? availEl.checked : true;
 
             if (!name) return alert("أدخل اسم الصنف");
             if (!Number.isFinite(price) || price < 0) return alert("أدخل سعراً صحيحاً");
