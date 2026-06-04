@@ -135,24 +135,26 @@
             });
 
             // مزامنة إعدادات المظهر
-            settings.ui = settings.ui || {};
-            const fsEl = document.getElementById('ui_font_size');
-            const bwEl = document.getElementById('ui_box_width');
-            const bhEl = document.getElementById('ui_box_height');
-            const brEl = document.getElementById('ui_border_width');
-            const gcEl = document.getElementById('ui_gold_color');
+            settings.ui = settings.ui || {}; // Already safe
+            const fsEl = document.getElementById('ui_font_size'); // Already safe
+            const bwEl = document.getElementById('ui_box_width'); // Already safe
+            const bhEl = document.getElementById('ui_box_height'); // Already safe
+            const brEl = document.getElementById('ui_border_width'); // Already safe
+            const gcEl = document.getElementById('ui_gold_color'); // Already safe
 
-            settings.ui.text_font_size = fsEl ? parseInt(fsEl.value, 10) : 16;
-            settings.ui.box_width = bwEl ? parseInt(bwEl.value, 10) : 220;
-            settings.ui.box_height = bhEl ? parseInt(bhEl.value, 10) : 220;
-            settings.ui.border_width = brEl ? parseInt(brEl.value, 10) : 1;
-            settings.ui.gold_color = gcEl ? gcEl.value : '#D4AF37';
+            settings.ui.text_font_size = fsEl ? parseInt(fsEl.value, 10) : 16; // Already safe
+            settings.ui.box_width = bwEl ? parseInt(bwEl.value, 10) : 220; // Already safe
+            settings.ui.box_height = bhEl ? parseInt(bhEl.value, 10) : 220; // Already safe
+            settings.ui.border_width = brEl ? parseInt(brEl.value, 10) : 1; // Already safe
+            settings.ui.gold_color = gcEl ? gcEl.value : '#D4AF37'; // Already safe
 
             const btn = isModal ? document.getElementById("modalSaveBtn") : document.getElementById("saveBtn");
             const originalText = btn.textContent;
             
-            btn.disabled = true;
-            btn.textContent = "جاري الحفظ...";
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = "جاري الحفظ...";
+            }
             
             try {
                 await saveAppSettings(settings);
@@ -162,12 +164,14 @@
                 alert("فشل الحفظ: " + e.message);
             } finally {
                 btn.disabled = false;
-                btn.textContent = originalText;
+                if (btn) btn.textContent = originalText;
             }
         }
 
-        document.getElementById("saveBtn").addEventListener("click", () => saveAll('main'));
-        document.getElementById("modalSaveBtn").addEventListener("click", () => saveAll('modal'));
+        const saveBtn = document.getElementById("saveBtn");
+        if (saveBtn) saveBtn.addEventListener("click", () => saveAll('main'));
+        const modalSaveBtn = document.getElementById("modalSaveBtn");
+        if (modalSaveBtn) modalSaveBtn.addEventListener("click", () => saveAll('modal'));
         
         // populate UI controls from settings when loaded
         function populateUiControls() {

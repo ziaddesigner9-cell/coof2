@@ -3,8 +3,8 @@
  * يوفّر: window.supabaseClient و window.getSupabaseClient()
  */
 (function initSupabaseClient() {
-    const SUPABASE_URL = "https://xywrgfnktvesnmeeqlux.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_Ii70Zy47h_KNbMv60d2UZw_II1i-mFC";
+    const SUPABASE_URL = "الرابط هنا"; 
+    const SUPABASE_KEY = "المفتاح هنا"; 
 
     /** رابط عام ثابت بعد رفع الموقع. اتركه فارغاً ليستخدم الموقع الحالي أو قاعدة مخزنة.
      * يُستخدم في QR بدل localhost.
@@ -57,34 +57,43 @@
         if (window.supabaseClient && typeof window.supabaseClient.from === "function") {
             return window.supabaseClient;
         }
-        if (window.supabase && typeof window.supabase.from === "function") {
-            window.supabaseClient = window.supabase;
-            return window.supabase;
-        }
-        const lib = window.supabaseLib || window.supabase;
+        
+        const lib = window.supabaseLib || (window.supabase && typeof window.supabase.createClient === "function" ? window.supabase : null);
+        
         if (lib && typeof lib.createClient === "function") {
-            const client = lib.createClient(SUPABASE_URL, SUPABASE_KEY);
-            window.supabaseClient = client;
-            window.supabase = client;
-            return client;
+            try {
+                const client = lib.createClient(SUPABASE_URL, SUPABASE_KEY);
+                window.supabaseClient = client;
+                window.supabase = client; // توحيد المرجع لضمان التوافق مع الكود القديم
+                return client;
+            } catch (e) {
+                console.error("خطأ أثناء إنشاء عميل Supabase:", e);
+            }
         }
         return null;
     };
 
-    const lib = window.supabase;
-    if (!lib || typeof lib.createClient !== "function") {
-        console.error("لم يتم تحميل مكتبة Supabase. ضع سكربت CDN قبل هذا الملف.");
-        return;
-    }
-
-    window.supabaseLib = lib;
+    window.onSupabaseReady = function(callback) {
+        const client = window.getSupabaseClient();
+        if (window.isSupabaseReady && client) {
+            callback(client);
+        } else {
+            window.addEventListener("supabaseReady", () => callback(window.getSupabaseClient()), { once: true });
+        }
+    };
 
     try {
-        const client = lib.createClient(SUPABASE_URL, SUPABASE_KEY);
-        window.supabaseClient = client;
-        window.supabase = client;
-        window.dispatchEvent(new Event("supabaseReady"));
-        console.log("تم تهيئة Supabase بنجاح.");
+        const client = window.getSupabaseClient();
+        if (client) {
+            // إعلام النظام بالجاهزية
+            window.dispatchEvent(new Event("supabaseReady"));
+            // التأكد من استجابة المستمعين الذين تمت إضافتهم لاحقاً
+            window.isSupabaseReady = true; 
+            console.log("تم تهيئة Supabase بنجاح.");
+        } else {
+            // محاولة إعادة التهيئة بعد قليل في حال تأخر تحميل الـ CDN
+            setTimeout(initSupabaseClient, 500);
+        }
     } catch (error) {
         console.error("فشل تهيئة Supabase:", error);
     }

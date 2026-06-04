@@ -71,8 +71,10 @@
             if (!selectedImageUrl) return alert("يرجى اختيار صورة من المكتبة أولاً");
 
             const btn = document.getElementById('saveBtn');
-            btn.disabled = true;
-            btn.innerText = "جاري الحفظ...";
+            if (btn) {
+                btn.disabled = true;
+                btn.innerText = "جاري الحفظ...";
+            }
 
             try {
                 const client = window.getSupabaseClient?.();
@@ -93,8 +95,10 @@
                 location.reload();
             } catch (error) {
                 alert("فشل الحفظ: " + error.message);
-                btn.disabled = false;
-                btn.innerText = "حفظ الصنف";
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerText = "حفظ الصنف";
+                }
             }
         }
     </script>

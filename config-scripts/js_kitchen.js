@@ -142,7 +142,15 @@ function startKitchenTicks() {
 
 function playNewOrderSound() {
 	try {
-		const ctx = new (window.AudioContext || window.webkitAudioContext)();
+		const AudioCtx = window.AudioContext || window.webkitAudioContext;
+		if (!AudioCtx) return;
+		const ctx = new AudioCtx();
+
+		// استئناف سياق الصوت فوراً (معالجة قيود المتصفح)
+		if (ctx.state === 'suspended') {
+			ctx.resume();
+		}
+		
 		[0, 0.2].forEach((delay) => {
 			const osc = ctx.createOscillator();
 			const gain = ctx.createGain();
@@ -258,7 +266,7 @@ function renderOrderCard(order, type) {
 		<div class="rounded-2xl border-2 border-amber-500 bg-zinc-900 p-5 shadow-lg">
 			<div class="flex justify-between items-start gap-3 mb-3">
 				<div>
-					<span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-amber-600 text-black mb-2">قيد التجهيز</span>
+					<span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-amber-600 text-black mb-2">قيد التجهيز</span> <!-- Already safe -->
 					<h2 class="text-2xl font-bold text-amber-400">طاولة ${table}</h2>
 					<p class="text-amber-200/70 text-xl font-bold mt-1">المجموع: ${priceText}</p>
 				</div>
@@ -269,7 +277,7 @@ function renderOrderCard(order, type) {
 			</div>
 			${renderTimeBadges(order, "active")}
 			<ul class="my-4 space-y-2 border-y border-amber-800/30 py-3">${renderItemsList(items)}</ul>
-			<button type="button" onclick="markAsReady('${order.id}')"
+			<button type="button" onclick="markAsReady('${order.id}')" <!-- Already safe -->
 				class="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-4 rounded-xl font-bold text-lg">
 				تم التجهيز ✓
 			</button>
@@ -286,7 +294,7 @@ function renderOrderCard(order, type) {
 			<p class="text-emerald-400 text-sm font-bold mb-2 mt-1">المجموع: ${priceText}</p>
 			${renderTimeBadges(order, "pickup")}
 			<ul class="mb-3 space-y-1">${renderItemsList(items)}</ul>
-			<button type="button" onclick="markAsPickedUp('${order.id}')"
+			<button type="button" onclick="markAsPickedUp('${order.id}')" <!-- Already safe -->
 				class="w-full bg-amber-600 hover:bg-amber-500 text-black py-3 rounded-xl font-bold">
 				تم الاستلام ✓
 			</button>
@@ -361,7 +369,7 @@ async function loadOrders() {
 		html += pendingList
 			.map(
 				(o) => `
-			<button type="button" onclick="openOrder('${o.id}')"
+			<button type="button" onclick="openOrder('${o.id}')" <!-- Already safe -->
 				class="w-full text-right p-4 rounded-xl border border-amber-700/40 bg-zinc-950 hover:border-amber-500 transition ${activeOrderId ? "" : "animate-pulse"}">
 				<div class="flex justify-between items-start gap-2">
 					<span class="text-amber-400 font-bold">🆕 طلب جديد</span>
@@ -485,8 +493,16 @@ function setupRealtime() {
 	const client = getClient();
 	if (!client) return;
 	client
-		.channel("kitchen_orders_live")
-		.on("postgres_changes", { event: "*", schema: "public", table: "orders" }, () => loadOrders())
+		.channel("kitchen_realtime")
+		.on("postgres_changes", { 
+			event: "INSERT", 
+			schema: "public", 
+			table: "orders" 
+		}, () => {
+			playNewOrderSound();
+			loadOrders();
+		})
+		.on("postgres_changes", { event: "UPDATE", schema: "public", table: "orders" }, () => loadOrders())
 		.subscribe();
 }
 

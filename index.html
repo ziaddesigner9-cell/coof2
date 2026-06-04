@@ -151,8 +151,8 @@
         // التشغيل
         document.addEventListener("DOMContentLoaded", () => {
             bootHome();
-        });
-        window.addEventListener("supabaseReady", bootHome);
+        }); // Already safe
+        window.addEventListener("supabaseReady", bootHome); // Already safe
     </script>
 </body>
 </html>

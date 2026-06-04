@@ -187,19 +187,19 @@
             if (catEl) catEl.value = categoryKey(editingItem) || "hot";
 
             const currentImg = document.getElementById("edit-current-img");
-            if (currentImg) currentImg.src = selectedEditImage;
+            if (currentImg) currentImg.src = selectedEditImage; // Already safe
 
             const availEl = document.getElementById("edit-available");
             if (availEl) availEl.checked = editingItem.is_available !== false;
 
             renderGalleryGrid(selectedEditImage);
-            const modal = document.getElementById("edit-modal");
-            if (modal) modal.classList.remove("hidden");
+            const editModal = document.getElementById("edit-modal");
+            if (editModal) editModal.classList.remove("hidden");
         }
 
         function closeEdit() {
-            const modal = document.getElementById("edit-modal");
-            if (modal) modal.classList.add("hidden");
+            const editModal = document.getElementById("edit-modal");
+            if (editModal) editModal.classList.add("hidden");
             editingItem = null;
         }
 
@@ -243,17 +243,21 @@
             if (!Number.isFinite(price) || price < 0) return alert("أدخل سعراً صحيحاً");
             if (!selectedEditImage) return alert("اختر صورة من المكتبة");
 
-            const btn = document.getElementById("save-edit-btn");
-            btn.disabled = true;
-            btn.textContent = "جاري الحفظ...";
+            const saveBtn = document.getElementById("save-edit-btn");
+            if (saveBtn) {
+                saveBtn.disabled = true;
+                saveBtn.textContent = "جاري الحفظ...";
+            }
 
             const { error } = await client
                 .from("items")
                 .update({ name, price, category, image_url: selectedEditImage, is_available })
                 .eq("id", editingItem.id);
 
-            btn.disabled = false;
-            btn.textContent = "حفظ التعديلات";
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.textContent = "حفظ التعديلات";
+            }
 
             if (error) {
                 alert("فشل الحفظ: " + error.message + "\n\nإن لزم، شغّل supabase-items-admin-migration.sql في Supabase.");
@@ -298,12 +302,16 @@
             });
         });
 
-        document.getElementById("close-modal").addEventListener("click", closeEdit);
-        document.getElementById("edit-modal").addEventListener("click", (e) => {
+        const closeModalBtn = document.getElementById("close-modal");
+        if (closeModalBtn) closeModalBtn.addEventListener("click", closeEdit);
+        const editModalEl = document.getElementById("edit-modal");
+        if (editModalEl) editModalEl.addEventListener("click", (e) => {
             if (e.target.id === "edit-modal") closeEdit();
         });
-        document.getElementById("save-edit-btn").addEventListener("click", saveEdit);
-        document.getElementById("delete-item-btn").addEventListener("click", deleteItem);
+        const saveEditBtn = document.getElementById("save-edit-btn");
+        if (saveEditBtn) saveEditBtn.addEventListener("click", saveEdit);
+        const deleteItemBtn = document.getElementById("delete-item-btn");
+        if (deleteItemBtn) deleteItemBtn.addEventListener("click", deleteItem);
 
         window.addEventListener("supabaseReady", loadData);
         if (window.getSupabaseClient?.()) loadData();

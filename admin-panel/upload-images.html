@@ -54,7 +54,7 @@
         async function loadGallery() {
             const client = window.getSupabaseClient?.();
             const grid = document.getElementById("galleryGrid");
-            if (!client && grid) {
+ون            if (!client && grid) {
                 grid.innerHTML = '<p class="col-span-full text-red-400 text-sm text-center">تعذر الاتصال بقاعدة البيانات</p>';
                 return;
             }
@@ -150,8 +150,10 @@
             if (!file) return alert("اختر صورة أولاً");
             if (!client) return alert("قاعدة البيانات غير متصلة");
 
-            btn.disabled = true;
-            btn.textContent = "جاري المعالجة والرفع...";
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = "جاري المعالجة والرفع...";
+            }
 
             try {
                 // تحويل تلقائي إلى WebP إذا لم تكن الصورة بهذا التنسيق
@@ -184,8 +186,10 @@
                 console.error(err);
                 alert("فشل العملية: " + err.message);
             } finally {
-                if (btn) btn.disabled = false;
-                if (btn) btn.textContent = "رفع إلى المكتبة";
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = "رفع إلى المكتبة";
+                }
             }
         }
 

@@ -3,7 +3,7 @@
  */
 const APP_SETTINGS_KEY = "app_config";
 const APP_SETTINGS_CACHE = "cafe_app_settings_cache";
-const APP_VERSION = "1.1.7"; // تحديث النسخة لضمان تصفير الكاش نهائياً
+const APP_VERSION = "1.2.1"; // تحديث النسخة لفرض تحديث الواجهة عند المستخدمين
 
 const DEFAULT_APP_SETTINGS = {
     background_image: "",
@@ -12,11 +12,11 @@ const DEFAULT_APP_SETTINGS = {
     category_cold_image: "",
     category_dessert_image: "",
     phrases: {
-        brand_tagline: "CAFE AL-SAADA",
-        home_slogan: "Welcome to the Distinguished Cafe",
+        brand_tagline: "COOF1",
+        home_slogan: "استمتع بتجربة قهوة فريدة",
         home_welcome_title: "أهلاً بك",
-        home_welcome_sub: "اختر تصنيفاً واستمتع بتجربة فاخرة",
-        category_hot_label: "المشروبات الساخنة",
+        home_welcome_sub: "اختر مشروبك المفضل وسنقوم بتجهيزه لك بكل حب",
+        category_hot_label: "القهوة والمشروبات الساخنة",
         category_cold_label: "المشروبات الباردة",
         category_dessert_label: "الحلى",
         category_row_hint: "تصفح",
@@ -28,9 +28,9 @@ const DEFAULT_APP_SETTINGS = {
         tracking_status_ready: "الطلب جاهز للاستلام ✓",
         tracking_sub_ready: "تفضّل بالاستلام من الكاونتر",
         tracking_status_completed: "تم الاستلام ✓",
-        tracking_sub_completed: "شكراً لزيارتكم — نتمنى لكم يوماً سعيداً",
-        order_view_brand_en: "Cafe Al-Saada",
-        order_view_brand_ar: "مقهى السعادة",
+        tracking_sub_completed: "نتمنى أن تكون تجربتك رائعة، نراك قريباً",
+        order_view_brand_en: "COOF1",
+        order_view_brand_ar: "COOF1",
         order_view_ready_msg: "✓ الطلب جاهز — تفضّل بالاستلام",
         order_view_completed_msg: "✓ شكراً لزيارتكم",
     },
@@ -112,6 +112,11 @@ async function saveAppSettings(settings) {
 
     if (error) throw error;
     localStorage.setItem(APP_SETTINGS_CACHE, JSON.stringify(payload));
+    
+    // تحديث الواجهة فوراً بعد الحفظ
+    if (typeof applyHomeSettings === "function") {
+        applyHomeSettings(payload);
+    }
     return payload;
 }
 

@@ -1,6 +1,6 @@
 const translations = {
-    'ar': { 'welcome': 'أهلاً بك في مقهانا', 'browse': 'تصفح القائمة', 'kitchen': 'لوحة تحكم المطبخ' },
-    'en': { 'welcome': 'Welcome to our cafe', 'browse': 'Browse Menu', 'kitchen': 'Kitchen Dashboard' }
+    'ar': { 'welcome': 'أهلاً بك في COOF1', 'browse': 'استعرض المنيو', 'kitchen': 'شاشة المطبخ' },
+    'en': { 'welcome': 'Welcome to COOF1', 'browse': 'View Menu', 'kitchen': 'Kitchen Display' }
 };
 
 // تطبيق اللغة

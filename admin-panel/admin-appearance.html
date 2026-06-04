@@ -136,8 +136,10 @@
 
         document.getElementById("saveBtn").addEventListener("click", async () => {
             const btn = document.getElementById("saveBtn");
-            btn.disabled = true;
-            btn.textContent = "جاري الحفظ...";
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = "جاري الحفظ...";
+            }
             try {
                 // read UI controls into settings.ui
                 settings.ui = settings.ui || {};
@@ -162,8 +164,10 @@
             } catch (e) {
                 alert("فشل الحفظ: " + e.message + "\n\nشغّل supabase-settings-migration.sql في Supabase");
             } finally {
-                btn.disabled = false;
-                btn.textContent = "حفظ المظهر";
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = "حفظ المظهر";
+                }
             }
         });
 

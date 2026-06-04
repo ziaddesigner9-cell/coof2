@@ -85,8 +85,8 @@
             if (!el) return;
             
             let color = "";
-            if (status === "pending") color = "#f5d76e"; // ذهبي - عند اتمام الطلب
-            else if (status === "preparing" || status === "ready") color = "#22C55E"; // أخضر - عند التجهيز
+            if (status === "pending") color = "#f5d76e"; 
+            else if (status === "preparing" || status === "ready") color = "#10B981"; // Emerald Green
             
             if (color) {
                 el.innerHTML = `

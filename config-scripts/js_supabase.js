@@ -3,8 +3,8 @@
  * وتحافظ على نفس آلية التهيئة الموجودة في dependencies.js.
  */
 (function initSupabaseClientFromLegacyFile() {
-    const SUPABASE_URL = "https://xywrgfnktvesnmeeqlux.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_Ii70Zy47h_KNbMv60d2UZw_II1i-mFC";
+    const SUPABASE_URL = "الرابط هنا";
+    const SUPABASE_KEY = "المفتاح هنا";
 
     if (!window.supabase || !window.supabase.createClient) {
         console.error("لم يتم تحميل مكتبة Supabase. تأكد من تضمين CDN أولاً.");

@@ -76,8 +76,8 @@ async function confirmOrder() {
         return;
     }
 
-    const tableNoEl = document.getElementById("tableNo");
-    const tableNo = tableNoEl ? tableNoEl.value.trim() : "";
+    const tableNoEl = document.getElementById("tableNo"); // Already safe
+    const tableNo = tableNoEl ? tableNoEl.value.trim() : ""; // Already safe
     const cart = getCart();
 
     if (!tableNo) {
@@ -89,8 +89,10 @@ async function confirmOrder() {
         return;
     }
 
-    btn.disabled = true;
-    btn.innerText = "جاري الإرسال...";
+    if (btn) {
+        btn.disabled = true;
+        btn.innerText = "جاري الإرسال...";
+    }
 
     const total = cart.reduce((sum, item) => {
         const qty = parseInt(item.quantity) || 0;
@@ -118,15 +120,27 @@ async function confirmOrder() {
         if (error) {
             console.error("خطأ Supabase:", error);
             alert("خطأ في الإرسال: " + error.message);
-            btn.disabled = false;
-            btn.innerText = "تأكيد الطلب";
+            if (btn) {
+                btn.disabled = false;
+                btn.innerText = "تأكيد الطلب";
+            }
             return;
         }
 
         localStorage.removeItem("cart");
+        
+        // تحديث كافة العدادات في الصفحة الحالية
+        if (typeof window.updateCartBadge === "function") {
+            window.updateCartBadge();
+        }
+        if (typeof updateCartCount === "function") {
+            updateCartCount();
+        }
+
         const orderId = data?.id;
         // حفظ آخر طلب في الذاكرة المحلية لربط زر التتبع في الرئيسية
         if (orderId) localStorage.setItem("lastOrderId", orderId);
+
         const redirectUrl = orderId
             ? `tracking.html?orderId=${encodeURIComponent(orderId)}`
             : "tracking.html";
@@ -134,8 +148,10 @@ async function confirmOrder() {
     } catch (err) {
         console.error("فشل إرسال الطلب:", err);
         alert("تعذر إرسال الطلب. حاول مرة أخرى.");
-        btn.disabled = false;
-        btn.innerText = "تأكيد الطلب";
+        if (btn) {
+            btn.disabled = false;
+            btn.innerText = "تأكيد الطلب";
+        }
     }
 }
 
