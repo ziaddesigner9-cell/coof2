@@ -40,8 +40,8 @@
         <div id="qrBox" class="mx-auto rounded-2xl p-2 flex items-center justify-center">
             <div id="qrHost" aria-label="رمز QR للطلب"></div>
         </div>
-        <p id="qrCodeLabel" class="text-center text-xl text-yellow-400 font-bold mt-3 tracking-wide"></p>
-        <p id="tracking-scan-hint" class="hidden text-center text-xs text-amber-600/80 mt-1">امسح الرمز لفتح صفحة الطلب</p>
+        <p id="qrCodeLabel" class="text-center text-2xl font-bold mt-4 tracking-wide"></p>
+        <p id="tracking-scan-hint" class="hidden text-center text-xs mt-1">امسح الرمز لفتح صفحة الطلب</p>
 
         <div class="mt-6 space-y-1">
             <h1 id="tracking-title" class="text-2xl font-bold text-yellow-400 text-center">شكراً لطلبك</h1>
@@ -167,13 +167,25 @@
 
         function applyLayoutSettings() {
             const ui = appSettings?.ui || {};
-            // always keep QR box at the top (moved in HTML)
-            // hide the small explanation text under the code by default
+            
+            // تطبيق إعدادات الحجم والإطار من لوحة المدير
+            const qrBoxEl = document.getElementById('qrBox');
+            const goldColor = ui.gold_color || '#D4AF37';
+            if (qrBoxEl) {
+                if (ui.box_width) qrBoxEl.style.width = ui.box_width + 'px';
+                if (ui.box_height) qrBoxEl.style.height = ui.box_height + 'px';
+                if (ui.border_width !== undefined) qrBoxEl.style.borderWidth = ui.border_width + 'px';
+                qrBoxEl.style.borderColor = goldColor;
+            }
+
             const scanHint = document.getElementById('tracking-scan-hint');
-            if (scanHint) scanHint.style.display = ui.show_code_text === false ? 'none' : 'none';
-            // apply font size if provided
+            if (scanHint) {
+                scanHint.style.display = ui.show_code_text === true ? 'block' : 'none';
+                scanHint.style.color = goldColor;
+            }
+
             if (ui.text_font_size) document.documentElement.style.setProperty('--app-font-size', ui.text_font_size + 'px');
-            // apply QR label color immediately
+            
             applyQrLabelStyle(currentOrder?.status);
         }
 
@@ -257,8 +269,8 @@
                       );
             orderTotal.textContent = `${total} ر.س`;
 
-            // إظهار رقم الطاولة فقط هنا لأن السعر يظهر بوضوح تحت الـ QR
-            orderMeta.textContent = `طاولة ${order.table_no ?? "—"}`;
+            const priceText = `${parseFloat(order.total_price || 0)} ريال`;
+            orderMeta.textContent = `طاولة ${order.table_no ?? "—"} · ${priceText}`;
         }
 
         function escapeHtml(str) {
@@ -273,8 +285,9 @@
         async function renderQr(order) {
             const url = buildOrderPageUrl(order);
             const fillColor = getQrFillColor(order.status);
-            const priceDisplay = `${parseFloat(order.total_price || 0).toFixed(2)} ريال`;
-            document.getElementById("qrCodeLabel").textContent = priceDisplay; // السعر الفخم تحت الـ QR
+
+            const priceText = `${parseFloat(order.total_price || 0)} ريال`;
+            document.getElementById("qrCodeLabel").textContent = priceText;
             applyQrLabelStyle(order.status);
             qrHost.innerHTML = "";
 

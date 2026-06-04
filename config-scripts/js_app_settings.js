@@ -3,7 +3,7 @@
  */
 const APP_SETTINGS_KEY = "app_config";
 const APP_SETTINGS_CACHE = "cafe_app_settings_cache";
-const APP_VERSION = "1.1.2"; // تحديث النسخة لإجبار المتصفح على جلب الإعدادات الجديدة
+const APP_VERSION = "1.1.3"; // إجبار المتصفح على تحديث الإعدادات والمظهر فوراً
 
 const DEFAULT_APP_SETTINGS = {
     background_image: "",
