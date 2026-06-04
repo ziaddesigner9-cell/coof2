@@ -6,10 +6,12 @@
     if (document.body.classList.contains("cart-page")) return;
 
     const pathLower = window.location.pathname.toLowerCase();
-    const inFrontend = pathLower.includes("/front-end/");
-    const homeHref = inFrontend ? "../index.html" : "./index.html";
-    const menuBase = inFrontend ? "./menu.html" : "./Front-end/menu.html";
-    const cartHref = inFrontend ? "./cart.html" : "./Front-end/cart.html";
+    const isInSubFolder = pathLower.includes("/front-end/") || pathLower.includes("/admin-panel/");
+    const isInFrontend = pathLower.includes("/front-end/");
+
+    const homeHref = isInSubFolder ? "../index.html" : "./index.html";
+    const menuBase = isInFrontend ? "./menu.html" : (isInSubFolder ? "../Front-end/menu.html" : "./Front-end/menu.html");
+    const cartHref = isInFrontend ? "./cart.html" : (isInSubFolder ? "../Front-end/cart.html" : "./Front-end/cart.html");
 
     const params = new URLSearchParams(window.location.search);
     const currentCat = params.get("cat");

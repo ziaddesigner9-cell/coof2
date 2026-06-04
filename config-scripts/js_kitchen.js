@@ -260,7 +260,7 @@ function renderOrderCard(order, type) {
 				<div>
 					<span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-amber-600 text-black mb-2">قيد التجهيز</span>
 					<h2 class="text-2xl font-bold text-amber-400">طاولة ${table}</h2>
-					<p class="text-amber-200/70 text-lg font-bold mt-1">المجموع: ${priceText}</p>
+					<p class="text-amber-200/70 text-xl font-bold mt-1">المجموع: ${priceText}</p>
 				</div>
 				<div class="text-center shrink-0">
 					<p class="text-xs text-zinc-500 mb-1">مؤقت التجهيز</p>
@@ -283,8 +283,7 @@ function renderOrderCard(order, type) {
 				<span class="text-emerald-400 font-bold">📦 جاهز للاستلام</span>
 				<span class="text-zinc-400 text-sm">طاولة ${table}</span>
 			</div>
-			<p class="text-zinc-500 text-xs mb-1">${code}</p>
-			<p class="text-emerald-400 text-xs font-bold mb-1 mt-1">المجموع: ${priceText}</p>
+			<p class="text-emerald-400 text-sm font-bold mb-2 mt-1">المجموع: ${priceText}</p>
 			${renderTimeBadges(order, "pickup")}
 			<ul class="mb-3 space-y-1">${renderItemsList(items)}</ul>
 			<button type="button" onclick="markAsPickedUp('${order.id}')"
@@ -298,7 +297,6 @@ function renderOrderCard(order, type) {
 	<div class="p-3 rounded-lg border border-zinc-800 bg-zinc-950/50 opacity-80">
 		<div class="flex justify-between text-sm">
 			<span class="text-zinc-500">✓ مسلّم</span>
-			<span class="text-zinc-400">طاولة ${table} · ${code}</span>
 			<span class="text-zinc-400">طاولة ${table} · ${priceText}</span>
 		</div>
 	</div>`;

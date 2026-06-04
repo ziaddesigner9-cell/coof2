@@ -27,15 +27,17 @@ async function loadMenu() {
 
     if (!category || !MENU_CATEGORY_KEYS.includes(category)) {
         const pathLower = window.location.pathname.toLowerCase();
-        window.location.replace(pathLower.includes("/front-end/") ? "../index.html" : "index.html");
+        const isInSubFolder = pathLower.includes("/front-end/") || pathLower.includes("/admin-panel/");
+        window.location.replace(isInSubFolder ? "../index.html" : "index.html");
         return;
     }
 
     try {
-        const { data: allItems, error } = await supabaseClient
+        const { data: items, error } = await supabaseClient
             .from("items")
             .select("*")
             .eq("is_available", true)
+            .eq("category", category)
             .order("created_at", { ascending: false });
 
         if (error) {
@@ -43,16 +45,13 @@ async function loadMenu() {
             return;
         }
 
-        const items = Array.isArray(allItems) ? allItems : [];
-        const filtered = items.filter((item) => itemMatchesCategory(item, category));
-
-        if (filtered.length === 0) {
+        if (!items || items.length === 0) {
             const label = MENU_CATEGORY_LABELS[category] || category;
             menuContainer.innerHTML = `<p class='text-center col-span-full gold-text-soft py-10'>لا توجد أصناف في «${label}» حالياً.<br><span class="text-sm text-zinc-500">أضف صنفاً واختر التصنيف الصحيح من لوحة المدير.</span></p>`;
             return;
         }
 
-        menuContainer.innerHTML = filtered
+        menuContainer.innerHTML = items
             .map(
                 (item) => {
                     const safeName = escapeHtml(item.name || "غير معروف");
