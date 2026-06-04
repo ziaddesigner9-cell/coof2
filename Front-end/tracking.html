@@ -257,8 +257,8 @@
                       );
             orderTotal.textContent = `${total} ر.س`;
 
-            const priceText = `${parseFloat(order.total_price || 0)} ريال`;
-            orderMeta.textContent = `طاولة ${order.table_no ?? "—"} · ${priceText}`;
+            const priceDisplay = `${parseFloat(order.total_price || 0).toFixed(2)} ريال`;
+            orderMeta.textContent = `طاولة ${order.table_no ?? "—"} · ${priceDisplay}`;
         }
 
         function escapeHtml(str) {
@@ -273,9 +273,8 @@
         async function renderQr(order) {
             const url = buildOrderPageUrl(order);
             const fillColor = getQrFillColor(order.status);
-
-            const priceText = `${parseFloat(order.total_price || 0)} ريال`;
-            document.getElementById("qrCodeLabel").textContent = priceText;
+            const priceDisplay = `${parseFloat(order.total_price || 0).toFixed(2)} ريال`;
+            document.getElementById("qrCodeLabel").textContent = priceDisplay;
             applyQrLabelStyle(order.status);
             qrHost.innerHTML = "";
 

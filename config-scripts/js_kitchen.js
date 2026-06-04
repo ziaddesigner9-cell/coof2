@@ -251,7 +251,7 @@ function renderItemsList(items) {
 function renderOrderCard(order, type) {
 	const items = parseItems(order.items);
 	const table = escapeHtml(order.table_no ?? "—");
-	const priceText = `${parseFloat(order.total_price || 0)} ريال`;
+	const priceText = `${parseFloat(order.total_price || 0).toFixed(2)} ريال`;
 
 	if (type === "active") {
 		return `

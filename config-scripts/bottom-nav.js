@@ -10,8 +10,8 @@
     const isInFrontend = pathLower.includes("/front-end/");
 
     const homeHref = isInSubFolder ? "../index.html" : "./index.html";
-    const menuBase = isInFrontend ? "./menu.html" : (isInSubFolder ? "../Front-end/menu.html" : "./Front-end/menu.html");
-    const cartHref = isInFrontend ? "./cart.html" : (isInSubFolder ? "../Front-end/cart.html" : "./Front-end/cart.html");
+    const menuBase = isInFrontend ? "./menu.html" : (isInSubFolder ? "../Front-end/menu.html?v=" + Date.now() : "./Front-end/menu.html");
+    const cartHref = isInFrontend ? "./cart.html" : (isInSubFolder ? "../Front-end/cart.html?v=" + Date.now() : "./Front-end/cart.html");
 
     const params = new URLSearchParams(window.location.search);
     const currentCat = params.get("cat");

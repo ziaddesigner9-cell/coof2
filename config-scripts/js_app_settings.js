@@ -3,6 +3,7 @@
  */
 const APP_SETTINGS_KEY = "app_config";
 const APP_SETTINGS_CACHE = "cafe_app_settings_cache";
+const APP_VERSION = "1.0.9"; // قم بزيادة هذا الرقم عند إجراء تعديلات كبرى
 
 const DEFAULT_APP_SETTINGS = {
     background_image: "",
@@ -64,7 +65,11 @@ async function loadAppSettings(forceRemote = false) {
     if (!forceRemote) {
         try {
             const cached = localStorage.getItem(APP_SETTINGS_CACHE);
-            if (cached) return mergeSettings(JSON.parse(cached));
+            if (cached) {
+                const parsed = JSON.parse(cached);
+                // إذا كانت النسخة المخزنة قديمة، تجاوز الكاش
+                if (parsed._version === APP_VERSION) return mergeSettings(parsed);
+            }
         } catch (_) {}
     }
 
@@ -84,6 +89,7 @@ async function loadAppSettings(forceRemote = false) {
     }
 
     const merged = mergeSettings(data?.value);
+    merged._version = APP_VERSION; // حفظ النسخة في الكاش
     try {
         localStorage.setItem(APP_SETTINGS_CACHE, JSON.stringify(merged));
     } catch (_) {}
