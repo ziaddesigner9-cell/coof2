@@ -3,7 +3,7 @@
  */
 const APP_SETTINGS_KEY = "app_config";
 const APP_SETTINGS_CACHE = "cafe_app_settings_cache";
-const APP_VERSION = "1.1.5"; // تحديث النسخة لضمان تصفير الكاش نهائياً
+const APP_VERSION = "1.1.6"; // تحديث النسخة لضمان تصفير الكاش نهائياً
 
 const DEFAULT_APP_SETTINGS = {
     background_image: "",

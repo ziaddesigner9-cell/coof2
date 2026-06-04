@@ -36,3 +36,4 @@ async function fillMissingCategoryImages() {
 }
 
 window.addEventListener("supabaseReady", fillMissingCategoryImages);
+window.addEventListener("storage", fillMissingCategoryImages); // تحديث الصور عند تغيير الإعدادات

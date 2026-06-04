@@ -1,6 +1,6 @@
 /* ثيم ذهبي نحاسي مشرق */
 :root {
-    --app-gold: #f5d76e; /* المتغير الذي نتحكم به من المدير */
+    --app-gold: #f5d76e; /* المتغير الذي نتحكم به من المدير (قيمة افتراضية) */
     --gold-bright: var(--app-gold);
     --gold-copper: #e8b84a;
     --gold-warm: #d4af37;
@@ -16,7 +16,7 @@ body.app-theme {
 }
 
 .gold-text {
-    color: var(--app-gold); /* الربط مع المتغير الديناميكي */
+    color: var(--app-gold);
     text-shadow: 0 0 14px var(--gold-glow);
 }
 
@@ -25,7 +25,7 @@ body.app-theme {
 }
 
 .gold-title {
-    color: var(--app-gold); /* الربط مع المتغير الديناميكي */
+    color: var(--app-gold);
     font-weight: 700;
     text-shadow: 0 0 18px var(--gold-glow), 0 1px 0 rgba(0, 0, 0, 0.5);
 }

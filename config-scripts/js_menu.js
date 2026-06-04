@@ -112,7 +112,7 @@ function updateCartCount() {
 document.addEventListener("DOMContentLoaded", () => {
     loadMenu();
     window.addEventListener("supabaseReady", loadMenu);
-
+    
     document.getElementById("menu-items")?.addEventListener("click", (e) => {
         const btn = e.target.closest(".add-to-cart-btn");
         if (btn) {

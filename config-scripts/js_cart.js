@@ -147,6 +147,7 @@ window.addEventListener("DOMContentLoaded", () => {
     renderCart();
     enableConfirmButton();
     document.getElementById("confirm-btn")?.addEventListener("click", confirmOrder);
+    if (typeof window.updateHomeState === "function") window.updateHomeState(); // تحديث حالة السلة في الرئيسية
 });
 
 window.addEventListener("supabaseReady", enableConfirmButton);
