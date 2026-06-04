@@ -3,7 +3,7 @@
  */
 const APP_SETTINGS_KEY = "app_config";
 const APP_SETTINGS_CACHE = "cafe_app_settings_cache";
-const APP_VERSION = "1.1.6"; // تحديث النسخة لضمان تصفير الكاش نهائياً
+const APP_VERSION = "1.1.7"; // تحديث النسخة لضمان تصفير الكاش نهائياً
 
 const DEFAULT_APP_SETTINGS = {
     background_image: "",
@@ -168,6 +168,11 @@ function applyHomeSettings(settings) {
     if (ui.text_font_size) {
         document.documentElement.style.setProperty('--app-font-size', ui.text_font_size + 'px');
     }
+
+    // تطبيق اللون المختار على كافة العبارات الذهبية لضمان الربط الفوري
+    document.querySelectorAll('.gold-text, .gold-title').forEach(el => {
+        el.style.color = ui.gold_color || '#D4AF37';
+    });
 
     const bg = document.getElementById("app-bg-layer");
     if (bg && s.background_image) {
