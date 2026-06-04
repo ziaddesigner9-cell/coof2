@@ -6,9 +6,9 @@
     <title>مقهى السعادة</title>
     <script src="https://cdn.tailwindcss.com?v=9"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2?v=12"></script>
-    <script src="config-scripts/dependencies.js?v=12"></script>
-    <script src="config-scripts/js_app_settings.js?v=12"></script>
-    <link rel="stylesheet" href="config-scripts/theme.css?v=12" />
+    <script src="config-scripts/dependencies.js?v=14"></script>
+    <script src="config-scripts/js_app_settings.js?v=14"></script>
+    <link rel="stylesheet" href="config-scripts/theme.css?v=14" />
     <style>
         body.has-bottom-nav { padding-bottom: 5.5rem; }
         #app-bg-layer {
@@ -103,13 +103,13 @@
 
         <div class="grid grid-cols-2 gap-3 mb-4">
             <a href="Front-end/cart.html" class="relative rounded-2xl border border-amber-600/40 bg-amber-950/40 p-4 text-center transition hover:border-amber-400 hover:bg-amber-950/60">
-                <span id="home-cart-badge" class="absolute -top-2 -left-2 bg-amber-500 text-black text-xs font-bold rounded-full min-w-[1.2rem] h-[1.2rem] hidden items-center justify-center px-1 border border-black">0</span>
-                <p class="text-sm gold-text-soft">السلة</p>
-                <p class="font-bold text-lg mt-2">اطلع على الطلب</p>
+                <span id="home-cart-badge" class="absolute -top-2 -left-2 bg-amber-500 text-black text-xs font-bold rounded-full min-w-[1.2rem] h-[1.2rem] flex items-center justify-center px-1 border border-black hidden" style="z-index:20;">0</span>
+                <p class="text-sm gold-text">السلة</p>
+                <p class="font-bold text-lg mt-2 text-white">اطلع على الطلب</p>
             </a>
             <a id="home-tracking-link" href="Front-end/tracking.html" class="rounded-2xl border border-amber-600/40 bg-amber-950/40 p-4 text-center transition hover:border-amber-400 hover:bg-amber-950/60">
-                <p class="text-sm gold-text-soft">تتبع الطلب</p>
-                <p class="font-bold text-lg mt-2">ألقي نظرة الآن</p>
+                <p class="text-sm gold-text">تتبع الطلب</p>
+                <p class="font-bold text-lg mt-2 text-white">ألقي نظرة الآن</p>
             </a>
         </div>
 

@@ -16,7 +16,7 @@ body.app-theme {
 }
 
 .gold-text {
-    color: var(--gold-bright);
+    color: var(--app-gold); /* الربط مع المتغير الديناميكي */
     text-shadow: 0 0 14px var(--gold-glow);
 }
 
@@ -25,7 +25,7 @@ body.app-theme {
 }
 
 .gold-title {
-    color: var(--gold-bright);
+    color: var(--app-gold); /* الربط مع المتغير الديناميكي */
     font-weight: 700;
     text-shadow: 0 0 18px var(--gold-glow), 0 1px 0 rgba(0, 0, 0, 0.5);
 }
