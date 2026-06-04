@@ -76,7 +76,8 @@ async function confirmOrder() {
         return;
     }
 
-    const tableNo = document.getElementById("tableNo")?.value?.trim();
+    const tableNoEl = document.getElementById("tableNo");
+    const tableNo = tableNoEl ? tableNoEl.value.trim() : "";
     const cart = getCart();
 
     if (!tableNo) {
