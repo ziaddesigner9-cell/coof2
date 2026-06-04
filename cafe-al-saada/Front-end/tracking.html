@@ -40,7 +40,7 @@
         <div id="qrBox" class="mx-auto rounded-2xl p-2 flex items-center justify-center">
             <div id="qrHost" aria-label="رمز QR للطلب"></div>
         </div>
-        <p id="qrCodeLabel" class="text-center text-xl text-yellow-400 font-bold mt-3 tracking-wide"></p>
+        <p id="qrCodeLabel" class="text-center text-2xl text-yellow-400 font-bold mt-4 tracking-wide drop-shadow-[0_0_8px_rgba(212,175,55,0.4)]"></p>
         <p id="tracking-scan-hint" class="hidden text-center text-xs text-amber-600/80 mt-1">امسح الرمز لفتح صفحة الطلب</p>
 
         <div class="mt-6 space-y-1">
@@ -257,8 +257,8 @@
                       );
             orderTotal.textContent = `${total} ر.س`;
 
-            // إظهار رقم الطاولة فقط هنا لأن السعر يظهر بوضوح تحت الـ QR
-            orderMeta.textContent = `طاولة ${order.table_no ?? "—"}`;
+            const priceText = `${parseFloat(order.total_price || 0)} ريال`;
+            orderMeta.textContent = `طاولة ${order.table_no ?? "—"} · ${priceText}`;
         }
 
         function escapeHtml(str) {
@@ -274,8 +274,8 @@
             const url = buildOrderPageUrl(order);
             const fillColor = getQrFillColor(order.status);
 
-            const priceDisplay = `${parseFloat(order.total_price || 0).toFixed(2)} ريال`;
-            document.getElementById("qrCodeLabel").textContent = priceDisplay;
+            const priceText = `${parseFloat(order.total_price || 0)} ريال`;
+            document.getElementById("qrCodeLabel").textContent = priceText;
             applyQrLabelStyle(order.status);
             qrHost.innerHTML = "";
 

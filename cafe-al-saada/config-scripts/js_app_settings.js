@@ -3,7 +3,6 @@
  */
 const APP_SETTINGS_KEY = "app_config";
 const APP_SETTINGS_CACHE = "cafe_app_settings_cache";
-const APP_VERSION = "1.1.1"; // إجبار المتصفح على مسح الكاش القديم فوراً
 
 const DEFAULT_APP_SETTINGS = {
     background_image: "",
@@ -41,8 +40,7 @@ const DEFAULT_APP_SETTINGS = {
         gold_color: "#D4AF37",
         silver_color: "#C0C0C0",
         gold_on_top: false,
-        show_code_text: false, // إخفاء النصوص الكودية (ORD-xxx)
-        border_width: 1 // سمك الإطار
+        show_code_text: false
     }
 };
 
@@ -66,11 +64,7 @@ async function loadAppSettings(forceRemote = false) {
     if (!forceRemote) {
         try {
             const cached = localStorage.getItem(APP_SETTINGS_CACHE);
-            if (cached) {
-                const parsed = JSON.parse(cached);
-                // إذا كانت النسخة المخزنة قديمة، تجاوز الكاش
-                if (parsed._version === APP_VERSION) return mergeSettings(parsed);
-            }
+            if (cached) return mergeSettings(JSON.parse(cached));
         } catch (_) {}
     }
 
@@ -90,7 +84,6 @@ async function loadAppSettings(forceRemote = false) {
     }
 
     const merged = mergeSettings(data?.value);
-    merged._version = APP_VERSION; // حفظ النسخة في الكاش
     try {
         localStorage.setItem(APP_SETTINGS_CACHE, JSON.stringify(merged));
     } catch (_) {}

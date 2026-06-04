@@ -124,7 +124,6 @@ async function confirmOrder() {
 
         localStorage.removeItem("cart");
         const orderId = data?.id;
-        if (orderId) localStorage.setItem("lastOrderId", orderId);
         const redirectUrl = orderId
             ? `tracking.html?orderId=${encodeURIComponent(orderId)}`
             : "tracking.html";

@@ -80,14 +80,7 @@
             document.querySelectorAll('.gold-text').forEach(el => el.style.color = goldColor);
             // set CSS var for app font size
             if (ui.text_font_size) document.documentElement.style.setProperty('--app-font-size', ui.text_font_size + 'px');
-
-            // تطبيق الإطار واللون للأقسام الرئيسية
-            const heroWrap = document.getElementById('heroWrap');
-            if (heroWrap) {
-                if (ui.border_width !== undefined) heroWrap.style.borderWidth = ui.border_width + 'px';
-                heroWrap.style.borderColor = goldColor;
-            }
-
+            // hide or show order meta (code line) under options
             const orderMeta = document.getElementById('orderMeta');
             if (orderMeta) orderMeta.style.display = ui.show_code_text === false ? 'none' : '';
         }
@@ -143,9 +136,10 @@
         function renderOrder(order) {
             const items = parseItems(order.items);
             const list = document.getElementById("orderItemsList");
-            const priceDisplay = `${parseFloat(order.total_price || 0).toFixed(2)} ريال`;
+            const code = order.order_code || `ORD-${String(order.id).slice(0, 8)}`;
+
             document.getElementById("orderMeta").textContent =
-                `طاولة ${order.table_no ?? "—"} · ${priceDisplay}`;
+                `طاولة ${order.table_no ?? "—"} · ${code}`;
 
             if (items.length === 0) {
                 list.innerHTML =

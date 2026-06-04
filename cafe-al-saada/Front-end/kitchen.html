@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة العامل — المطبخ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../config-scripts/dependencies.js?v=6"></script>
+    <script src="../config-scripts/js_auth_config.js"></script>
+    <script>
+        const role = localStorage.getItem("role");
+        if (role !== "admin" && role !== "worker") {
+            window.location.href = "../admin-panel/admin-login.html";
+        }
+    </script>
+</head>
+<body class="bg-black text-white min-h-screen p-4 pb-10">
+    <div class="max-w-lg mx-auto">
+        <header class="text-center mb-5 pt-2">
+            <p class="text-xs tracking-widest text-amber-700">WORKER PANEL</p>
+            <h1 class="text-2xl font-bold text-amber-400 mt-1">لوحة العامل</h1>
+            <p class="text-zinc-500 text-xs mt-2 leading-relaxed">
+                الأحدث في الأعلى · مؤقت الوصول والفتح<br>
+                جديد → تجهيز → استلام → مسلّم
+            </p>
+        </header>
+
+        <div id="rls-warning" class="hidden mb-4 p-3 rounded-xl border border-red-600/50 bg-red-950/50 text-red-200 text-xs">
+            ⚠️ تحديث الطلبات لا يزال محظوراً. أعد تشغيل
+            <span class="font-mono text-amber-300">supabase-kitchen-migration.sql</span>
+            بالكامل في SQL Editor.
+        </div>
+
+        <div id="orders-container" class="grid gap-4">
+            <p class="text-zinc-500 text-center p-8">جاري التحميل...</p>
+        </div>
+
+        <a href="../index.html" class="block text-center mt-8 text-zinc-600 hover:text-amber-500 text-sm">العودة للرئيسية</a>
+    </div>
+
+    <script src="../config-scripts/js_kitchen.js?v=7"></script>
+</body>
+</html>

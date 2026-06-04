@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>مقهى السعادة</title>
-    <script src="https://cdn.tailwindcss.com?v=9"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2?v=11"></script>
-    <script src="config-scripts/dependencies.js?v=11"></script>
-    <script src="config-scripts/js_app_settings.js?v=11"></script>
-    <link rel="stylesheet" href="config-scripts/theme.css?v=11" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config-scripts/dependencies.js?v=6"></script>
+    <script src="config-scripts/js_app_settings.js"></script>
+    <link rel="stylesheet" href="config-scripts/theme.css" />
     <style>
         body.has-bottom-nav { padding-bottom: 5.5rem; }
         #app-bg-layer {
@@ -156,19 +156,6 @@
         async function bootHome() {
             const s = await loadAppSettings();
             applyHomeSettings(s);
-            updateHomeBadge();
-        }
-        function updateHomeBadge() {
-            const badge = document.getElementById("home-cart-badge");
-            if (!badge) return;
-            try {
-                const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-                const count = cart.reduce((s, i) => s + (parseInt(i.quantity) || 0), 0);
-                badge.textContent = count;
-                badge.style.display = count > 0 ? "flex" : "none";
-            } catch {
-                badge.style.display = "none";
-            }
         }
         window.addEventListener("supabaseReady", bootHome);
         if (window.getSupabaseClient?.()) bootHome();

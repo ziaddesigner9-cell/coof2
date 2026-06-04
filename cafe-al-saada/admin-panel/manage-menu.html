@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>إدارة القائمة</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../config-scripts/dependencies.js?v=6"></script>
+    <script src="../config-scripts/js_categories.js"></script>
+    <script src="../config-scripts/js_auth_config.js"></script>
+    <script>if (localStorage.getItem("role") !== "admin") location.href = "admin-login.html";</script>
+</head>
+<body class="bg-slate-50 p-8">
+
+    <div class="max-w-2xl mx-auto">
+        <a href="admin-dashboard.html" class="inline-block text-amber-700 text-sm font-semibold mb-2 hover:text-amber-900">← لوحة المدير</a>
+        <a href="edit-items.html" class="inline-block text-amber-600 text-sm font-semibold mb-4 mr-4 hover:text-amber-900">✏️ تعديل الأصناف الموجودة</a>
+    <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+        <h1 class="text-2xl font-bold text-slate-800 mb-6">➕ إضافة صنف جديد</h1>
+        
+        <div class="space-y-4">
+            <input type="text" id="name" placeholder="اسم الصنف" class="w-full p-3 border rounded-xl">
+            <input type="number" id="price" placeholder="السعر" class="w-full p-3 border rounded-xl">
+            <label class="block text-sm font-bold text-slate-600 mb-1">التصنيف (يظهر فقط في قسمه)</label>
+            <select id="category" class="w-full p-3 border rounded-xl bg-white">
+                <option value="hot">مشروبات ساخنة</option>
+                <option value="cold">مشروبات باردة</option>
+                <option value="dessert">الحلى</option>
+            </select>
+            <p class="text-xs text-slate-500">يُحفظ كـ hot / cold / dessert لربط الصنف بالقسم الصحيح فقط.</p>
+            
+            <label class="block text-sm font-bold text-slate-600">اختر صورة من المكتبة:</label>
+            <div id="galleryGrid" class="grid grid-cols-4 gap-2 border p-2 rounded-xl h-40 overflow-y-auto">
+                </div>
+            
+            <button onclick="handleSave()" id="saveBtn" class="w-full bg-orange-600 text-white py-3 rounded-xl font-bold hover:bg-orange-700 transition">
+                حفظ الصنف
+            </button>
+        </div>
+    </div>
+    </div>
+
+    <script>
+        let selectedImageUrl = "";
+
+        async function loadGalleryForMenu() {
+            const client = window.getSupabaseClient?.();
+            if (!client) return;
+            const { data, error } = await client.from("gallery").select("*");
+            if (error) return console.error("خطأ في جلب الصور:", error);
+
+            const grid = document.getElementById("galleryGrid");
+            grid.innerHTML = "";
+            (data || []).forEach((img) => {
+                grid.innerHTML += `
+                    <img src="${img.image_url}" onclick="selectImage('${img.image_url}', this)" 
+                         class="cursor-pointer rounded border-2 border-transparent hover:border-orange-500 w-full h-16 object-cover">`;
+            });
+        }
+        window.addEventListener("supabaseReady", loadGalleryForMenu);
+        if (window.getSupabaseClient?.()) loadGalleryForMenu();
+
+        function selectImage(url, element) {
+            selectedImageUrl = url;
+            document.querySelectorAll('#galleryGrid img').forEach(img => img.classList.remove('border-orange-500'));
+            element.classList.add('border-orange-500');
+        }
+
+        async function handleSave() {
+            if (!selectedImageUrl) return alert("يرجى اختيار صورة من المكتبة أولاً");
+
+            const btn = document.getElementById('saveBtn');
+            btn.disabled = true;
+            btn.innerText = "جاري الحفظ...";
+
+            try {
+                const client = window.getSupabaseClient?.();
+                if (!client) throw new Error("قاعدة البيانات غير متصلة");
+                const { error } = await client.from("items").insert([{
+                    name: document.getElementById('name').value,
+                    price: parseFloat(document.getElementById('price').value),
+                    category: document.getElementById("category").value,
+                    image_url: selectedImageUrl,
+                    is_available: true
+                }]);
+
+                if (error) throw error;
+                alert("تمت الإضافة بنجاح!");
+                location.reload();
+            } catch (error) {
+                alert("فشل الحفظ: " + error.message);
+                btn.disabled = false;
+                btn.innerText = "حفظ الصنف";
+            }
+        }
+    </script>
+</body>
+</html>

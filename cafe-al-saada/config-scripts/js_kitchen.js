@@ -251,7 +251,7 @@ function renderItemsList(items) {
 function renderOrderCard(order, type) {
 	const items = parseItems(order.items);
 	const table = escapeHtml(order.table_no ?? "—");
-	const priceText = `${parseFloat(order.total_price || 0).toFixed(2)} ريال`;
+	const priceText = `${parseFloat(order.total_price || 0)} ريال`;
 
 	if (type === "active") {
 		return `
@@ -297,7 +297,7 @@ function renderOrderCard(order, type) {
 	<div class="p-3 rounded-lg border border-zinc-800 bg-zinc-950/50 opacity-80">
 		<div class="flex justify-between text-sm">
 			<span class="text-zinc-500">✓ مسلّم</span>
-			<span class="text-zinc-400">طاولة ${table} · المجموع: ${priceText}</span>
+			<span class="text-zinc-400">طاولة ${table} · ${priceText}</span>
 		</div>
 	</div>`;
 }
