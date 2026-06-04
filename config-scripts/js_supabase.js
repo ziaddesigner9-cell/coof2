@@ -11,9 +11,10 @@
         return;
     }
 
-    // إذا تم التهيئة مسبقًا، لا نعيد الإنشاء
-    if (window.supabaseClient) {
+    // التحقق من وجود العميل مسبقاً لمنع التكرار
+    if (window.supabaseClient?.from) {
         window.supabase = window.supabaseClient;
+        window.isSupabaseReady = true;
         window.dispatchEvent(new Event("supabaseReady"));
         return;
     }
