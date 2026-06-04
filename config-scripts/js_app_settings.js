@@ -39,8 +39,8 @@ const DEFAULT_APP_SETTINGS = {
         box_height: 220,
         gold_color: "#D4AF37",
         silver_color: "#C0C0C0",
-        gold_on_top: true,
-        show_code_text: true
+        gold_on_top: false,
+        show_code_text: false
     }
 };
 

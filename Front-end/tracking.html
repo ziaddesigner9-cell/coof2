@@ -36,15 +36,17 @@
 </head>
 <body class="bg-black text-white min-h-screen flex items-center justify-center p-4 pb-8">
     <div class="w-full max-w-md bg-zinc-900 border border-yellow-600/40 rounded-3xl p-6 shadow-2xl">
-        <h1 id="tracking-title" class="text-2xl font-bold text-yellow-400 text-center mb-1">شكراً لطلبك</h1>
-        <p id="subText" class="text-zinc-300 mb-5 text-sm text-center">انتظر تحويل اللون إلى الأخضر عند اكتمال التجهيز</p>
-
-        <!-- QR فعلي يُولَّد محلياً ويُمسح بالكاميرا -->
+        <!-- QR فعلي يُولَّد محلياً ويُمسح بالكاميرا -->
         <div id="qrBox" class="mx-auto rounded-2xl p-2 flex items-center justify-center">
             <div id="qrHost" aria-label="رمز QR للطلب"></div>
         </div>
-        <p id="qrCodeLabel" class="text-center text-sm text-yellow-400 font-bold mt-2 tracking-wide"></p>
-        <p id="tracking-scan-hint" class="text-center text-xs text-amber-600/80 mt-1">امسح الرمز لفتح صفحة الطلب</p>
+        <p id="qrCodeLabel" class="text-center text-xl text-yellow-400 font-bold mt-3 tracking-wide"></p>
+        <p id="tracking-scan-hint" class="hidden text-center text-xs text-amber-600/80 mt-1">امسح الرمز لفتح صفحة الطلب</p>
+
+        <div class="mt-6 space-y-1">
+            <h1 id="tracking-title" class="text-2xl font-bold text-yellow-400 text-center">شكراً لطلبك</h1>
+            <p id="subText" class="text-zinc-300 mb-5 text-sm text-center">انتظر تحويل اللون إلى الأخضر عند اكتمال التجهيز</p>
+        </div>
 
         <div id="qrNetworkBanner" class="hidden mt-4 p-3 rounded-xl border border-amber-600/50 bg-amber-950/40 text-right text-sm">
             <p class="text-amber-200 font-bold mb-2">⚠️ الرابط الحالي لا يعمل من الجوال</p>
@@ -165,17 +167,10 @@
 
         function applyLayoutSettings() {
             const ui = appSettings?.ui || {};
-            // move code label above QR box when gold_on_top
-            const qrBoxEl = document.getElementById('qrBox');
-            const qrLabel = document.getElementById('qrCodeLabel');
-            if (ui.gold_on_top) {
-                qrBoxEl.parentNode.insertBefore(qrLabel, qrBoxEl);
-            } else {
-                qrBoxEl.parentNode.insertBefore(qrLabel, qrBoxEl.nextSibling);
-            }
-            // hide or show the small explanation text under the code
+            // always keep QR box at the top (moved in HTML)
+            // hide the small explanation text under the code by default
             const scanHint = document.getElementById('tracking-scan-hint');
-            if (scanHint) scanHint.style.display = ui.show_code_text === false ? 'none' : '';
+            if (scanHint) scanHint.style.display = ui.show_code_text === false ? 'none' : 'none';
             // apply font size if provided
             if (ui.text_font_size) document.documentElement.style.setProperty('--app-font-size', ui.text_font_size + 'px');
             // apply QR label color immediately
@@ -262,8 +257,8 @@
                       );
             orderTotal.textContent = `${total} ر.س`;
 
-            const code = order.order_code || `ORD-${String(order.id).slice(0, 8)}`;
-            orderMeta.textContent = `طاولة ${order.table_no ?? "—"} · ${code}`;
+            const priceText = `${parseFloat(order.total_price || 0)} ريال`;
+            orderMeta.textContent = `طاولة ${order.table_no ?? "—"} · ${priceText}`;
         }
 
         function escapeHtml(str) {
@@ -278,9 +273,9 @@
         async function renderQr(order) {
             const url = buildOrderPageUrl(order);
             const fillColor = getQrFillColor(order.status);
-            const code = order.order_code || `ORD-${String(order.id).slice(0, 8)}`;
 
-            document.getElementById("qrCodeLabel").textContent = code;
+            const priceText = `${parseFloat(order.total_price || 0)} ريال`;
+            document.getElementById("qrCodeLabel").textContent = priceText;
             applyQrLabelStyle(order.status);
             qrHost.innerHTML = "";
 

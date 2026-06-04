@@ -251,7 +251,7 @@ function renderItemsList(items) {
 function renderOrderCard(order, type) {
 	const items = parseItems(order.items);
 	const table = escapeHtml(order.table_no ?? "—");
-	const code = escapeHtml(order.order_code || "—");
+	const priceText = `${parseFloat(order.total_price || 0)} ريال`;
 
 	if (type === "active") {
 		return `
@@ -260,7 +260,7 @@ function renderOrderCard(order, type) {
 				<div>
 					<span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-amber-600 text-black mb-2">قيد التجهيز</span>
 					<h2 class="text-2xl font-bold text-amber-400">طاولة ${table}</h2>
-					<p class="text-zinc-500 text-sm mt-1">كود: ${code}</p>
+					<p class="text-amber-200/70 text-lg font-bold mt-1">المجموع: ${priceText}</p>
 				</div>
 				<div class="text-center shrink-0">
 					<p class="text-xs text-zinc-500 mb-1">مؤقت التجهيز</p>
@@ -284,6 +284,7 @@ function renderOrderCard(order, type) {
 				<span class="text-zinc-400 text-sm">طاولة ${table}</span>
 			</div>
 			<p class="text-zinc-500 text-xs mb-1">${code}</p>
+			<p class="text-emerald-400 text-xs font-bold mb-1 mt-1">المجموع: ${priceText}</p>
 			${renderTimeBadges(order, "pickup")}
 			<ul class="mb-3 space-y-1">${renderItemsList(items)}</ul>
 			<button type="button" onclick="markAsPickedUp('${order.id}')"
@@ -298,6 +299,7 @@ function renderOrderCard(order, type) {
 		<div class="flex justify-between text-sm">
 			<span class="text-zinc-500">✓ مسلّم</span>
 			<span class="text-zinc-400">طاولة ${table} · ${code}</span>
+			<span class="text-zinc-400">طاولة ${table} · ${priceText}</span>
 		</div>
 	</div>`;
 }
