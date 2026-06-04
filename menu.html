@@ -5,14 +5,14 @@
     <title>إعادة التوجيه إلى القائمة</title>
     <script>
         const query = window.location.search || "";
-        window.location.replace("front-end/menu.html" + query);
+        window.location.replace("./front-end/menu.html" + query);
     </script>
 </head>
 <body>
     <p>جاري إعادة التوجيه إلى القائمة...</p>
     <p>إذا لم يتم التحويل تلقائياً، <a id="redirectLink" href="#">اضغط هنا</a>.</p>
     <script>
-        document.getElementById('redirectLink').href = 'front-end/menu.html' + query;
+        document.getElementById('redirectLink').href = './front-end/menu.html' + query;
     </script>
 </body>
 </html>

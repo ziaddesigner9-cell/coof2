@@ -7,9 +7,9 @@
 
     const pathLower = window.location.pathname.toLowerCase();
     const inFrontend = pathLower.includes("/front-end/");
-    const homeHref = inFrontend ? "../index.html" : "index.html";
-    const menuBase = inFrontend ? "menu.html" : "front-end/menu.html";
-    const cartHref = inFrontend ? "cart.html" : "front-end/cart.html";
+    const homeHref = inFrontend ? "../index.html" : "./index.html";
+    const menuBase = inFrontend ? "./menu.html" : "./front-end/menu.html";
+    const cartHref = inFrontend ? "./cart.html" : "./front-end/cart.html";
 
     const params = new URLSearchParams(window.location.search);
     const currentCat = params.get("cat");

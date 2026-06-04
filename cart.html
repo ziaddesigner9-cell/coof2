@@ -5,14 +5,14 @@
     <title>إعادة التوجيه إلى السلة</title>
     <script>
         const query = window.location.search || "";
-        window.location.replace("front-end/cart.html" + query);
+        window.location.replace("./front-end/cart.html" + query);
     </script>
 </head>
 <body>
     <p>جاري إعادة التوجيه إلى السلة...</p>
     <p>إذا لم يتم التحويل تلقائياً، <a id="redirectLink" href="#">اضغط هنا</a>.</p>
     <script>
-        document.getElementById('redirectLink').href = 'front-end/cart.html' + query;
+        document.getElementById('redirectLink').href = './front-end/cart.html' + query;
     </script>
 </body>
 </html>
