@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>مراقبة الطلبات</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../config-scripts/dependencies.js?v=6"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-2xl font-bold mb-6">طلبات الزبائن الحالية</h1>
+        <div id="live-orders" class="grid gap-4">
+            </div>
+        <a href="admin-dashboard.html" class="block mt-6 text-orange-600 underline">العودة للوحة الأصناف</a>
+    </div>
+
+    <script>
+        // جلب الطلبات المفتوحة فقط
+        async function fetchLiveOrders() {
+            const { data } = await window.supabase
+                .from('orders')
+                .select('*')
+                .eq('status', 'pending');
+
+            const container = document.getElementById('live-orders');
+            const rows = Array.isArray(data) ? data : [];
+            container.innerHTML = rows.length ? rows.map(o => `
+                <div class="bg-white p-4 rounded-xl shadow">
+                    <p class="font-bold">طاولة رقم: ${o.table_no ?? o.table_number ?? '---'}</p>
+                    <p class="text-sm text-gray-500">تم الطلب منذ: ${new Date(o.created_at).toLocaleTimeString()}</p>
+                </div>
+            `).join('') : '<p>لا توجد طلبات معلقة حالياً.</p>';
+        }
+        window.addEventListener('DOMContentLoaded', fetchLiveOrders);
+    </script>
+</body>
+</html>

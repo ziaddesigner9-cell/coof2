@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مقهى السعادة</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config-scripts/dependencies.js?v=6"></script>
+    <script src="config-scripts/js_app_settings.js"></script>
+    <link rel="stylesheet" href="config-scripts/theme.css" />
+    <style>
+        body.has-bottom-nav { padding-bottom: 5.5rem; }
+        #app-bg-layer {
+            position: fixed;
+            inset: 0;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0.5;
+            z-index: 0;
+        }
+        .category-row {
+            display: flex;
+            flex-direction: row;
+            direction: ltr;
+            position: relative;
+            height: 8.5rem;
+            border-radius: 1.25rem;
+            overflow: hidden;
+            background: linear-gradient(135deg, #1e1e26 0%, #141418 100%);
+            border: 2px solid rgba(232, 184, 74, 0.5);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06);
+            transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+        }
+        .category-img-wrap {
+            flex: 0 0 50%;
+            max-width: 50%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 0.35rem 0.25rem 0.35rem 0.5rem;
+            background: rgba(0,0,0,0.25);
+        }
+        .category-cover-img {
+            width: 100%;
+            height: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            object-position: left center;
+            pointer-events: none;
+        }
+        .category-row:hover {
+            transform: scale(1.02);
+            border-color: rgba(245, 215, 110, 0.85);
+            box-shadow: 0 6px 28px rgba(232, 184, 74, 0.2);
+        }
+        .category-row::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            background: linear-gradient(to right, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.55) 48%, rgba(0,0,0,0.82) 100%);
+            pointer-events: none;
+        }
+        .category-row-content {
+            position: relative;
+            z-index: 2;
+            flex: 1;
+            direction: rtl;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 0 1.25rem 0 0.5rem;
+        }
+        .category-label-title {
+            font-size: 1.45rem;
+            line-height: 1.25;
+        }
+        .category-label-hint {
+            font-size: 0.8rem;
+            letter-spacing: 0.05em;
+        }
+    </style>
+</head>
+<body class="app-theme min-h-screen">
+    <div id="app-bg-layer" class="hidden"></div>
+    <div class="app-vignette absolute inset-0 pointer-events-none z-[1]"></div>
+
+    <button type="button" onclick="location.href='admin-panel/admin-login.html'"
+        class="fixed top-4 left-4 z-50 text-amber-400 border border-amber-700/50 px-3 py-1.5 rounded-full text-xs">⚙️ المدير</button>
+    <a href="admin-panel/admin-login.html"
+        class="fixed top-4 right-4 z-50 text-amber-400 border border-amber-700/50 px-3 py-1.5 rounded-full text-xs">👨‍🍳 العامل</a>
+
+    <div class="relative z-10 max-w-lg mx-auto px-4 pt-8 pb-4">
+        <header class="text-center mb-8">
+            <h1 id="home-welcome-title" class="text-3xl gold-title">أهلاً بك</h1>
+            <p id="home-welcome-sub" class="gold-text-soft text-sm mt-2 max-w-xs mx-auto leading-relaxed">اختر تصنيفاً واستمتع بتجربة فاخرة</p>
+            <!-- <p id="home-brand" class="text-xs tracking-[0.45em] gold-text-soft">CAFE AL-SAADA</p> -->
+            <!-- <img id="app-logo" loading="lazy" class="hidden w-20 h-20 mx-auto mt-3 mb-3 rounded-full object-contain bg-zinc-900 border-2 border-amber-600/50 shadow-lg" alt="الشعار" /> -->
+        </header>
+
+        <div class="grid grid-cols-2 gap-3 mb-4">
+            <a href="Front-end/cart.html" class="rounded-2xl border border-amber-600/40 bg-amber-950/40 p-4 text-center transition hover:border-amber-400 hover:bg-amber-950/60">
+                <p class="text-sm gold-text-soft">السلة</p>
+                <p class="font-bold text-lg mt-2">اطلع على الطلب</p>
+            </a>
+            <a href="Front-end/tracking.html" class="rounded-2xl border border-amber-600/40 bg-amber-950/40 p-4 text-center transition hover:border-amber-400 hover:bg-amber-950/60">
+                <p class="text-sm gold-text-soft">تتبع الطلب</p>
+                <p class="font-bold text-lg mt-2">ألقي نظرة الآن</p>
+            </a>
+        </div>
+
+        <div class="space-y-4">
+            <a href="Front-end/menu.html?cat=hot" class="category-row" data-category-cover="hot">
+                <div class="category-img-wrap">
+                    <img class="category-cover-img" alt="صورة التصنيف" loading="lazy" hidden />
+                </div>
+                <div class="category-row-content">
+                    <div class="text-right w-full">
+                        <p data-category-hint="hot" class="category-label-hint gold-text-soft mb-1">تصفح</p>
+                        <h2 data-category-label="hot" class="category-label-title gold-title">المشروبات الساخنة</h2>
+                    </div>
+                </div>
+            </a>
+            <a href="Front-end/menu.html?cat=cold" class="category-row" data-category-cover="cold">
+                <div class="category-img-wrap">
+                    <img class="category-cover-img" alt="صورة التصنيف" loading="lazy" hidden />
+                </div>
+                <div class="category-row-content">
+                    <div class="text-right w-full">
+                        <p data-category-hint="cold" class="category-label-hint gold-text-soft mb-1">تصفح</p>
+                        <h2 data-category-label="cold" class="category-label-title gold-title">المشروبات الباردة</h2>
+                    </div>
+                </div>
+            </a>
+            <a href="Front-end/menu.html?cat=dessert" class="category-row" data-category-cover="dessert">
+                <div class="category-img-wrap">
+                    <img class="category-cover-img" alt="صورة التصنيف" loading="lazy" hidden />
+                </div>
+                <div class="category-row-content">
+                    <div class="text-right w-full">
+                        <p data-category-hint="dessert" class="category-label-hint gold-text-soft mb-1">تصفح</p>
+                        <h2 data-category-label="dessert" class="category-label-title gold-title">الحلى</h2>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <script src="config-scripts/js_categories.js"></script>
+    <script src="config-scripts/js_home.js"></script>
+    <script src="config-scripts/bottom-nav.js"></script>
+    <script>
+        async function bootHome() {
+            const s = await loadAppSettings();
+            applyHomeSettings(s);
+        }
+        window.addEventListener("supabaseReady", bootHome);
+        if (window.getSupabaseClient?.()) bootHome();
+        else applyHomeSettings(mergeSettings(null));
+    </script>
+</body>
+</html>

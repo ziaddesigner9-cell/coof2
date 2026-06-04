@@ -170,7 +170,7 @@
             // always keep QR box at the top (moved in HTML)
             // hide the small explanation text under the code by default
             const scanHint = document.getElementById('tracking-scan-hint');
-            if (scanHint) scanHint.style.display = ui.show_code_text === true ? 'block' : 'none';
+            if (scanHint) scanHint.style.display = ui.show_code_text === false ? 'none' : 'none';
             // apply font size if provided
             if (ui.text_font_size) document.documentElement.style.setProperty('--app-font-size', ui.text_font_size + 'px');
             // apply QR label color immediately
@@ -257,8 +257,8 @@
                       );
             orderTotal.textContent = `${total} ر.س`;
 
-            const priceDisplay = `${parseFloat(order.total_price || 0).toFixed(2)} ريال`;
-            orderMeta.textContent = `طاولة ${order.table_no ?? "—"} · ${priceDisplay}`;
+            const priceText = `${parseFloat(order.total_price || 0)} ريال`;
+            orderMeta.textContent = `طاولة ${order.table_no ?? "—"} · ${priceText}`;
         }
 
         function escapeHtml(str) {
@@ -273,8 +273,9 @@
         async function renderQr(order) {
             const url = buildOrderPageUrl(order);
             const fillColor = getQrFillColor(order.status);
-            const priceDisplay = `${parseFloat(order.total_price || 0).toFixed(2)} ريال`;
-            document.getElementById("qrCodeLabel").textContent = priceDisplay;
+
+            const priceText = `${parseFloat(order.total_price || 0)} ريال`;
+            document.getElementById("qrCodeLabel").textContent = priceText;
             applyQrLabelStyle(order.status);
             qrHost.innerHTML = "";
 

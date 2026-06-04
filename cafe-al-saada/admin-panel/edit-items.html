@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تعديل الأصناف</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../config-scripts/dependencies.js?v=6"></script>
+    <script src="../config-scripts/js_categories.js"></script>
+    <script src="../config-scripts/js_auth_config.js"></script>
+    <script>if (localStorage.getItem("role") !== "admin") location.href = "admin-login.html";</script>
+</head>
+<body class="bg-black text-white min-h-screen p-4 md:p-8">
+    <div class="max-w-3xl mx-auto">
+        <a href="admin-dashboard.html" class="text-amber-500 text-sm hover:text-amber-300">← لوحة المدير</a>
+        <div class="flex flex-wrap justify-between items-start gap-3 mt-4 mb-6">
+            <div>
+                <h1 class="text-2xl font-bold text-amber-400">تعديل الأصناف الموجودة</h1>
+                <p class="text-zinc-500 text-sm mt-1">عدّل الاسم، السعر، التصنيف، والصورة من المكتبة</p>
+            </div>
+            <a href="manage-menu.html" class="text-sm px-4 py-2 rounded-xl border border-amber-700/50 text-amber-300 hover:bg-amber-950">
+                ➕ إضافة صنف جديد
+            </a>
+        </div>
+
+        <div class="flex flex-wrap gap-2 mb-5">
+            <button type="button" data-filter="all" class="filter-btn px-4 py-2 rounded-full text-sm border border-amber-600/50 bg-amber-950 text-amber-300">الكل</button>
+            <button type="button" data-filter="hot" class="filter-btn px-4 py-2 rounded-full text-sm border border-zinc-700 text-zinc-400">ساخن</button>
+            <button type="button" data-filter="cold" class="filter-btn px-4 py-2 rounded-full text-sm border border-zinc-700 text-zinc-400">بارد</button>
+            <button type="button" data-filter="dessert" class="filter-btn px-4 py-2 rounded-full text-sm border border-zinc-700 text-zinc-400">حلى</button>
+        </div>
+
+        <div id="items-list" class="space-y-3">
+            <p class="text-zinc-500 text-center py-10">جاري التحميل...</p>
+        </div>
+    </div>
+
+    <!-- نافذة التعديل -->
+    <div id="edit-modal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80">
+        <div class="w-full sm:max-w-lg bg-zinc-900 border border-amber-800/40 rounded-t-3xl sm:rounded-2xl p-5 max-h-[92vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-bold text-amber-400">تعديل الصنف</h2>
+                <button type="button" id="close-modal" class="text-zinc-500 hover:text-white text-2xl leading-none">&times;</button>
+            </div>
+
+            <input type="hidden" id="edit-id" />
+
+            <div class="space-y-4">
+                <div>
+                    <label class="text-xs text-zinc-500 mb-1 block">اسم الصنف</label>
+                    <input type="text" id="edit-name" class="w-full p-3 rounded-xl bg-black border border-amber-800/40 focus:border-amber-500 outline-none" />
+                </div>
+                <div>
+                    <label class="text-xs text-zinc-500 mb-1 block">السعر (ريال)</label>
+                    <input type="number" id="edit-price" step="0.01" class="w-full p-3 rounded-xl bg-black border border-amber-800/40 focus:border-amber-500 outline-none" />
+                </div>
+                <div>
+                    <label class="text-xs text-zinc-500 mb-1 block">التصنيف</label>
+                    <select id="edit-category" class="w-full p-3 rounded-xl bg-black border border-amber-800/40">
+                        <option value="hot">مشروبات ساخنة</option>
+                        <option value="cold">مشروبات باردة</option>
+                        <option value="dessert">الحلى</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-xs text-zinc-500 mb-1 block">الصورة الحالية</label>
+                    <img id="edit-current-img" src="" alt="" class="w-20 h-20 rounded-xl object-cover border border-amber-700/40 mb-2" />
+                    <label class="text-xs text-zinc-500 mb-1 block">اختر صورة من المكتبة</label>
+                    <div id="edit-gallery" class="grid grid-cols-4 gap-2 border border-amber-800/30 rounded-xl p-2 max-h-36 overflow-y-auto bg-black"></div>
+                </div>
+                <label class="flex items-center gap-2 text-sm text-zinc-300 cursor-pointer">
+                    <input type="checkbox" id="edit-available" class="w-4 h-4 accent-amber-500" />
+                    يظهر في القائمة للزبائن
+                </label>
+            </div>
+
+            <div class="flex flex-col gap-2 mt-6">
+                <button type="button" id="save-edit-btn" class="w-full py-3 rounded-xl bg-amber-600 hover:bg-amber-500 text-black font-bold">
+                    حفظ التعديلات
+                </button>
+                <button type="button" id="delete-item-btn" class="w-full py-3 rounded-xl border border-red-700/50 text-red-400 hover:bg-red-950/50 text-sm">
+                    حذف الصنف نهائياً
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allItems = [];
+        let galleryImages = [];
+        let currentFilter = "all";
+        let selectedEditImage = "";
+        let editingItem = null;
+
+        function escapeHtml(s) {
+            return String(s)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;");
+        }
+
+        function categoryKey(item) {
+            return normalizeMenuCategory(item.category) || String(item.category || "").trim().toLowerCase();
+        }
+
+        function categoryLabel(item) {
+            const k = categoryKey(item);
+            return MENU_CATEGORY_LABELS[k] || item.category || "—";
+        }
+
+        function filteredItems() {
+            if (currentFilter === "all") return allItems;
+            return allItems.filter((i) => categoryKey(i) === currentFilter);
+        }
+
+        function renderList() {
+            const list = document.getElementById("items-list");
+            const items = filteredItems();
+
+            if (!items.length) {
+                list.innerHTML = `<p class="text-zinc-500 text-center py-10 border border-zinc-800 rounded-2xl">لا توجد أصناف${currentFilter !== "all" ? " في هذا القسم" : ""}. <a href="manage-menu.html" class="text-amber-500 underline">أضف صنفاً</a></p>`;
+                return;
+            }
+
+            list.innerHTML = items
+                .map(
+                    (item) => `
+                <div class="flex gap-3 items-center p-4 rounded-2xl border border-amber-800/30 bg-zinc-950 ${item.is_available === false ? "opacity-60" : ""}">
+                    <img src="${escapeHtml(item.image_url || "")}" alt="" class="w-16 h-16 rounded-xl object-cover border border-amber-800/30 shrink-0 bg-zinc-900" />
+                    <div class="flex-1 min-w-0 text-right">
+                        <p class="font-bold text-amber-100 truncate">${escapeHtml(item.name || "—")}</p>
+                        <p class="text-amber-400 text-sm font-bold mt-0.5">${parseFloat(item.price || 0)} ر.س</p>
+                        <p class="text-zinc-500 text-xs mt-1">${escapeHtml(categoryLabel(item))}${item.is_available === false ? " · مخفي" : ""}</p>
+                    </div>
+                    <button type="button" data-edit-id="${item.id}" class="edit-btn shrink-0 px-4 py-2 rounded-xl bg-amber-600/90 hover:bg-amber-500 text-black text-sm font-bold">
+                        تعديل
+                    </button>
+                </div>`
+                )
+                .join("");
+
+            list.querySelectorAll(".edit-btn").forEach((btn) => {
+                btn.addEventListener("click", () => openEdit(btn.dataset.editId));
+            });
+        }
+
+        function renderGalleryGrid(selectedUrl) {
+            const grid = document.getElementById("edit-gallery");
+            if (!galleryImages.length) {
+                grid.innerHTML = '<p class="col-span-full text-xs text-zinc-500 text-center py-4">لا صور في المكتبة — <a href="upload-images.html" class="text-amber-500">ارفع صوراً</a></p>';
+                return;
+            }
+            grid.innerHTML = galleryImages
+                .map(
+                    (g) => `
+                <img src="${escapeHtml(g.image_url)}" data-url="${escapeHtml(g.image_url)}"
+                    class="gallery-pick w-full h-14 object-cover rounded cursor-pointer border-2 ${g.image_url === selectedUrl ? "border-amber-500" : "border-transparent hover:border-amber-600/60"}" />`
+                )
+                .join("");
+
+            grid.querySelectorAll(".gallery-pick").forEach((img) => {
+                img.addEventListener("click", () => {
+                    selectedEditImage = img.dataset.url;
+                    document.getElementById("edit-current-img").src = selectedEditImage;
+                    grid.querySelectorAll(".gallery-pick").forEach((el) => {
+                        el.classList.toggle("border-amber-500", el.dataset.url === selectedEditImage);
+                        el.classList.toggle("border-transparent", el.dataset.url !== selectedEditImage);
+                    });
+                });
+            });
+        }
+
+        function openEdit(id) {
+            editingItem = allItems.find((i) => String(i.id) === String(id));
+            if (!editingItem) return;
+
+            selectedEditImage = editingItem.image_url || "";
+            document.getElementById("edit-id").value = editingItem.id;
+            document.getElementById("edit-name").value = editingItem.name || "";
+            document.getElementById("edit-price").value = editingItem.price ?? "";
+            document.getElementById("edit-category").value = categoryKey(editingItem) || "hot";
+            document.getElementById("edit-current-img").src = selectedEditImage;
+            document.getElementById("edit-available").checked = editingItem.is_available !== false;
+
+            renderGalleryGrid(selectedEditImage);
+            document.getElementById("edit-modal").classList.remove("hidden");
+        }
+
+        function closeEdit() {
+            document.getElementById("edit-modal").classList.add("hidden");
+            editingItem = null;
+        }
+
+        async function loadData() {
+            const client = window.getSupabaseClient?.();
+            const list = document.getElementById("items-list");
+            if (!client) {
+                list.innerHTML = '<p class="text-red-400 text-center py-10">تعذر الاتصال بقاعدة البيانات</p>';
+                return;
+            }
+
+            const [itemsRes, galleryRes] = await Promise.all([
+                client.from("items").select("*").order("created_at", { ascending: false }),
+                client.from("gallery").select("image_url, name").order("id", { ascending: false }),
+            ]);
+
+            if (itemsRes.error) {
+                list.innerHTML = `<p class="text-red-400 text-center py-10">${escapeHtml(itemsRes.error.message)}</p>`;
+                return;
+            }
+
+            allItems = itemsRes.data || [];
+            galleryImages = galleryRes.data || [];
+            renderList();
+        }
+
+        async function saveEdit() {
+            const client = window.getSupabaseClient?.();
+            if (!client || !editingItem) return;
+
+            const name = document.getElementById("edit-name").value.trim();
+            const price = parseFloat(document.getElementById("edit-price").value);
+            const category = document.getElementById("edit-category").value;
+            const is_available = document.getElementById("edit-available").checked;
+
+            if (!name) return alert("أدخل اسم الصنف");
+            if (!Number.isFinite(price) || price < 0) return alert("أدخل سعراً صحيحاً");
+            if (!selectedEditImage) return alert("اختر صورة من المكتبة");
+
+            const btn = document.getElementById("save-edit-btn");
+            btn.disabled = true;
+            btn.textContent = "جاري الحفظ...";
+
+            const { error } = await client
+                .from("items")
+                .update({ name, price, category, image_url: selectedEditImage, is_available })
+                .eq("id", editingItem.id);
+
+            btn.disabled = false;
+            btn.textContent = "حفظ التعديلات";
+
+            if (error) {
+                alert("فشل الحفظ: " + error.message + "\n\nإن لزم، شغّل supabase-items-admin-migration.sql في Supabase.");
+                return;
+            }
+
+            alert("تم حفظ التعديلات ✓");
+            closeEdit();
+            loadData();
+        }
+
+        async function deleteItem() {
+            if (!editingItem) return;
+            if (!confirm(`حذف «${editingItem.name}» نهائياً؟ لا يمكن التراجع.`)) return;
+
+            const client = window.getSupabaseClient?.();
+            if (!client) return;
+
+            const { error } = await client.from("items").delete().eq("id", editingItem.id);
+            if (error) {
+                alert("فشل الحذف: " + error.message);
+                return;
+            }
+
+            alert("تم حذف الصنف");
+            closeEdit();
+            loadData();
+        }
+
+        document.querySelectorAll(".filter-btn").forEach((btn) => {
+            btn.addEventListener("click", () => {
+                currentFilter = btn.dataset.filter;
+                document.querySelectorAll(".filter-btn").forEach((b) => {
+                    const active = b.dataset.filter === currentFilter;
+                    b.classList.toggle("border-amber-600/50", active);
+                    b.classList.toggle("bg-amber-950", active);
+                    b.classList.toggle("text-amber-300", active);
+                    b.classList.toggle("border-zinc-700", !active);
+                    b.classList.toggle("text-zinc-400", !active);
+                });
+                renderList();
+            });
+        });
+
+        document.getElementById("close-modal").addEventListener("click", closeEdit);
+        document.getElementById("edit-modal").addEventListener("click", (e) => {
+            if (e.target.id === "edit-modal") closeEdit();
+        });
+        document.getElementById("save-edit-btn").addEventListener("click", saveEdit);
+        document.getElementById("delete-item-btn").addEventListener("click", deleteItem);
+
+        window.addEventListener("supabaseReady", loadData);
+        if (window.getSupabaseClient?.()) loadData();
+    </script>
+</body>
+</html>
