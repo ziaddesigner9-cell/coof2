@@ -25,10 +25,10 @@
     const trackUrl = lastOrderId ? `${trackHref}?orderId=${encodeURIComponent(lastOrderId)}` : trackHref;
     const isTracking = pathLower.includes("tracking.html");
 
-    const activeClass = "font-bold scale-110";
-    const activeStyle = "color:#f5d76e;text-shadow:0 0 10px rgba(245,215,110,0.5)";
+    const activeClass = "font-bold scale-115";
+    const activeStyle = "color:#f5d76e;text-shadow:0 0 15px rgba(245,215,110,0.8)";
     const idleClass = "transition hover:opacity-100";
-    const idleStyle = "color:#e8b84a;opacity:0.85";
+    const idleStyle = "color:#f5d76e;text-shadow:0 0 8px rgba(245,215,110,0.4);opacity:0.95";
 
     const nav = document.createElement("nav");
     nav.id = "app-bottom-nav";
@@ -36,22 +36,22 @@
         "fixed bottom-0 left-0 w-full bg-zinc-900/98 backdrop-blur border-t border-amber-500/50 px-2 py-2 flex justify-around items-center z-50 shadow-[0_-8px_30px_rgba(232,184,74,0.12)]";
 
     nav.innerHTML = `
-        <a href="${homeHref}" class="flex flex-col items-center gap-0.5 text-[10px] ${isHome && !currentCat ? activeClass : idleClass}" style="${isHome && !currentCat ? activeStyle : idleStyle}" data-nav="home">
+        <a href="${homeHref}" class="flex flex-col items-center gap-0.5 text-[11.5px] ${isHome && !currentCat ? activeClass : idleClass}" style="${isHome && !currentCat ? activeStyle : idleStyle}" data-nav="home">
             <span class="text-lg">🏠</span><span>الرئيسية</span>
         </a>
-        <a href="${menuBase}?cat=hot" class="flex flex-col items-center gap-0.5 text-[10px] ${currentCat === "hot" ? activeClass : idleClass}" style="${currentCat === "hot" ? activeStyle : idleStyle}" data-nav="hot">
+        <a href="${menuBase}?cat=hot" class="flex flex-col items-center gap-0.5 text-[11.5px] ${currentCat === "hot" ? activeClass : idleClass}" style="${currentCat === "hot" ? activeStyle : idleStyle}" data-nav="hot">
             <span class="text-lg">☕</span><span>ساخن</span>
         </a>
-        <a href="${menuBase}?cat=cold" class="flex flex-col items-center gap-0.5 text-[10px] ${currentCat === "cold" ? activeClass : idleClass}" style="${currentCat === "cold" ? activeStyle : idleStyle}" data-nav="cold">
+        <a href="${menuBase}?cat=cold" class="flex flex-col items-center gap-0.5 text-[11.5px] ${currentCat === "cold" ? activeClass : idleClass}" style="${currentCat === "cold" ? activeStyle : idleStyle}" data-nav="cold">
             <span class="text-lg">🧊</span><span>بارد</span>
         </a>
-        <a href="${menuBase}?cat=dessert" class="flex flex-col items-center gap-0.5 text-[10px] ${currentCat === "dessert" ? activeClass : idleClass}" style="${currentCat === "dessert" ? activeStyle : idleStyle}" data-nav="dessert">
+        <a href="${menuBase}?cat=dessert" class="flex flex-col items-center gap-0.5 text-[11.5px] ${currentCat === "dessert" ? activeClass : idleClass}" style="${currentCat === "dessert" ? activeStyle : idleStyle}" data-nav="dessert">
             <span class="text-lg">🍰</span><span>حلى</span>
         </a>
-        <a href="${trackUrl}" class="flex flex-col items-center gap-0.5 text-[10px] ${isTracking ? activeClass : idleClass} ${!lastOrderId ? 'opacity-40 grayscale' : ''}" style="${isTracking ? activeStyle : idleStyle}" data-nav="track">
+        <a href="${trackUrl}" class="flex flex-col items-center gap-0.5 text-[11.5px] ${isTracking ? activeClass : idleClass} ${!lastOrderId ? 'opacity-40 grayscale' : ''}" style="${isTracking ? activeStyle : idleStyle}" data-nav="track">
             <span class="text-lg">📋</span><span>طلبي</span>
         </a>
-        <a href="${cartHref}" class="relative flex flex-col items-center gap-0.5 text-[10px] ${pathLower.includes("cart.html") ? activeClass : idleClass}" style="${pathLower.includes("cart.html") ? activeStyle : idleStyle}" data-nav="cart">
+        <a href="${cartHref}" class="relative flex flex-col items-center gap-0.5 text-[11.5px] ${pathLower.includes("cart.html") ? activeClass : idleClass}" style="${pathLower.includes("cart.html") ? activeStyle : idleStyle}" data-nav="cart">
             <span class="text-lg">🛒</span><span>السلة</span>
             <span id="cart-badge" class="absolute -top-1 -left-1 bg-amber-500 text-black text-[10px] font-bold rounded-full min-w-[1.1rem] h-[1.1rem] flex items-center justify-center px-1">0</span>
         </a>
