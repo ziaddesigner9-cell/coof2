@@ -136,10 +136,9 @@
         function renderOrder(order) {
             const items = parseItems(order.items);
             const list = document.getElementById("orderItemsList");
-            const code = order.order_code || `ORD-${String(order.id).slice(0, 8)}`;
-
+            const priceDisplay = `${parseFloat(order.total_price || 0).toFixed(2)} ريال`;
             document.getElementById("orderMeta").textContent =
-                `طاولة ${order.table_no ?? "—"} · ${code}`;
+                `طاولة ${order.table_no ?? "—"} · ${priceDisplay}`;
 
             if (items.length === 0) {
                 list.innerHTML =
