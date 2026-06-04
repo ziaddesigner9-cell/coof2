@@ -2,10 +2,10 @@
 
 DROP POLICY IF EXISTS "items_update" ON public.items;
 CREATE POLICY "items_update"
-ON public.items FOR UPDATE TO anon, authenticated
-USING (true) WITH CHECK (true);
+ON public.items FOR UPDATE TO authenticated
+USING (true);
 
 DROP POLICY IF EXISTS "items_delete" ON public.items;
 CREATE POLICY "items_delete"
-ON public.items FOR DELETE TO anon, authenticated
+ON public.items FOR DELETE TO authenticated
 USING (true);
