@@ -18,43 +18,51 @@
         <h1 class="text-2xl font-bold text-amber-400 mt-4 mb-2">تعديل العبارات</h1>
         <p class="text-zinc-500 text-sm mb-6">كل حقل يوضح أين تظهر العبارة في التطبيق.</p>
 
-        <div class="mb-6 p-4 rounded-xl border border-amber-800/30 bg-zinc-950">
-            <p class="text-amber-400 font-bold mb-4">إعدادات النص والرموز</p>
-            <div class="grid grid-cols-1 gap-3">
-                <label class="text-zinc-400 text-sm">حجم النص (px)
-                    <input id="ui_font_size" type="number" min="10" max="48" class="w-full mt-1 p-2 rounded bg-black border border-amber-700/30" />
-                </label>
-                <div class="flex gap-2">
-                    <label class="flex-1 text-zinc-400 text-sm">عرض الصندوق (px)
-                        <input id="ui_box_width" type="number" min="80" max="800" class="w-full mt-1 p-2 rounded bg-black border border-amber-700/30" />
-                    </label>
-                    <label class="flex-1 text-zinc-400 text-sm">طول الصندوق (px)
-                        <input id="ui_box_height" type="number" min="80" max="800" class="w-full mt-1 p-2 rounded bg-black border border-amber-700/30" />
-                    </label>
-                </div>
-                <div class="flex gap-2">
-                    <label class="flex-1 text-zinc-400 text-sm">لون الكود الذهبي
-                        <input id="ui_gold_color" type="color" class="w-full mt-1 h-10 rounded" />
-                    </label>
-                    <label class="flex-1 text-zinc-400 text-sm">لون الكود الفضي
-                        <input id="ui_silver_color" type="color" class="w-full mt-1 h-10 rounded" />
-                    </label>
-                </div>
-                <label class="flex items-center gap-3 text-zinc-400 text-sm">
-                    <input id="ui_gold_on_top" type="checkbox" class="w-4 h-4" /> اجعل الكود (ذهبي/فضي) أعلى
-                </label>
-                <label class="flex items-center gap-3 text-zinc-400 text-sm">
-                    <input id="ui_show_code_text" type="checkbox" class="w-4 h-4" /> إظهار نص الشرح تحت الكود
-                </label>
-            </div>
-        </div>
-
         <div id="phrases-form" class="space-y-4"></div>
 
         <button type="button" id="saveBtn"
             class="w-full mt-8 py-4 rounded-xl bg-amber-600 hover:bg-amber-500 text-black font-bold text-lg sticky bottom-4">
             حفظ جميع العبارات
         </button>
+    </div>
+
+    <!-- نافذة تعديل المظهر الفني (Modal) -->
+    <div id="style-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm">
+        <div class="w-full max-w-md bg-zinc-950 border border-amber-800/40 rounded-3xl p-6 shadow-2xl">
+            <div class="flex justify-between items-center mb-6 border-b border-amber-800/20 pb-4">
+                <h2 class="text-xl font-bold text-amber-400">تعديل المظهر والحجم</h2>
+                <button type="button" onclick="closeStyleModal()" class="text-zinc-500 hover:text-white text-2xl">&times;</button>
+            </div>
+            
+            <div class="space-y-5">
+                <div>
+                    <label class="text-xs text-zinc-500 block mb-1">حجم الخط (تكبير/تصغير)</label>
+                    <input id="ui_font_size" type="range" min="12" max="48" class="w-full accent-amber-500 h-2 bg-zinc-900 rounded-lg appearance-none cursor-pointer" />
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-xs text-zinc-500 block mb-1">عرض الإطار (Scaling)</label>
+                        <input id="ui_box_width" type="number" min="50" max="800" class="w-full p-3 rounded-xl bg-black border border-zinc-800 text-amber-100 outline-none focus:border-amber-500" />
+                    </div>
+                    <div>
+                        <label class="text-xs text-zinc-500 block mb-1">طول الإطار (Scaling)</label>
+                        <input id="ui_box_height" type="number" min="50" max="800" class="w-full p-3 rounded-xl bg-black border border-zinc-800 text-amber-100 outline-none focus:border-amber-500" />
+                    </div>
+                </div>
+                <div>
+                    <label class="text-xs text-zinc-500 block mb-1">سمك إطار الصندوق</label>
+                    <input id="ui_border_width" type="number" min="0" max="15" class="w-full p-3 rounded-xl bg-black border border-zinc-800 text-amber-100 outline-none focus:border-amber-500" />
+                </div>
+                <div>
+                    <label class="text-xs text-zinc-500 block mb-1">اللون الذهبي الموحد</label>
+                    <input id="ui_gold_color" type="color" class="w-full h-12 rounded-xl border-2 border-zinc-800 bg-transparent cursor-pointer p-1" />
+                </div>
+                
+                <button type="button" id="modalSaveBtn" class="w-full py-4 rounded-2xl bg-amber-600 hover:bg-amber-500 text-black font-bold text-lg mt-2 transition shadow-lg shadow-amber-900/20">
+                    تطبيق وحفظ المظهر
+                </button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -87,13 +95,18 @@
             const form = document.getElementById("phrases-form");
             form.innerHTML = PHRASE_FIELDS.map(
                 (f) => `
-                <div class="p-4 rounded-xl border border-amber-800/30 bg-zinc-950">
+                <div class="p-4 rounded-xl border border-amber-800/30 bg-zinc-950 hover:border-amber-600/50 transition cursor-pointer group" onclick="openStyleModal()">
                     <div class="flex flex-wrap justify-between gap-2 mb-2">
                         <span class="font-bold text-amber-300 text-sm">${f.label}</span>
                         <span class="text-[11px] text-zinc-500 bg-zinc-900 px-2 py-1 rounded">${f.location}</span>
                     </div>
-                    <input type="text" data-phrase-key="${f.key}" value="${(settings.phrases[f.key] || "").replace(/"/g, "&quot;")}"
-                        class="w-full p-3 rounded-lg bg-black border border-amber-800/40 text-white text-sm focus:border-amber-500 outline-none" />
+                    <div class="flex gap-2" onclick="event.stopPropagation()">
+                        <input type="text" data-phrase-key="${f.key}" value="${(settings.phrases[f.key] || "").replace(/"/g, "&quot;")}"
+                            class="flex-1 p-3 rounded-lg bg-black border border-amber-800/40 text-white text-sm focus:border-amber-500 outline-none" />
+                        <button type="button" onclick="openStyleModal()" class="shrink-0 w-11 h-11 flex items-center justify-center rounded-lg bg-zinc-900 border border-amber-700/30 text-amber-400 hover:bg-amber-500 hover:text-black transition" title="تعديل المظهر">
+                            🎨
+                        </button>
+                    </div>
                 </div>`
             ).join("");
         }
@@ -101,58 +114,66 @@
         async function init() {
             settings = await loadAppSettings(true);
             renderForm();
+            populateUiControls();
         }
 
-        document.getElementById("saveBtn").addEventListener("click", async () => {
-            // Save phrases
+        function openStyleModal() {
+            document.getElementById('style-modal').classList.remove('hidden');
+        }
+
+        function closeStyleModal() {
+            document.getElementById('style-modal').classList.add('hidden');
+        }
+
+        async function saveAll(source) {
+            const isModal = source === 'modal';
+            
+            // مزامنة العبارات من الحقول
             document.querySelectorAll("[data-phrase-key]").forEach((input) => {
                 settings.phrases[input.dataset.phraseKey] = input.value;
             });
-            // Save UI settings
+
+            // مزامنة إعدادات المظهر
             settings.ui = settings.ui || {};
-            settings.ui.text_font_size = parseInt(document.getElementById('ui_font_size').value || settings.ui.text_font_size || 16, 10);
-            settings.ui.box_width = parseInt(document.getElementById('ui_box_width').value || settings.ui.box_width || 220, 10);
-            settings.ui.box_height = parseInt(document.getElementById('ui_box_height').value || settings.ui.box_height || 220, 10);
-            settings.ui.gold_color = document.getElementById('ui_gold_color').value || settings.ui.gold_color || '#D4AF37';
-            settings.ui.silver_color = document.getElementById('ui_silver_color').value || settings.ui.silver_color || '#C0C0C0';
-            settings.ui.gold_on_top = document.getElementById('ui_gold_on_top').checked;
-            settings.ui.show_code_text = document.getElementById('ui_show_code_text').checked;
+            settings.ui.text_font_size = parseInt(document.getElementById('ui_font_size').value, 10);
+            settings.ui.box_width = parseInt(document.getElementById('ui_box_width').value, 10);
+            settings.ui.box_height = parseInt(document.getElementById('ui_box_height').value, 10);
+            settings.ui.border_width = parseInt(document.getElementById('ui_border_width').value, 10);
+            settings.ui.gold_color = document.getElementById('ui_gold_color').value;
+
+            const btn = isModal ? document.getElementById("modalSaveBtn") : document.getElementById("saveBtn");
+            const originalText = btn.textContent;
             
-            const btn = document.getElementById("saveBtn");
             btn.disabled = true;
             btn.textContent = "جاري الحفظ...";
+            
             try {
                 await saveAppSettings(settings);
-                alert("تم حفظ العبارات والإعدادات!");
+                alert("تم حفظ جميع التغييرات بنجاح!");
+                if (isModal) closeStyleModal();
             } catch (e) {
                 alert("فشل الحفظ: " + e.message);
             } finally {
                 btn.disabled = false;
-                btn.textContent = "حفظ جميع العبارات";
+                btn.textContent = originalText;
             }
-        });
+        }
+
+        document.getElementById("saveBtn").addEventListener("click", () => saveAll('main'));
+        document.getElementById("modalSaveBtn").addEventListener("click", () => saveAll('modal'));
         
         // populate UI controls from settings when loaded
-        async function populateUiControls() {
-            settings = await loadAppSettings();
+        function populateUiControls() {
             const ui = settings.ui || {};
             document.getElementById('ui_font_size').value = ui.text_font_size || 16;
             document.getElementById('ui_box_width').value = ui.box_width || 220;
             document.getElementById('ui_box_height').value = ui.box_height || 220;
+            document.getElementById('ui_border_width').value = ui.border_width || 1;
             document.getElementById('ui_gold_color').value = ui.gold_color || '#D4AF37';
-            document.getElementById('ui_silver_color').value = ui.silver_color || '#C0C0C0';
-            document.getElementById('ui_gold_on_top').checked = ui.gold_on_top === true;
-            document.getElementById('ui_show_code_text').checked = ui.show_code_text !== false;
         }
 
-        window.addEventListener("supabaseReady", () => {
-            init();
-            populateUiControls();
-        });
-        if (window.getSupabaseClient?.()) {
-            init();
-            populateUiControls();
-        }
+        window.addEventListener("supabaseReady", init);
+        if (window.getSupabaseClient?.()) init();
     </script>
 </body>
 </html>
