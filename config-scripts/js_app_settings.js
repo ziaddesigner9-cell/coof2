@@ -2,8 +2,7 @@
  * إعدادات التطبيق (مظهر + عبارات) — تُحفظ في Supabase جدول app_settings
  */
 const APP_SETTINGS_KEY = "app_config";
-const APP_SETTINGS_CACHE = "cafe_app_settings_cache";
-const APP_VERSION = "1.2.1"; // تحديث النسخة لفرض تحديث الواجهة عند المستخدمين
+const APP_SETTINGS_CACHE = "coof1_app_settings_cache";
 
 const DEFAULT_APP_SETTINGS = {
     background_image: "",
@@ -13,10 +12,9 @@ const DEFAULT_APP_SETTINGS = {
     category_dessert_image: "",
     phrases: {
         brand_tagline: "COOF1",
-        home_slogan: "استمتع بتجربة قهوة فريدة",
         home_welcome_title: "أهلاً بك",
-        home_welcome_sub: "اختر مشروبك المفضل وسنقوم بتجهيزه لك بكل حب",
-        category_hot_label: "القهوة والمشروبات الساخنة",
+        home_welcome_sub: "استمتع بمشروبك المفضل من COOF1",
+        category_hot_label: "المشروبات الساخنة",
         category_cold_label: "المشروبات الباردة",
         category_dessert_label: "الحلى",
         category_row_hint: "تصفح",
@@ -28,9 +26,9 @@ const DEFAULT_APP_SETTINGS = {
         tracking_status_ready: "الطلب جاهز للاستلام ✓",
         tracking_sub_ready: "تفضّل بالاستلام من الكاونتر",
         tracking_status_completed: "تم الاستلام ✓",
-        tracking_sub_completed: "نتمنى أن تكون تجربتك رائعة، نراك قريباً",
+        tracking_sub_completed: "شكراً لزيارتكم — نتمنى لكم يوماً سعيداً",
         order_view_brand_en: "COOF1",
-        order_view_brand_ar: "COOF1",
+        order_view_brand_ar: "كوفي 1",
         order_view_ready_msg: "✓ الطلب جاهز — تفضّل بالاستلام",
         order_view_completed_msg: "✓ شكراً لزيارتكم",
     },
@@ -42,8 +40,7 @@ const DEFAULT_APP_SETTINGS = {
         gold_color: "#D4AF37",
         silver_color: "#C0C0C0",
         gold_on_top: false,
-        show_code_text: false, // إخفاء النصوص الكودية (ORD-xxx)
-        border_width: 1 // سمك الإطار
+        show_code_text: false
     }
 };
 
@@ -67,11 +64,7 @@ async function loadAppSettings(forceRemote = false) {
     if (!forceRemote) {
         try {
             const cached = localStorage.getItem(APP_SETTINGS_CACHE);
-            if (cached) {
-                const parsed = JSON.parse(cached);
-                // إذا كانت النسخة المخزنة قديمة، تجاوز الكاش
-                if (parsed._version === APP_VERSION) return mergeSettings(parsed);
-            }
+            if (cached) return mergeSettings(JSON.parse(cached));
         } catch (_) {}
     }
 
@@ -91,7 +84,6 @@ async function loadAppSettings(forceRemote = false) {
     }
 
     const merged = mergeSettings(data?.value);
-    merged._version = APP_VERSION; // حفظ النسخة في الكاش
     try {
         localStorage.setItem(APP_SETTINGS_CACHE, JSON.stringify(merged));
     } catch (_) {}
@@ -112,11 +104,6 @@ async function saveAppSettings(settings) {
 
     if (error) throw error;
     localStorage.setItem(APP_SETTINGS_CACHE, JSON.stringify(payload));
-    
-    // تحديث الواجهة فوراً بعد الحفظ
-    if (typeof applyHomeSettings === "function") {
-        applyHomeSettings(payload);
-    }
     return payload;
 }
 
@@ -164,21 +151,6 @@ function categoryRowHasImage(row) {
 
 function applyHomeSettings(settings) {
     const s = mergeSettings(settings);
-    
-    // تطبيق الألوان وحجم الخط برمجياً عبر متغيرات CSS
-    const ui = s.ui || {};
-    if (ui.gold_color) {
-        document.documentElement.style.setProperty('--app-gold', ui.gold_color);
-    }
-    if (ui.text_font_size) {
-        document.documentElement.style.setProperty('--app-font-size', ui.text_font_size + 'px');
-    }
-
-    // تطبيق اللون المختار على كافة العبارات الذهبية لضمان الربط الفوري
-    document.querySelectorAll('.gold-text, .gold-title').forEach(el => {
-        el.style.color = ui.gold_color || '#D4AF37';
-    });
-
     const bg = document.getElementById("app-bg-layer");
     if (bg && s.background_image) {
         bg.style.backgroundImage = `url('${s.background_image}')`;
@@ -195,9 +167,6 @@ function applyHomeSettings(settings) {
         const emoji = document.getElementById("app-logo-emoji");
         if (emoji) emoji.classList.add("hidden");
     }
-
-    const slogan = document.getElementById("app-slogan");
-    if (slogan) slogan.textContent = phrase(s, "home_slogan");
 
     const brand = document.getElementById("home-brand");
     if (brand) brand.textContent = phrase(s, "brand_tagline");
