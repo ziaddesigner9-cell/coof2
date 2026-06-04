@@ -39,36 +39,6 @@
                     <p class="text-amber-400 font-bold mb-2">صورة صف — الحلى</p>
                     <div id="pick-dessert" class="grid grid-cols-4 gap-2 max-h-28 overflow-y-auto"></div>
                 </div>
-                <div class="p-4 rounded-xl border border-amber-800/30 bg-zinc-950">
-                    <p class="text-amber-400 font-bold mb-2">إعدادات النص والرموز</p>
-                    <div class="grid grid-cols-1 gap-3">
-                        <label class="text-zinc-400 text-sm">حجم النص (px)
-                            <input id="ui_font_size" type="number" min="10" max="48" class="w-full mt-1 p-2 rounded bg-black border border-amber-700/30" />
-                        </label>
-                        <div class="flex gap-2">
-                            <label class="flex-1 text-zinc-400 text-sm">عرض الصندوق (px)
-                                <input id="ui_box_width" type="number" min="80" max="800" class="w-full mt-1 p-2 rounded bg-black border border-amber-700/30" />
-                            </label>
-                            <label class="flex-1 text-zinc-400 text-sm">طول الصندوق (px)
-                                <input id="ui_box_height" type="number" min="80" max="800" class="w-full mt-1 p-2 rounded bg-black border border-amber-700/30" />
-                            </label>
-                        </div>
-                        <div class="flex gap-2">
-                            <label class="flex-1 text-zinc-400 text-sm">لون الكود الذهبي
-                                <input id="ui_gold_color" type="color" class="w-full mt-1 h-10 rounded" />
-                            </label>
-                            <label class="flex-1 text-zinc-400 text-sm">لون الكود الفضي
-                                <input id="ui_silver_color" type="color" class="w-full mt-1 h-10 rounded" />
-                            </label>
-                        </div>
-                        <label class="flex items-center gap-3 text-zinc-400 text-sm">
-                            <input id="ui_gold_on_top" type="checkbox" class="w-4 h-4" /> اجعل الكود (ذهبي/فضي) أعلى
-                        </label>
-                        <label class="flex items-center gap-3 text-zinc-400 text-sm">
-                            <input id="ui_show_code_text" type="checkbox" class="w-4 h-4" /> إظهار نص الشرح تحت الكود
-                        </label>
-                    </div>
-                </div>
                 <button type="button" id="saveBtn"
                     class="w-full py-4 rounded-xl bg-amber-600 hover:bg-amber-500 text-black font-bold text-lg">
                     حفظ المظهر
@@ -191,21 +161,6 @@
 
         window.addEventListener("supabaseReady", init);
         if (window.getSupabaseClient?.()) init();
-
-    // populate UI controls from settings when loaded
-    async function populateUiControls() {
-        settings = await loadAppSettings();
-        const ui = settings.ui || {};
-        document.getElementById('ui_font_size').value = ui.text_font_size || 16;
-        document.getElementById('ui_box_width').value = ui.box_width || 220;
-        document.getElementById('ui_box_height').value = ui.box_height || 220;
-        document.getElementById('ui_gold_color').value = ui.gold_color || '#D4AF37';
-        document.getElementById('ui_silver_color').value = ui.silver_color || '#C0C0C0';
-        document.getElementById('ui_gold_on_top').checked = ui.gold_on_top === true;
-        document.getElementById('ui_show_code_text').checked = ui.show_code_text !== false;
-    }
-
-    populateUiControls();
     </script>
 </body>
 </html>
