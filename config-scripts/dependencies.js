@@ -6,13 +6,13 @@
     /**
      * تحذير أمني: لا تضع المفاتيح الحقيقية هنا بشكل دائم إذا كان المستودع عاماً.
      */
-    const SUPABASE_URL = "YOUR_SUPABASE_URL"; // استبدله برابط المشروع الجديد
-    const SUPABASE_KEY = "YOUR_SUPABASE_KEY"; // استبدله بمفتاح ANON_KEY الجديد
+    const SUPABASE_URL = "YOUR_SUPABASE_URL";
+    const SUPABASE_KEY = "YOUR_SUPABASE_KEY";
 
     /** رابط عام ثابت بعد رفع الموقع. اتركه فارغاً ليستخدم الموقع الحالي أو قاعدة مخزنة.
      * يُستخدم في QR بدل localhost.
      */
-    window.COOF2_SITE_BASE = ""; // اتركه فارغاً ليتم التعرف عليه تلقائياً أو عبر الإعدادات
+    window.COOF2_SITE_BASE = "https://ziaddesigner9-cell.github.io/coof2/";
 
     const PUBLIC_BASE_STORAGE_KEY = "COOF2_PUBLIC_BASE";
 
