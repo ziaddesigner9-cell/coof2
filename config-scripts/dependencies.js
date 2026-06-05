@@ -57,36 +57,50 @@
         return host === "localhost" || host === "127.0.0.1";
     };
 
-    window.getSupabaseClient = function getSupabaseClient() {
-        if (window.supabaseClient && typeof window.supabaseClient.from === "function") {
-            return window.supabaseClient;
-        }
-        if (window.supabase && typeof window.supabase.from === "function") {
-            window.supabaseClient = window.supabase;
-            return window.supabase;
-        }
-        const lib = window.supabaseLib || window.supabase;
-        if (lib && typeof lib.createClient === "function") {
-            const client = lib.createClient(SUPABASE_URL, SUPABASE_KEY);
-            window.supabaseClient = client;
-            window.supabase = client;
-            return client;
-        }
-        return null;
-    };
+	window.getSupabaseClient = function getSupabaseClient() {
+		// 1. Check for existing initialized client
+		if (window.supabaseClient && typeof window.supabaseClient.from === "function") return window.supabaseClient;
+		
+		// 2. Check for library availability (supabase-js CDN)
+		const lib = window.supabase || (window.supabaseLib && window.supabaseLib.createClient ? window.supabaseLib : null);
+		
+		if (lib && typeof lib.createClient === "function") {
+			try {
+				const client = lib.createClient(SUPABASE_URL, SUPABASE_KEY);
+				window.supabaseClient = client;
+				return client;
+			} catch (e) {
+				console.error("خطأ أثناء إنشاء عميل Supabase:", e);
+			}
+		}
+		
+		// 3. Check if 'supabase' object itself is already a client (some CDN versions)
+		if (window.supabase && typeof window.supabase.from === "function") {
+			window.supabaseClient = window.supabase;
+			return window.supabase;
+		}
+
+		return null;
+	};
 
     try {
-        if (!window.supabaseInitialized) {
-            const client = window.getSupabaseClient();
-            if (client) {
-                window.supabaseInitialized = true;
-                window.dispatchEvent(new Event("supabaseReady"));
-                console.log("تم تهيئة Supabase بنجاح.");
-            }
-        }
-        if (!window.supabaseClient) {
-            console.error("لم يتم تحميل مكتبة Supabase. تأكد من إدراج سكربت CDN الخاص بـ Supabase قبل هذا الملف.");
-        }
+		let attempts = 0;
+		const maxAttempts = 20;
+		const checkInit = setInterval(() => {
+			attempts++;
+			const client = window.getSupabaseClient();
+			if (client) {
+				clearInterval(checkInit);
+				if (!window.supabaseInitialized) {
+					window.supabaseInitialized = true;
+					window.dispatchEvent(new Event("supabaseReady"));
+					console.log("تم تهيئة Supabase بنجاح.");
+				}
+			} else if (attempts >= maxAttempts) {
+				clearInterval(checkInit);
+				console.error("تعذر العثور على مكتبة Supabase بعد عدة محاولات.");
+			}
+		}, 500);
     } catch (error) {
         console.error("فشل تهيئة Supabase:", error);
     }

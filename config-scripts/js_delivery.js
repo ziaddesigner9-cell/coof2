@@ -20,7 +20,11 @@ function parseDeliveryDetails(text) {
 async function loadDeliveryOrders() {
     const container = document.getElementById("delivery-orders");
     const client = typeof window.getSupabaseClient === "function" ? window.getSupabaseClient() : null;
-    if (!client || !container) return;
+    if (!container) return;
+    if (!client) {
+        container.innerHTML = `<p class="text-amber-500 text-center py-10">جاري الاتصال بالنظام...</p>`;
+        return;
+    }
 
     const { data: orders, error } = await client
         .from("orders")
