@@ -107,7 +107,13 @@
 				}
 			} else if (attempts >= maxAttempts) {
 				clearInterval(checkInit);
-				console.error("تعذر العثور على مكتبة Supabase بعد عدة محاولات.");
+				const rawUrl = safeGetEnv("SUPABASE_URL");
+				const rawKey = safeGetEnv("SUPABASE_KEY");
+				if (!rawUrl || !rawKey) {
+					console.error("❌ فشل التهيئة: المفاتيح مفقودة. تأكد من استدعاء app_env.js قبل dependencies.js");
+				} else {
+					console.error("❌ فشل التهيئة: مكتبة Supabase (CDN) مفقودة في هذه الصفحة.");
+				}
 			}
 		}, 500);
     } catch (error) {
