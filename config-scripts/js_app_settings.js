@@ -2,7 +2,7 @@
  * إعدادات التطبيق (مظهر + عبارات) — تُحفظ في Supabase جدول app_settings
  */
 const APP_SETTINGS_KEY = "app_config";
-const APP_SETTINGS_CACHE = "coof1_app_settings_cache";
+const APP_SETTINGS_CACHE = "coof2_app_settings_cache";
 
 const DEFAULT_APP_SETTINGS = {
     background_image: "",
@@ -11,9 +11,9 @@ const DEFAULT_APP_SETTINGS = {
     category_cold_image: "",
     category_dessert_image: "",
     phrases: {
-        brand_tagline: "COOF1",
+        brand_tagline: "COOF2",
         home_welcome_title: "أهلاً بك",
-        home_welcome_sub: "استمتع بمشروبك المفضل من COOF1",
+        home_welcome_sub: "استمتع بمشروبك المفضل من COOF2",
         category_hot_label: "المشروبات الساخنة",
         category_cold_label: "المشروبات الباردة",
         category_dessert_label: "الحلى",
@@ -27,8 +27,8 @@ const DEFAULT_APP_SETTINGS = {
         tracking_sub_ready: "تفضّل بالاستلام من الكاونتر",
         tracking_status_completed: "تم الاستلام ✓",
         tracking_sub_completed: "شكراً لزيارتكم — نتمنى لكم يوماً سعيداً",
-        order_view_brand_en: "COOF1",
-        order_view_brand_ar: "كوفي 1",
+        order_view_brand_en: "COOF2",
+        order_view_brand_ar: "كوفي 2",
         order_view_ready_msg: "✓ الطلب جاهز — تفضّل بالاستلام",
         order_view_completed_msg: "✓ شكراً لزيارتكم",
     },

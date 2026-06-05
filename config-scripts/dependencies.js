@@ -9,9 +9,9 @@
     /** رابط عام ثابت بعد رفع الموقع. اتركه فارغاً ليستخدم الموقع الحالي أو قاعدة مخزنة.
      * يُستخدم في QR بدل localhost.
      */
-    window.COOF1_SITE_BASE = "";
+    window.COOF2_SITE_BASE = "";
 
-    const PUBLIC_BASE_STORAGE_KEY = "COOF1_PUBLIC_BASE";
+    const PUBLIC_BASE_STORAGE_KEY = "COOF2_PUBLIC_BASE";
 
     function normalizeBase(url) {
         if (!url) return "";
@@ -22,21 +22,21 @@
         return base;
     }
 
-    window.setCoof1PublicBase = function setCoof1PublicBase(url) {
+    window.setCoof2PublicBase = function setCoof2PublicBase(url) {
         const base = normalizeBase(url);
         if (base) localStorage.setItem(PUBLIC_BASE_STORAGE_KEY, base);
         else localStorage.removeItem(PUBLIC_BASE_STORAGE_KEY);
         return base;
     };
 
-    window.getCoof1PublicBase = function getCoof1PublicBase() {
+    window.getCoof2PublicBase = function getCoof2PublicBase() {
         return localStorage.getItem(PUBLIC_BASE_STORAGE_KEY) || "";
     };
 
     /** عنوان يعمل من الجوال عند مسح QR */
     window.resolveSiteBase = function resolveSiteBase() {
-        if (window.COOF1_SITE_BASE) return normalizeBase(window.COOF1_SITE_BASE);
-        const stored = getCoof1PublicBase();
+        if (window.COOF2_SITE_BASE) return normalizeBase(window.COOF2_SITE_BASE);
+        const stored = getCoof2PublicBase();
         if (stored) return normalizeBase(stored);
 
         if (window.location.protocol === "file:") return "";
