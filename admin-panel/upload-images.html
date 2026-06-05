@@ -2,200 +2,79 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مكتبة الصور</title>
+    <title>إدارة الصور</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 1. تحميل المكتبة الأساسية -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="../config-scripts/dependencies.js?v=6"></script>
-    <script src="../config-scripts/js_auth_config.js"></script>
-    <script>if (localStorage.getItem("role") !== "admin") location.href = "admin-login.html";</script>
+    <!-- 2. تحميل الإعدادات والارتباطات -->
+    <script src="../config-scripts/dependencies.js"></script>
+    <script src="../config-scripts/js_admin.js"></script>
 </head>
-<body class="bg-black text-white min-h-screen p-4 md:p-8">
-    <div class="max-w-2xl mx-auto">
-        <a href="admin-dashboard.html" class="text-amber-500 text-sm hover:text-amber-300">← لوحة المدير</a>
-        <h1 class="text-2xl font-bold text-amber-400 mt-4 mb-2">مكتبة الصور</h1>
-        <p class="text-zinc-500 text-sm mb-6">ارفع الصور هنا ثم استخدمها في القائمة أو المظهر العام. الصورة تُعرض كاملة داخل الإطار دون قص.</p>
-
-        <div class="p-5 rounded-2xl border border-amber-800/30 bg-zinc-950 mb-8">
-            <h2 class="font-bold text-amber-300 mb-3">رفع صورة جديدة</h2>
-            <input type="file" id="fileInput" accept="image/*" class="w-full p-3 rounded-lg bg-black border border-amber-800/40 mb-3 text-sm">
-            <button type="button" id="uploadBtn" class="w-full bg-amber-600 hover:bg-amber-500 text-black py-3 rounded-xl font-bold">
-                رفع إلى المكتبة
-            </button>
+<body class="bg-black text-white p-6">
+    
+    <!-- واجهة التحميل التي تظهر في البداية -->
+    <div id="admin-loader" class="fixed inset-0 bg-black z-[100] flex items-center justify-center">
+        <div class="text-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500 mx-auto"></div>
+            <p class="mt-4 text-amber-500 font-bold">جاري التحميل...</p>
         </div>
+    </div>
 
-        <h2 class="font-bold text-amber-300 mb-3">الصور المحفوظة</h2>
-        <div id="galleryGrid" class="grid grid-cols-3 sm:grid-cols-4 gap-3 min-h-[4rem]">
-            <p class="col-span-full text-zinc-500 text-sm text-center py-6">جاري التحميل...</p>
+    <div class="max-w-md mx-auto">
+        <h1 class="text-2xl font-bold text-amber-500 mb-6">رفع صورة صنف جديد</h1>
+        
+        <div class="bg-zinc-900 p-6 rounded-2xl border border-amber-800/30">
+            <input type="file" id="imageInput" class="hidden" accept="image/*">
+            <label for="imageInput" class="block w-full border-2 border-dashed border-zinc-700 rounded-xl p-8 text-center cursor-pointer hover:border-amber-500 transition">
+                <span class="text-4xl block mb-2">📸</span>
+                <span class="text-sm text-zinc-400">اضغط لاختيار صورة</span>
+            </label>
+            
+            <div id="previewContainer" class="mt-4 hidden text-center">
+                <img id="imagePreview" class="w-32 h-32 object-cover rounded-xl mx-auto border border-amber-500/50">
+                <button id="uploadBtn" class="w-full mt-4 bg-amber-600 text-black font-bold py-3 rounded-xl">رفع الآن</button>
+            </div>
         </div>
     </div>
 
     <script>
-        function escapeHtml(s) {
-            return String(s)
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;");
-        }
+        const imageInput = document.getElementById('imageInput');
+        const previewContainer = document.getElementById('previewContainer');
+        const imagePreview = document.getElementById('imagePreview');
+        const uploadBtn = document.getElementById('uploadBtn');
 
-        function storagePathFromPublicUrl(url) {
-            try {
-                const u = new URL(url);
-                const markers = ["/menu-images/", "/object/public/menu-images/"];
-                for (const marker of markers) {
-                    const idx = u.pathname.indexOf(marker);
-                    if (idx !== -1) return decodeURIComponent(u.pathname.slice(idx + marker.length));
-                }
-            } catch (_) {}
-            return null;
-        }
-
-        async function loadGallery() {
-            const client = window.getSupabaseClient?.();
-            const grid = document.getElementById("galleryGrid");
-ون            if (!client && grid) {
-                grid.innerHTML = '<p class="col-span-full text-red-400 text-sm text-center">تعذر الاتصال بقاعدة البيانات</p>';
-                return;
+        imageInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                imagePreview.src = URL.createObjectURL(file);
+                previewContainer.classList.remove('hidden');
             }
-            const { data, error } = await client.from("gallery").select("id, name, image_url").order("id", { ascending: false });
-            if (error && grid) {
-                grid.innerHTML = `<p class="col-span-full text-red-400 text-sm text-center">${escapeHtml(error.message)}</p>`;
-                return;
-            }
-            if (!data?.length && grid) {
-                grid.innerHTML = '<p class="col-span-full text-zinc-500 text-sm text-center py-6">لا توجد صور بعد — ارفع أول صورة</p>';
-                return;
-            }
-            if (grid) grid.innerHTML = data
-                .map(
-                    (g) => `
-                <div class="relative rounded-xl overflow-hidden border border-amber-800/30 bg-zinc-900 group">
-                    <img src="${escapeHtml(g.image_url)}" alt="" class="w-full aspect-square object-contain bg-black p-1" loading="lazy" />
-                    <button type="button" data-delete-id="${g.id}" data-delete-url="${escapeHtml(g.image_url)}"
-                        class="absolute top-1 left-1 w-8 h-8 rounded-full bg-red-600/95 hover:bg-red-500 text-white text-sm font-bold shadow-lg opacity-90"
-                        title="حذف الصورة">×</button>
-                    <p class="text-[10px] text-zinc-500 p-1 truncate" title="${escapeHtml(g.name || "")}">${escapeHtml(g.name || "صورة")}</p>
-                </div>`
-                )
-                .join("");
+        });
 
-            grid.querySelectorAll("[data-delete-id]").forEach((btn) => {
-                btn.addEventListener("click", (e) => {
-                    e.stopPropagation();
-                    deleteGalleryItem(btn.dataset.deleteId, btn.dataset.deleteUrl);
-                });
-            });
-        }
-
-        async function deleteGalleryItem(id, imageUrl) {
-            if (!confirm("حذف هذه الصورة من المكتبة؟")) return;
-
-            const client = window.getSupabaseClient?.();
-            if (!client) return alert("قاعدة البيانات غير متصلة");
-
-            const path = storagePathFromPublicUrl(imageUrl);
-            if (path) {
-                const { error: storageErr } = await client.storage.from("menu-images").remove([path]);
-                if (storageErr) console.warn("تعذر حذف الملف من التخزين:", storageErr.message);
-            }
-
-            const { error } = await client.from("gallery").delete().eq("id", id);
-            if (error) {
-                alert(
-                    "فشل الحذف: " +
-                        error.message +
-                        "\n\nإن لم تُنفَّذ بعد، شغّل supabase-gallery-delete-migration.sql في SQL Editor."
-                );
-                return;
-            }
-            loadGallery();
-        }
-
-        /** وظيفة لتحويل الصورة إلى صيغة WebP لتقليل الحجم مع الحفاظ على الجودة */
-        async function convertToWebP(file, quality = 0.8) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    const img = new Image();
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        canvas.width = img.width;
-                        canvas.height = img.height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0);
-                        canvas.toBlob((blob) => {
-                            if (blob) {
-                                const newFileName = file.name.replace(/\.[^/.]+$/, "") + ".webp";
-                                resolve(new File([blob], newFileName, { type: 'image/webp' }));
-                            } else {
-                                reject(new Error("فشل معالجة الصورة"));
-                            }
-                        }, 'image/webp', quality);
-                    };
-                    img.onerror = () => reject(new Error("خطأ في قراءة ملف الصورة"));
-                    img.src = event.target.result;
-                };
-                reader.onerror = () => reject(new Error("خطأ في قراءة الملف"));
-                reader.readAsDataURL(file);
-            });
-        }
-
-        async function uploadImage() {
-            const fileInput = document.getElementById("fileInput");
-            let file = (fileInput && fileInput.files) ? fileInput.files[0] : null;
-            const btn = document.getElementById("uploadBtn");
-            const client = window.getSupabaseClient?.();
-
-            if (!file) return alert("اختر صورة أولاً");
-            if (!client) return alert("قاعدة البيانات غير متصلة");
-
-            if (btn) {
-                btn.disabled = true;
-                btn.textContent = "جاري المعالجة والرفع...";
-            }
+        uploadBtn.addEventListener('click', async () => {
+            const file = imageInput.files[0];
+            if (!file) return;
 
             try {
-                // تحويل تلقائي إلى WebP إذا لم تكن الصورة بهذا التنسيق
-                if (file.type !== 'image/webp') {
-                    try {
-                        file = await convertToWebP(file);
-                    } catch (e) {
-                        console.warn("تعذر التحويل، سيتم الرفع بالتنسيق الأصلي:", e);
-                    }
+                showAdminLoader(); // إظهار التحميل عند بدء الرفع
+                const result = await window.uploadItemImage(file);
+                
+                if (result.url) {
+                    alert('تم الرفع بنجاح!');
+                    console.log("URL الصورة:", result.url);
+                    // هنا يمكنك إرسال الرابط لجدول items
                 }
-
-                const cleanName = file.name.replace(/[^a-zA-Z0-9.]/g, "_");
-                const fileName = `assets/${Date.now()}_${cleanName}`;
-
-                const { error: uploadError } = await client.storage
-                    .from("menu-images")
-                    .upload(fileName, file, { upsert: true });
-                if (uploadError) throw uploadError;
-
-                const { data } = client.storage.from("menu-images").getPublicUrl(fileName);
-                const { error: dbError } = await client.from("gallery").insert([
-                    { name: file.name, image_url: data.publicUrl },
-                ]);
-                if (dbError) throw dbError;
-
-                alert("تم رفع الصورة وإضافتها للمكتبة بنجاح!");
-                if (fileInput) fileInput.value = "";
-                loadGallery();
             } catch (err) {
-                console.error(err);
-                alert("فشل العملية: " + err.message);
+                alert('فشل الرفع: ' + err.message);
             } finally {
-                if (btn) {
-                    btn.disabled = false;
-                    btn.textContent = "رفع إلى المكتبة";
-                }
+                hideAdminLoader(); // إخفاء التحميل عند الانتهاء (حتى لو فشل)
             }
-        }
+        });
 
-        document.getElementById("uploadBtn").addEventListener("click", uploadImage);
-        window.addEventListener("supabaseReady", loadGallery);
-        if (window.getSupabaseClient?.()) loadGallery();
+        // السطر 57 - التأكد من إغلاق الدوال قبل أي جملة if
+        if (window.location.search.includes('status=ready')) {
+            console.log("النظام جاهز تماماً");
+        }
     </script>
 </body>
 </html>
