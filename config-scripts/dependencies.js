@@ -7,9 +7,6 @@
     // إضافة تحقق لضمان عدم توقف النظام إذا تأخر تحميل ملف الإعدادات
     const safeGetEnv = (key) => (window.getEnv && typeof window.getEnv === "function" ? window.getEnv(key) : "");
 
-    const SUPABASE_URL = safeGetEnv("SUPABASE_URL");
-    const SUPABASE_KEY = safeGetEnv("SUPABASE_KEY");
-
     const PUBLIC_BASE_STORAGE_KEY = "COOF2_PUBLIC_BASE";
 
     function normalizeBase(url) {
@@ -58,6 +55,11 @@
         // 1. التحقق من وجود عميل مهيأ مسبقاً
         if (window.supabaseClient && typeof window.supabaseClient.from === "function") return window.supabaseClient;
         
+        const SUPABASE_URL = safeGetEnv("SUPABASE_URL");
+        const SUPABASE_KEY = safeGetEnv("SUPABASE_KEY");
+
+        if (!SUPABASE_URL || !SUPABASE_KEY) return null;
+
         // 2. التحقق من توفر المكتبة (supabase-js CDN)
         const lib = window.supabase;
         
