@@ -64,11 +64,9 @@
         if (lib && typeof lib.createClient === "function") {
             try {
                 // التحقق من صحة المفتاح قبل المحاولة
-                if (SUPABASE_KEY && SUPABASE_KEY.length > 0) {
-                    if (!SUPABASE_KEY.startsWith("eyJ")) {
-                        console.error("❌ خطأ حرج: المفتاح المستلم هو: (" + SUPABASE_KEY.substring(0, 5) + "...) وهو غير صالح. تأكد من حفظ ملف app_env.js واستدعائه أولاً.");
-                        return null;
-                    }
+                if (!SUPABASE_KEY || !SUPABASE_KEY.startsWith("eyJ")) {
+                    console.error("❌ خطأ حرج: المفتاح غير صالح أو مفقود.");
+                    return null;
                 }
                 const client = lib.createClient(SUPABASE_URL, SUPABASE_KEY);
                 window.supabaseClient = client;
@@ -104,7 +102,7 @@
 			} else if (attempts >= maxAttempts) {
 				clearInterval(checkInit);
 				if (!SUPABASE_URL || !SUPABASE_KEY) {
-					console.error("❌ فشل التهيئة: المفاتيح (URL/KEY) غير معرفة داخل dependencies.js");
+					console.error("❌ فشل التهيئة: المفاتيح مفقودة. يرجى التأكد من كتابة المفاتيح يدوياً داخل dependencies.js");
 				} else {
 					console.error("❌ فشل التهيئة: مكتبة Supabase (CDN) مفقودة في هذه الصفحة.");
 				}
