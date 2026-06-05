@@ -76,11 +76,15 @@
     };
 
     try {
-        const client = window.getSupabaseClient();
-        if (client) {
-            window.dispatchEvent(new Event("supabaseReady"));
-            console.log("تم تهيئة Supabase بنجاح.");
-        } else {
+        if (!window.supabaseInitialized) {
+            const client = window.getSupabaseClient();
+            if (client) {
+                window.supabaseInitialized = true;
+                window.dispatchEvent(new Event("supabaseReady"));
+                console.log("تم تهيئة Supabase بنجاح.");
+            }
+        }
+        if (!window.supabaseClient) {
             console.error("لم يتم تحميل مكتبة Supabase. تأكد من إدراج سكربت CDN الخاص بـ Supabase قبل هذا الملف.");
         }
     } catch (error) {
