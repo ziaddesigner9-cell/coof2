@@ -19,6 +19,6 @@ window.APP_ENV = {
  * دالة جلب الإعدادات (Helper Function)
  * @param {string} key - مفتاح الإعداد المطلوب
  */
-window.getEnv = function(key) {
-    return window.APP_ENV[key] || "";
+window.getEnv = function getEnv(key) {
+    return (window.APP_ENV && window.APP_ENV[key]) ? window.APP_ENV[key] : "";
 };

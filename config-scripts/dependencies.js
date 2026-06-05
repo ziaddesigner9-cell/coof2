@@ -3,9 +3,10 @@
  * يوفّر: window.supabaseClient و window.getSupabaseClient()
  */
 (function initSupabaseClient() {
-    // جلب البيانات من ملف الإعدادات المركزي
-    // إضافة تحقق لضمان عدم توقف النظام إذا تأخر تحميل ملف الإعدادات
-    const safeGetEnv = (key) => (window.getEnv && typeof window.getEnv === "function" ? window.getEnv(key) : "");
+    // تم وضع المفاتيح والروابط مباشرة هنا لحل مشاكل الترتيب والتحميل
+    const SUPABASE_URL = "https://jdaggrzdaxcnnfmdyvic.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkYWdncnpkYXhjbm5mbWR5dmljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1ODMyMzgsImV4cCI6MjA5NjE1OTIzOH0.75Pcz12Jp0WkZ3_NUVt8D78BH0KgdDd1krjt-oxQoT8";
+    const SITE_BASE_URL = "https://ziaddesigner9-cell.github.io/coof2/";
 
     const PUBLIC_BASE_STORAGE_KEY = "COOF2_PUBLIC_BASE";
 
@@ -36,8 +37,7 @@
             return normalizeBase(window.location.href.replace(/[^/]*$/, ""));
         }
 
-        const siteBase = safeGetEnv("SITE_BASE_URL");
-        if (siteBase) return normalizeBase(siteBase);
+        if (SITE_BASE_URL) return normalizeBase(SITE_BASE_URL);
         
         const stored = getCoof2PublicBase();
         if (stored) return normalizeBase(stored);
@@ -55,11 +55,6 @@
         // 1. التحقق من وجود عميل مهيأ مسبقاً
         if (window.supabaseClient && typeof window.supabaseClient.from === "function") return window.supabaseClient;
         
-        const rawUrl = safeGetEnv("SUPABASE_URL");
-        const rawKey = safeGetEnv("SUPABASE_KEY");
-        const SUPABASE_URL = rawUrl ? rawUrl.trim() : "";
-        const SUPABASE_KEY = rawKey ? rawKey.trim() : "";
-
         if (!SUPABASE_URL || !SUPABASE_KEY) return null;
 
         // 2. التحقق من توفر المكتبة (supabase-js CDN)
@@ -108,10 +103,8 @@
 				}
 			} else if (attempts >= maxAttempts) {
 				clearInterval(checkInit);
-				const rawUrl = safeGetEnv("SUPABASE_URL");
-				const rawKey = safeGetEnv("SUPABASE_KEY");
-				if (!rawUrl || !rawKey) {
-					console.error("❌ فشل التهيئة: المفاتيح مفقودة. تأكد من استدعاء app_env.js قبل dependencies.js");
+				if (!SUPABASE_URL || !SUPABASE_KEY) {
+					console.error("❌ فشل التهيئة: المفاتيح (URL/KEY) غير معرفة داخل dependencies.js");
 				} else {
 					console.error("❌ فشل التهيئة: مكتبة Supabase (CDN) مفقودة في هذه الصفحة.");
 				}

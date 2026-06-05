@@ -311,10 +311,10 @@ function renderOrderCard(order, type) {
 		return `
 		<div class="p-4 rounded-xl border border-emerald-700/40 bg-emerald-950/30">
 			<div class="flex justify-between items-center mb-2">
-				<span class="text-emerald-400 font-bold">📦 جاهز للاستلام</span>
-				<span class="text-zinc-400 text-sm">طاولة ${table}</span>
+				<span class="text-emerald-400 font-bold">📦 جاهز</span>
+				<span class="text-zinc-400 text-sm">${tableHtml}</span>
 			</div>
-			<p class="text-emerald-400 text-sm font-bold mb-2 mt-1">المجموع: ${priceText}</p>
+			<p class="text-amber-400 text-sm font-bold mb-2 mt-1">المجموع: ${priceText}</p>
 			${renderTimeBadges(order, "pickup")}
 			<ul class="mb-3 space-y-1">${renderItemsList(items)}</ul>
 			<button type="button" onclick="markAsPickedUp('${order.id}')" <!-- Already safe -->
@@ -328,7 +328,7 @@ function renderOrderCard(order, type) {
 	<div class="p-3 rounded-lg border border-zinc-800 bg-zinc-950/50 opacity-80">
 		<div class="flex justify-between text-sm">
 			<span class="text-zinc-500">✓ مسلّم</span>
-			<span class="text-zinc-400">طاولة ${table} · المجموع: ${priceText}</span>
+			<span class="text-zinc-400">${tableHtml} · المجموع: ${priceText}</span>
 		</div>
 	</div>`;
 }

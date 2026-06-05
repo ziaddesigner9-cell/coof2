@@ -180,7 +180,7 @@ async function confirmOrder() {
             .from("orders")
             .insert([
                 {
-                    table_no: orderLocation.substring(0, 100), // تم زيادة الطول للسماح بالعناوين
+                    table_no: orderLocation.substring(0, 500), // زيادة الطول لاستيعاب بيانات التوصيل كاملة
                     items: cart,
                     total_price: total,
                     status: "pending",
