@@ -4,8 +4,8 @@
  */
 
 const AUTH_CONFIG = {
-    ADMIN_PASS: "CHANGE_ME_ADMIN", // يجب تغييرها فوراً
-    WORKER_PASS: "CHANGE_ME_WORKER",  // يجب تغييرها فوراً
+    ADMIN_PASS: "12345", // يجب تغييرها فوراً إلى رقم سري قوي خاص بك
+    WORKER_PASS: "54321",  // يجب تغييرها فوراً إلى رقم سري قوي خاص بك
 };
 
 /**
