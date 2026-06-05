@@ -3,7 +3,8 @@
  * وتحافظ على نفس آلية التهيئة الموجودة في dependencies.js.
  */
 (function initSupabaseClientFromLegacyFile() {
-    if (!window.supabase || !window.supabase.createClient) {
+    const lib = window.supabasejs || window.supabase;
+    if (!lib || !lib.createClient) {
         console.error("لم يتم تحميل مكتبة Supabase. تأكد من تضمين CDN أولاً.");
         return;
     }
