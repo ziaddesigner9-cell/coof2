@@ -6,6 +6,9 @@
 ALTER TABLE public.orders
 ADD COLUMN IF NOT EXISTS preparing_started_at timestamptz;
 
+ALTER TABLE public.orders
+ADD COLUMN IF NOT EXISTS rating int;
+
 ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
 
 -- إزالة كل السياسات القديمة على جدول orders (قد تمنع التحديث)
@@ -29,4 +32,11 @@ ON public.orders FOR INSERT TO anon, authenticated WITH CHECK (true);
 CREATE POLICY "orders_update_public"
 ON public.orders FOR UPDATE TO anon, authenticated USING (true) WITH CHECK (true);
 
+-- Add CHECK constraint for status column to include 'out_for_delivery'
+ALTER TABLE public.orders
+DROP CONSTRAINT IF EXISTS orders_status_check;
+
+ALTER TABLE public.orders
+ADD CONSTRAINT orders_status_check
+CHECK (status IN ('pending', 'preparing', 'ready', 'out_for_delivery', 'completed'));
 -- تحقق: بعد التشغيل جرّب تحديث طلب من Table Editor أو من التطبيق

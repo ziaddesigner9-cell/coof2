@@ -24,10 +24,55 @@
                 <span id="cart-total" class="text-2xl font-bold text-amber-400">0 ريال</span>
             </div>
 
-            <label class="block text-amber-200/90 font-bold mb-2">رقم الطاولة:</label>
-            <input type="number" id="tableNo"
-                class="w-full bg-black border-2 border-amber-800/40 rounded-xl p-4 mb-6 text-white outline-none focus:border-amber-500"
-                placeholder="مثلاً: 5">
+            <!-- أزرار الاختيار (محلي/توصيل) -->
+            <div class="grid grid-cols-2 gap-2 mb-4">
+                <button id="tab-local" type="button" class="p-3 border-2 rounded-xl font-bold transition flex flex-col items-center gap-1 border-orange-500 bg-orange-50 text-black">
+                    <span>📍 محلي</span>
+                    <span class="text-[10px] font-normal opacity-70">داخل المقهى</span>
+                </button>
+                <button id="tab-delivery" type="button" class="p-3 border-2 rounded-xl font-bold transition flex flex-col items-center gap-1 border-amber-800/40 text-zinc-400">
+                    <span>🚗 توصيل</span>
+                    <span class="text-[10px] font-normal opacity-70">خارج المقهى</span>
+                </button>
+            </div>
+
+            <!-- قسم المحلي -->
+            <div id="local-section" class="mb-6">
+                <label class="block text-amber-200/90 font-bold mb-2">رقم الطاولة:</label>
+                <input type="number" id="localInput"
+                    class="w-full bg-black border-2 border-amber-800/40 rounded-xl p-4 text-white outline-none focus:border-amber-500 text-center text-xl font-bold"
+                    placeholder="مثلاً: 5">
+            </div>
+
+            <!-- قسم التوصيل -->
+            <div id="delivery-section" class="mb-6 hidden space-y-4">
+                <div>
+                    <label class="block text-amber-200/90 text-sm mb-1">الاسم</label>
+                    <input type="text" id="deliveryName" class="w-full bg-black border border-amber-800/40 rounded-xl p-3 text-white outline-none focus:border-amber-500" placeholder="اسم المستلم">
+                </div>
+                <div>
+                    <label class="block text-amber-200/90 text-sm mb-1">رقم الجوال</label>
+                    <input type="tel" id="deliveryPhone" class="w-full bg-black border border-amber-800/40 rounded-xl p-3 text-white outline-none focus:border-amber-500 text-center font-mono" placeholder="05xxxxxxxx">
+                </div>
+                <div>
+                    <label class="block text-amber-200/90 text-sm mb-1">طريقة الدفع</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <label class="flex items-center justify-center p-3 border rounded-xl cursor-pointer border-amber-800/40 has-[:checked]:border-amber-500 has-[:checked]:bg-amber-950/50">
+                            <input type="radio" name="paymentMethod" value="كاش" class="hidden" checked> <span class="text-sm">💵 كاش</span>
+                        </label>
+                        <label class="flex items-center justify-center p-3 border rounded-xl cursor-pointer border-amber-800/40 has-[:checked]:border-amber-500 has-[:checked]:bg-amber-950/50">
+                            <input type="radio" name="paymentMethod" value="بطاقة" class="hidden"> <span class="text-sm">💳 بطاقة</span>
+                        </label>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="block text-amber-200/90 text-sm">الموقع</label>
+                        <button type="button" onclick="shareLocation()" class="text-[10px] text-blue-400 underline">📌 مشاركة موقعي</button>
+                    </div>
+                    <textarea id="deliveryAddress" class="w-full bg-black border border-amber-800/40 rounded-xl p-3 text-white outline-none focus:border-amber-500 h-20" placeholder="الحي، الشارع..."></textarea>
+                </div>
+            </div>
 
             <button id="confirm-btn"
                 class="w-full bg-amber-600 hover:bg-amber-500 text-black p-4 rounded-2xl font-bold text-lg transition shadow-lg">

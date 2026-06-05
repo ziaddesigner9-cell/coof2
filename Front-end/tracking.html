@@ -66,6 +66,19 @@
             <p id="statusText" class="text-xl font-bold text-yellow-400 mt-1">قيد التحضير</p>
         </div>
 
+        <!-- قسم التقييم يظهر فقط عند اكتمال الطلب -->
+        <div id="ratingSection" class="hidden mt-6 p-4 rounded-2xl bg-zinc-800 border border-emerald-500/30 text-center">
+            <p class="text-emerald-400 font-bold mb-3">كيف كانت تجربتك؟</p>
+            <div class="flex justify-center gap-2 mb-4 text-2xl">
+                <button onclick="submitRating(1)" class="hover:scale-125 transition">⭐</button>
+                <button onclick="submitRating(2)" class="hover:scale-125 transition">⭐</button>
+                <button onclick="submitRating(3)" class="hover:scale-125 transition">⭐</button>
+                <button onclick="submitRating(4)" class="hover:scale-125 transition">⭐</button>
+                <button onclick="submitRating(5)" class="hover:scale-125 transition">⭐</button>
+            </div>
+            <p id="ratingThanks" class="hidden text-xs text-zinc-400">شكراً لتقييمك! ❤️</p>
+        </div>
+
         <p id="orderMeta" class="mt-3 text-center text-yellow-500/90 text-sm font-semibold"></p>
 
         <!-- تفاصيل الطلب -->
@@ -106,7 +119,7 @@
         const QR_COLOR_GREEN = "#22C55E";
 
         function isQrReadyStatus(status) {
-            return status === "ready" || status === "completed";
+            return status === "ready" || status === "completed" || status === "out_for_delivery";
         }
 
         function getQrFillColor(status) {
@@ -153,7 +166,8 @@
             const ui = appSettings?.ui || {};
             const gold = ui.gold_color || '#D4AF37';
             const silver = ui.silver_color || '#C0C0C0';
-            const color = isQrReadyStatus(status) ? (ui.green_color || '#22C55E') : gold;
+            // التأكد من استخدام اللون الأخضر عند الجاهزية والذهبي عند التحضير
+            const color = isQrReadyStatus(status) ? "#22C55E" : gold;
             label.style.color = color;
         }
 
@@ -183,7 +197,12 @@
             const qs = code
                 ? `code=${encodeURIComponent(code)}`
                 : `orderId=${encodeURIComponent(order.id)}`;
-            const base = window.resolveSiteBase?.();
+            
+            let base = window.resolveSiteBase?.() || "";
+            // إذا كان المسار الأساسي لا ينتهي بـ Front-end ونحن بداخل المجلد، نحتاج لإضافته
+            if (base && !base.toLowerCase().endsWith("/front-end/")) {
+                base += "Front-end/";
+            }
             if (base) return new URL(`order-view.html?${qs}`, base).href;
             return new URL(`order-view.html?${qs}`, window.location.href).href;
         }
@@ -208,7 +227,7 @@
 
         function savePublicBaseAndRefreshQr() {
             const input = document.getElementById("publicBaseInput");
-            window.setCafePublicBase?.(input.value);
+            window.setCoof2PublicBase?.(input.value);
             updateQrNetworkUi();
             if (currentOrder) renderQr(currentOrder).catch(console.error);
         }
@@ -331,6 +350,13 @@
                 statusText.classList.add("text-emerald-400");
                 statusText.textContent = phrase(appSettings, "tracking_status_completed");
                 subText.textContent = phrase(appSettings, "tracking_sub_completed");
+                document.getElementById("ratingSection")?.classList.remove("hidden");
+            } else if (status === "out_for_delivery") {
+                applyQrLabelStyle(status);
+                statusText.classList.remove("text-yellow-400");
+                statusText.classList.add("text-emerald-400");
+                statusText.textContent = "الطلب في الطريق";
+                subText.textContent = "طلبك مع سائق التوصيل الآن، استمتع بوقتك!";
             } else if (status === "ready") {
                 applyQrLabelStyle(status);
                 statusText.classList.remove("text-yellow-400");
@@ -415,7 +441,7 @@
             appSettings = await loadAppSettings();
             applyTrackingPhrases();
             applyLayoutSettings();
-            const saved = window.getCafePublicBase?.();
+            const saved = window.getCoof2PublicBase?.();
             if (saved) {
                 document.getElementById("publicBaseInput").value = saved;
             }

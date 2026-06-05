@@ -13,6 +13,18 @@ let ordersCache = [];
 const LOCAL_PREP_KEY = "kitchen_local_preparing";
 const LOCAL_OPENED_KEY = "kitchen_opened_at";
 
+/** إضافة زر التوصيل في أعلى الصفحة */
+function injectDeliveryButton() {
+    if (document.getElementById("btn-go-delivery")) return;
+    const header = document.querySelector('header') || document.body;
+    const btn = document.createElement("button");
+    btn.id = "btn-go-delivery";
+    btn.className = "fixed top-4 left-4 z-[60] bg-amber-600 text-black px-4 py-2 rounded-full font-bold text-xs shadow-lg";
+    btn.innerText = "🚗 عامل التوصيل";
+    btn.onclick = () => window.location.href = "delivery_login.html";
+    header.appendChild(btn);
+}
+
 function getClient() {
 	return typeof window.getSupabaseClient === "function" ? window.getSupabaseClient() : null;
 }
@@ -256,9 +268,20 @@ function renderItemsList(items) {
 		.join("");
 }
 
+/** تنسيق نص الموقع: إذا كان رابطاً يظهر كزر */
+function formatLocationInfo(text) {
+    if (!text) return "—";
+    // البحث عن روابط خرائط جوجل
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    return text.replace(urlRegex, (url) => {
+        return `<a href="${url}" target="_blank" class="inline-block px-2 py-1 bg-blue-600 text-white text-[10px] rounded-md mt-1 mb-1">فتح الخريطة 📍</a>`;
+    });
+}
+
 function renderOrderCard(order, type) {
 	const items = parseItems(order.items);
-	const table = escapeHtml(order.table_no ?? "—");
+    const tableRaw = order.table_no ?? "—";
+    const tableHtml = formatLocationInfo(escapeHtml(tableRaw));
 	const priceText = `${parseFloat(order.total_price || 0).toFixed(2)} ريال`;
 
 	if (type === "active") {
@@ -267,7 +290,7 @@ function renderOrderCard(order, type) {
 			<div class="flex justify-between items-start gap-3 mb-3">
 				<div>
 					<span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-amber-600 text-black mb-2">قيد التجهيز</span> <!-- Already safe -->
-					<h2 class="text-2xl font-bold text-amber-400">طاولة ${table}</h2>
+                    <h2 class="text-xl font-bold text-amber-400">${tableHtml}</h2>
 					<p class="text-amber-200/70 text-xl font-bold mt-1">المجموع: ${priceText}</p>
 				</div>
 				<div class="text-center shrink-0">
@@ -518,6 +541,7 @@ function startKitchen() {
 	testRlsOnStart();
 	loadOrders();
 	setupRealtime();
+    injectDeliveryButton();
 }
 
 window.openOrder = openOrder;

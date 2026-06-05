@@ -6,8 +6,8 @@
     /**
      * تحذير أمني: لا تضع المفاتيح الحقيقية هنا بشكل دائم إذا كان المستودع عاماً.
      */
-    const SUPABASE_URL = "YOUR_SUPABASE_URL";
-    const SUPABASE_KEY = "YOUR_SUPABASE_KEY";
+    const SUPABASE_URL = "https://jdaggrzdaxcnnfmdyvic.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_piXWc1wVLZYutDRvZaLVmA_7CqPaLD1";
 
     /** رابط عام ثابت بعد رفع الموقع. اتركه فارغاً ليستخدم الموقع الحالي أو قاعدة مخزنة.
      * يُستخدم في QR بدل localhost.
@@ -38,14 +38,15 @@
 
     /** عنوان يعمل من الجوال عند مسح QR */
     window.resolveSiteBase = function resolveSiteBase() {
+        // إذا كنا في بيئة محلية، نستخدم رابط الجهاز الحالي بدلاً من الرابط الثابت
+        if (window.isLocalOnlyEnvironment()) {
+            return normalizeBase(window.location.href.replace(/[^/]*$/, ""));
+        }
+
         if (window.COOF2_SITE_BASE) return normalizeBase(window.COOF2_SITE_BASE);
+        
         const stored = getCoof2PublicBase();
         if (stored) return normalizeBase(stored);
-
-        if (window.location.protocol === "file:") return "";
-
-        const host = window.location.hostname;
-        if (host === "localhost" || host === "127.0.0.1") return "";
 
         return normalizeBase(window.location.href.replace(/[^/]*$/, ""));
     };

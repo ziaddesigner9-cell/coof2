@@ -66,6 +66,49 @@ function enableConfirmButton() {
     }
 }
 
+/**
+ * التبديل بين نوع الطلب (محلي/توصيل) في الواجهة
+ */
+function setOrderType(type) {
+    const localSection = document.getElementById("local-section");
+    const deliverySection = document.getElementById("delivery-section");
+    const localBtn = document.getElementById("tab-local");
+    const deliveryBtn = document.getElementById("tab-delivery");
+
+    if (type === 'local') {
+        localSection?.classList.remove("hidden");
+        deliverySection?.classList.add("hidden");
+        localBtn?.classList.add("border-orange-500", "bg-orange-50");
+        deliveryBtn?.classList.remove("border-orange-500", "bg-orange-50");
+    } else {
+        deliverySection?.classList.remove("hidden");
+        localSection?.classList.add("hidden");
+        deliveryBtn?.classList.add("border-orange-500", "bg-orange-50");
+        localBtn?.classList.remove("border-orange-500", "bg-orange-50");
+    }
+}
+
+/**
+ * جلب موقع الزبون الجغرافي وتحويله لرابط خرائط جوجل
+ */
+async function shareLocation() {
+    const addressEl = document.getElementById("deliveryAddress");
+    if (!navigator.geolocation) {
+        alert("متصفحك لا يدعم مشاركة الموقع.");
+        return;
+    }
+    
+    addressEl.placeholder = "جاري جلب الموقع...";
+    navigator.geolocation.getCurrentPosition((position) => {
+        const { latitude, longitude } = position.coords;
+        const mapUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
+        addressEl.value = mapUrl;
+    }, (error) => {
+        alert("تعذر جلب الموقع، يرجى كتابة العنوان يدوياً.");
+        addressEl.placeholder = "الحي، الشارع، المعالم القريبة...";
+    });
+}
+
 async function confirmOrder() {
     const btn = document.getElementById("confirm-btn");
     const supabaseClient =
@@ -76,18 +119,48 @@ async function confirmOrder() {
         return;
     }
 
-    const tableNoEl = document.getElementById("tableNo"); // Already safe
-    const tableNo = tableNoEl ? tableNoEl.value.trim() : ""; // Already safe
+    const localEl = document.getElementById("localInput");
+    const deliveryNameEl = document.getElementById("deliveryName");
+    const deliveryPhoneEl = document.getElementById("deliveryPhone");
+    const deliveryAddressEl = document.getElementById("deliveryAddress");
+    const paymentEl = document.querySelector('input[name="paymentMethod"]:checked');
+    
+    // التحقق من القسم الظاهر حالياً
+    const isLocal = !document.getElementById("local-section")?.classList.contains("hidden");
+    const localVal = (isLocal && localEl) ? localEl.value.trim() : "";
+
+    const nameVal = (!isLocal && deliveryNameEl) ? deliveryNameEl.value.trim() : "";
+    const phoneVal = (!isLocal && deliveryPhoneEl) ? deliveryPhoneEl.value.trim() : "";
+    const paymentVal = (!isLocal && paymentEl) ? paymentEl.value : "";
+    const addressVal = (!isLocal && deliveryAddressEl) ? deliveryAddressEl.value.trim() : "";
+
     const cart = getCart();
 
-    if (!tableNo) {
+    if (isLocal && !localVal) {
         alert("يرجى إدخال رقم الطاولة");
         return;
+    }
+    if (!isLocal) {
+        if (!nameVal || !phoneVal || !addressVal || !paymentVal) {
+            alert("يرجى إكمال كافة بيانات التوصيل (الاسم، الجوال، الموقع، وطريقة الدفع)");
+            return;
+        }
+        // التحقق من صحة رقم الجوال السعودي (10 أرقام يبدأ بـ 05)
+        const phoneRegex = /^05\d{8}$/;
+        if (!phoneRegex.test(phoneVal)) {
+            alert("يرجى إدخال رقم جوال صحيح مكون من 10 أرقام ويبدأ بـ 05");
+            return;
+        }
     }
     if (cart.length === 0) {
         alert("السلة فارغة");
         return;
     }
+
+    // تحديد نوع الطلب والموقع (محلي أو توصيل)
+    const orderLocation = isLocal 
+        ? `محلي: ${localVal}` 
+        : `توصيل - الاسم: ${nameVal} | الجوال: ${phoneVal} | الدفع: ${paymentVal} | الموقع: ${addressVal}`;
 
     if (btn) {
         btn.disabled = true;
@@ -107,7 +180,7 @@ async function confirmOrder() {
             .from("orders")
             .insert([
                 {
-                    table_no: tableNo.substring(0, 10), // حماية إضافية لطول النص
+                    table_no: orderLocation.substring(0, 100), // تم زيادة الطول للسماح بالعناوين
                     items: cart,
                     total_price: total,
                     status: "pending",
@@ -164,6 +237,17 @@ window.addEventListener("DOMContentLoaded", () => {
     renderCart();
     enableConfirmButton();
     document.getElementById("confirm-btn")?.addEventListener("click", confirmOrder);
+    document.getElementById("tab-local")?.addEventListener("click", () => setOrderType('local'));
+    document.getElementById("tab-delivery")?.addEventListener("click", () => setOrderType('delivery'));
+    
+    // منع كتابة الأحرف في حقل الجوال
+    const phoneInput = document.getElementById("deliveryPhone");
+    if (phoneInput) {
+        phoneInput.addEventListener("input", (e) => {
+            e.target.value = e.target.value.replace(/\D/g, "");
+        });
+    }
+
     if (typeof window.updateHomeState === "function") window.updateHomeState(); // تحديث حالة السلة في الرئيسية
 });
 

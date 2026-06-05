@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تحديث حالة الطلب</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Tajawal', sans-serif; }</style>
+</head>
+<body class="bg-zinc-950 text-zinc-100 min-h-screen flex items-center justify-center p-6">
+    <div class="w-full max-w-md bg-zinc-900 p-8 rounded-3xl border border-amber-500/30 shadow-2xl text-center">
+        <div id="status-message">
+            <span class="text-5xl block mb-4">⏳</span>
+            <h1 class="text-2xl font-bold text-amber-500">جاري تحديث حالة الطلب...</h1>
+            <p class="text-zinc-400 mt-2">يرجى الانتظار قليلاً.</p>
+        </div>
+        <button onclick="window.location.href='delivery_dashboard.html'"
+                class="mt-8 w-full bg-amber-600 hover:bg-amber-500 text-black font-bold py-3 rounded-2xl transition shadow-lg hidden" id="back-to-dashboard">
+            العودة للوحة التوصيل
+        </button>
+    </div>
+
+    <script src="../config-scripts/dependencies.js"></script>
+    <script src="../config-scripts/js_delivery.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const orderId = urlParams.get('orderId');
+            const statusMessageEl = document.getElementById('status-message');
+            const backButton = document.getElementById('back-to-dashboard');
+
+            if (!orderId) {
+                statusMessageEl.innerHTML = `
+                    <span class="text-5xl block mb-4">❌</span>
+                    <h1 class="text-2xl font-bold text-red-500">خطأ: لم يتم تحديد الطلب.</h1>
+                    <p class="text-zinc-400 mt-2">يرجى التأكد من مسح الكود الصحيح.</p>
+                `;
+                backButton.classList.remove('hidden');
+                return;
+            }
+
+            if (!window.getSupabaseClient()) {
+                await new Promise(resolve => window.addEventListener('supabaseReady', resolve));
+            }
+
+            const result = await window.markAsOutForDelivery(orderId);
+
+            if (result.ok) {
+                statusMessageEl.innerHTML = `
+                    <span class="text-5xl block mb-4">✅</span>
+                    <h1 class="text-2xl font-bold text-emerald-500">تم تحديث حالة الطلب بنجاح!</h1>
+                    <p class="text-zinc-400 mt-2">الطلب الآن في طريق التوصيل.</p>
+                `;
+            } else {
+                statusMessageEl.innerHTML = `
+                    <span class="text-5xl block mb-4">⚠️</span>
+                    <h1 class="text-2xl font-bold text-amber-500">فشل تحديث حالة الطلب.</h1>
+                    <p class="text-zinc-400 mt-2">السبب: ${result.error || 'غير معروف'}. قد يكون الطلب ليس جاهزاً للتوصيل بعد.</p>
+                `;
+            }
+            backButton.classList.remove('hidden');
+        });
+    </script>
+</body>
+</html>

@@ -8,3 +8,11 @@ WHERE lower(trim(category)) IN ('cold', 'بارد', 'مشروبات باردة',
 
 UPDATE public.items SET category = 'dessert'
 WHERE lower(trim(category)) IN ('dessert', 'حلى', 'حلويات', 'حلوى', 'تحلية');
+
+-- إضافة قيد لضمان جودة البيانات مستقبلاً
+ALTER TABLE public.items 
+DROP CONSTRAINT IF EXISTS items_category_check;
+
+ALTER TABLE public.items 
+ADD CONSTRAINT items_category_check 
+CHECK (category IN ('hot', 'cold', 'dessert'));
