@@ -5,7 +5,7 @@
 (function initSupabaseClient() {
     // جلب البيانات من ملف الإعدادات المركزي
     // إضافة تحقق لضمان عدم توقف النظام إذا تأخر تحميل ملف الإعدادات
-    const safeGetEnv = (key) => (typeof window.getEnv === "function" ? window.getEnv(key) : "");
+    const safeGetEnv = (key) => (window.getEnv && typeof window.getEnv === "function" ? window.getEnv(key) : "");
 
     const SUPABASE_URL = safeGetEnv("SUPABASE_URL");
     const SUPABASE_KEY = safeGetEnv("SUPABASE_KEY");

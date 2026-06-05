@@ -4,7 +4,7 @@
  */
 
 // دالة مساعدة لجلب الإعدادات بأمان
-const safeGet = (key, fallback) => (typeof window.getEnv === "function" ? window.getEnv(key) : fallback);
+const safeGet = (key, fallback) => (window.getEnv && typeof window.getEnv === "function" ? window.getEnv(key) : fallback);
 
 const AUTH_CONFIG = {
     ADMIN_PASS: safeGet("ADMIN_PASS", "12345"),
