@@ -17,6 +17,11 @@ CREATE POLICY "menu_images_insert"
 ON storage.objects FOR INSERT TO anon, authenticated 
 WITH CHECK (bucket_id = 'menu-images');
 
+DROP POLICY IF EXISTS "menu_images_update" ON storage.objects;
+CREATE POLICY "menu_images_update"
+ON storage.objects FOR UPDATE TO anon, authenticated 
+USING (bucket_id = 'menu-images');
+
 DROP POLICY IF EXISTS "menu_images_delete" ON storage.objects;
 CREATE POLICY "menu_images_delete"
 ON storage.objects FOR DELETE TO anon, authenticated 
