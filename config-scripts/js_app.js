@@ -16,7 +16,7 @@ window.startOrder = async function(tableNumber) {
         // استخدام window.supabase بدلاً من supabase المباشر
         const { data, error } = await window.supabase
             .from('orders')
-            .insert([{ table_no: tableNumber, status: 'confirmed' }])
+            .insert([{ table_no: tableNumber, status: 'pending' }])
             .select();
 
         if (error) {

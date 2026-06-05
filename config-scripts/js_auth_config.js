@@ -4,8 +4,8 @@
  */
 
 const AUTH_CONFIG = {
-    ADMIN_PASS: "123456", // كلمة مرور المدير
-    WORKER_PASS: "0000",  // كلمة مرور العامل
+    ADMIN_PASS: "CHANGE_ME_ADMIN", // يجب تغييرها فوراً
+    WORKER_PASS: "CHANGE_ME_WORKER",  // يجب تغييرها فوراً
 };
 
 /**
