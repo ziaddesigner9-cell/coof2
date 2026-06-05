@@ -7,7 +7,8 @@
      * تحذير أمني: لا تضع المفاتيح الحقيقية هنا بشكل دائم إذا كان المستودع عاماً.
      */
     const SUPABASE_URL = "https://jdaggrzdaxcnnfmdyvic.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_piXWc1wVLZYutDRvZaLVmA_7CqPaLD1";
+    // تنبيه: تأكد من أن المفتاح يبدأ بـ eyJ... (خذه من Project Settings -> API في Supabase)
+    const SUPABASE_KEY = "sb_publishable_piXWc1wVLZYutDRvZaLVmA_7CqPaLD1"; 
 
     /** رابط عام ثابت بعد رفع الموقع. اتركه فارغاً ليستخدم الموقع الحالي أو قاعدة مخزنة.
      * يُستخدم في QR بدل localhost.
@@ -62,13 +63,18 @@
 		if (window.supabaseClient && typeof window.supabaseClient.from === "function") return window.supabaseClient;
 		
 		// 2. Check for library availability (supabase-js CDN)
-		const lib = window.supabase || (window.supabaseLib && window.supabaseLib.createClient ? window.supabaseLib : null);
+		const lib = window.supabase;
 		
 		if (lib && typeof lib.createClient === "function") {
 			try {
+                // التحقق من صحة المفتاح قبل المحاولة
+                if (!SUPABASE_KEY.startsWith("eyJ")) {
+                    console.error("⚠️ خطأ ارتباط: المفتاح المستخدم ليس مفتاح Supabase صحيح (يجب أن يبدأ بـ eyJ)");
+                }
 				const client = lib.createClient(SUPABASE_URL, SUPABASE_KEY);
 				window.supabaseClient = client;
-				return client;
+				window.supabase = client; // توحيد المتغير لضمان عمل كافة السكربتات
+                return client;
 			} catch (e) {
 				console.error("خطأ أثناء إنشاء عميل Supabase:", e);
 			}

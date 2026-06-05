@@ -338,7 +338,11 @@ async function loadOrders() {
 	if (!container) return;
 
 	const client = getClient();
-	if (!client) return;
+	if (!client) {
+        container.innerHTML = 
+            '<div class="text-center p-10"><p class="text-amber-500 animate-pulse">جاري محاولة الربط مع السيرفر...</p><p class="text-xs text-zinc-500 mt-2">تأكد من إعدادات المفاتيح في dependencies.js</p></div>';
+        return;
+    }
 
 	const [activeRes, deliveredRes] = await Promise.all([
 		client

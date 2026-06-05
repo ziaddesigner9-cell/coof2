@@ -115,7 +115,7 @@ async function confirmOrder() {
         typeof window.getSupabaseClient === "function" ? window.getSupabaseClient() : null;
 
     if (!supabaseClient) {
-        alert("نظام الطلب غير متصل، يرجى تحديث الصفحة.");
+        alert("⚠️ فشل الارتباط: لا يمكن إرسال الطلب حالياً. تأكد من إعدادات الربط في dependencies.js");
         return;
     }
 
