@@ -2,9 +2,9 @@
  * صور التصنيفات الاحتياطية من الأصناف إذا لم يحددها المدير في الإعدادات
  */
 const CATEGORY_FALLBACK = {
-    hot: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=800&h=500&fit=crop",
-    cold: "https://images.unsplash.com/photo-1622597469430-0a57358133f0?w=800&h=500&fit=crop",
-    dessert: "https://images.unsplash.com/photo-1558961363-fa8fdf82db73?w=800&h=500&fit=crop",
+    hot: "",
+    cold: "",
+    dessert: "",
 };
 
 async function fillMissingCategoryImages() {

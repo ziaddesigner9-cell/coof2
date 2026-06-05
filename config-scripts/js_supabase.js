@@ -3,9 +3,6 @@
  * وتحافظ على نفس آلية التهيئة الموجودة في dependencies.js.
  */
 (function initSupabaseClientFromLegacyFile() {
-    const SUPABASE_URL = "YOUR_SUPABASE_URL";
-    const SUPABASE_KEY = "YOUR_SUPABASE_KEY";
-
     if (!window.supabase || !window.supabase.createClient) {
         console.error("لم يتم تحميل مكتبة Supabase. تأكد من تضمين CDN أولاً.");
         return;
@@ -18,12 +15,14 @@
         return;
     }
 
+    // المحاولة من خلال الدالة المركزية في dependencies.js
+    if (typeof window.getSupabaseClient === "function") {
+        const client = window.getSupabaseClient();
+        if (client) return;
+    }
+
     try {
-        const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        window.supabaseClient = client;
-        window.supabase = client;
-        window.dispatchEvent(new Event("supabaseReady"));
-        console.log("تم تهيئة Supabase عبر js_supabase.js بنجاح.");
+        console.warn("js_supabase.js: يتم الاعتماد الآن على dependencies.js للتهيئة.");
     } catch (error) {
         console.error("فشل تهيئة Supabase:", error);
     }

@@ -107,7 +107,7 @@ async function confirmOrder() {
             .from("orders")
             .insert([
                 {
-                    table_no: String(tableNo),
+                    table_no: tableNo.substring(0, 10), // حماية إضافية لطول النص
                     items: cart,
                     total_price: total,
                     status: "pending",
