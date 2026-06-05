@@ -55,8 +55,8 @@
         // 1. التحقق من وجود عميل مهيأ مسبقاً
         if (window.supabaseClient && typeof window.supabaseClient.from === "function") return window.supabaseClient;
         
-        const SUPABASE_URL = safeGetEnv("SUPABASE_URL");
-        const SUPABASE_KEY = safeGetEnv("SUPABASE_KEY");
+        const SUPABASE_URL = safeGetEnv("SUPABASE_URL").trim();
+        const SUPABASE_KEY = safeGetEnv("SUPABASE_KEY").trim();
 
         if (!SUPABASE_URL || !SUPABASE_KEY) return null;
 
@@ -66,9 +66,11 @@
         if (lib && typeof lib.createClient === "function") {
             try {
                 // التحقق من صحة المفتاح قبل المحاولة
-                if (!SUPABASE_KEY.startsWith("eyJ")) {
-                    console.error("❌ خطأ حرج: المفتاح المستخدم غير صالح. يجب استخدام مفتاح anon (يبدأ بـ eyJ)");
-                    return null;
+                if (SUPABASE_KEY !== "") {
+                    if (!SUPABASE_KEY.startsWith("eyJ")) {
+                        console.error("❌ خطأ حرج: المفتاح المستخدم غير صالح. يجب استخدام مفتاح anon (يبدأ بـ eyJ)");
+                        return null;
+                    }
                 }
                 const client = lib.createClient(SUPABASE_URL, SUPABASE_KEY);
                 window.supabaseClient = client;
