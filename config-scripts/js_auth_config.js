@@ -4,8 +4,8 @@
  */
 
 const AUTH_CONFIG = {
-    ADMIN_PASS: "12345", // يجب تغييرها فوراً إلى رقم سري قوي خاص بك
-    WORKER_PASS: "54321",  // يجب تغييرها فوراً إلى رقم سري قوي خاص بك
+    ADMIN_PASS: window.getEnv("ADMIN_PASS") || "12345",
+    WORKER_PASS: window.getEnv("WORKER_PASS") || "54321",
 };
 
 /**

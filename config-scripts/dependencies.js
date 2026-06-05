@@ -3,18 +3,9 @@
  * يوفّر: window.supabaseClient و window.getSupabaseClient()
  */
 (function initSupabaseClient() {
-    /**
-     * تحذير أمني: لا تضع المفاتيح الحقيقية هنا بشكل دائم إذا كان المستودع عاماً.
-     */
-    const SUPABASE_URL = "https://jdaggrzdaxcnnfmdyvic.supabase.co";
-
-    // ⚠️ استبدل النص أدناه بمفتاح anon public الذي يبدأ بـ eyJ
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkYWdncnpkYXhjbm5mbWR5dmljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1ODMyMzgsImV4cCI6MjA5NjE1OTIzOH0.75Pcz12Jp0WkZ3_NUVt8D78BH0KgdDd1krjt-oxQoT8"; 
-
-    /** رابط عام ثابت بعد رفع الموقع. اتركه فارغاً ليستخدم الموقع الحالي أو قاعدة مخزنة.
-     * يُستخدم في QR بدل localhost.
-     */
-    window.COOF2_SITE_BASE = "https://ziaddesigner9-cell.github.io/coof2/";
+    // جلب البيانات من ملف الإعدادات المركزي
+    const SUPABASE_URL = window.getEnv("SUPABASE_URL");
+    const SUPABASE_KEY = window.getEnv("SUPABASE_KEY");
 
     const PUBLIC_BASE_STORAGE_KEY = "COOF2_PUBLIC_BASE";
 
@@ -45,7 +36,8 @@
             return normalizeBase(window.location.href.replace(/[^/]*$/, ""));
         }
 
-        if (window.COOF2_SITE_BASE) return normalizeBase(window.COOF2_SITE_BASE);
+        const siteBase = window.getEnv("SITE_BASE_URL");
+        if (siteBase) return normalizeBase(siteBase);
         
         const stored = getCoof2PublicBase();
         if (stored) return normalizeBase(stored);
