@@ -3,13 +3,14 @@
  * يوفّر: window.supabaseClient و window.getSupabaseClient()
  */
 (function initSupabaseClient() {
-    const SUPABASE_URL = "YOUR_SUPABASE_URL"; 
-    const SUPABASE_KEY = "YOUR_SUPABASE_KEY"; 
+    // ملاحظة: تأكد من وضع قيم المشروع الحقيقية هنا
+    const SUPABASE_URL = "https://jdaggrzdaxcnnfmdyvic.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_piXWc1wVLZYutDRvZaLVmA_7CqPaLD1";
 
     /** رابط عام ثابت بعد رفع الموقع. اتركه فارغاً ليستخدم الموقع الحالي أو قاعدة مخزنة.
      * يُستخدم في QR بدل localhost.
      */
-    window.COOF2_SITE_BASE = "";
+    window.COOF2_SITE_BASE = "https://ziaddesigner9-cell.github.io/coof2/";
 
     const PUBLIC_BASE_STORAGE_KEY = "COOF2_PUBLIC_BASE";
 
