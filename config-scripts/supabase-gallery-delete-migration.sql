@@ -5,6 +5,11 @@ DROP POLICY IF EXISTS "gallery_all_access" ON public.gallery;
 CREATE POLICY "gallery_all_access"
 ON public.gallery FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
 
+-- منح صلاحيات الوصول الأساسية للمخطط لضمان قدرة النظام على القراءة والكتابة
+GRANT USAGE ON SCHEMA storage TO anon, authenticated;
+GRANT ALL ON TABLE storage.objects TO anon, authenticated;
+GRANT ALL ON TABLE storage.buckets TO anon, authenticated;
+
 -- سياسات التعامل مع ملفات الصور في Storage
 -- تأكد من أن الـ bucket باسم 'menu-images' موجود ومعد كـ Public
 
@@ -20,7 +25,7 @@ WITH CHECK (bucket_id = 'menu-images');
 DROP POLICY IF EXISTS "menu_images_update" ON storage.objects;
 CREATE POLICY "menu_images_update"
 ON storage.objects FOR UPDATE TO anon, authenticated 
-USING (bucket_id = 'menu-images');
+USING (bucket_id = 'menu-images') WITH CHECK (bucket_id = 'menu-images');
 
 DROP POLICY IF EXISTS "menu_images_delete" ON storage.objects;
 CREATE POLICY "menu_images_delete"

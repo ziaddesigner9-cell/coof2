@@ -7,7 +7,7 @@
      * تحذير أمني: لا تضع المفاتيح الحقيقية هنا بشكل دائم إذا كان المستودع عاماً.
      */
     const SUPABASE_URL = "https://jdaggrzdaxcnnfmdyvic.supabase.co";
-    // تنبيه: تأكد من أن المفتاح يبدأ بـ eyJ... (خذه من Project Settings -> API في Supabase)
+    // ⚠️ تنبيه هام: المفتاح أدناه خاطئ. يجب أن تضع المفتاح الذي يبدأ بـ eyJ والموجود في إعدادات Supabase
     const SUPABASE_KEY = "sb_publishable_piXWc1wVLZYutDRvZaLVmA_7CqPaLD1"; 
 
     /** رابط عام ثابت بعد رفع الموقع. اتركه فارغاً ليستخدم الموقع الحالي أو قاعدة مخزنة.
@@ -69,7 +69,8 @@
 			try {
                 // التحقق من صحة المفتاح قبل المحاولة
                 if (!SUPABASE_KEY.startsWith("eyJ")) {
-                    console.error("⚠️ خطأ ارتباط: المفتاح المستخدم ليس مفتاح Supabase صحيح (يجب أن يبدأ بـ eyJ)");
+                    console.error("❌ خطأ حرج: المفتاح المستخدم في dependencies.js غير صالح. رفع الصور لن يعمل حتى تضع مفتاح يبدأ بـ eyJ");
+                    alert("خطأ في الربط: مفتاح Supabase غير صحيح. يرجى مراجعة Console المتصفح.");
                 }
 				const client = lib.createClient(SUPABASE_URL, SUPABASE_KEY);
 				window.supabaseClient = client;
