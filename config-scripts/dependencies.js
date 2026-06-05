@@ -7,8 +7,9 @@
      * تحذير أمني: لا تضع المفاتيح الحقيقية هنا بشكل دائم إذا كان المستودع عاماً.
      */
     const SUPABASE_URL = "https://jdaggrzdaxcnnfmdyvic.supabase.co";
-    // ⚠️ تنبيه هام: المفتاح أدناه خاطئ. يجب أن تضع المفتاح الذي يبدأ بـ eyJ والموجود في إعدادات Supabase
-    const SUPABASE_KEY = "sb_publishable_piXWc1wVLZYutDRvZaLVmA_7CqPaLD1"; 
+
+    // ⚠️ استبدل النص أدناه بمفتاح anon public الذي يبدأ بـ eyJ
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkYWdncnpkYXhjbm5mbWR5dmljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1ODMyMzgsImV4cCI6MjA5NjE1OTIzOH0.75Pcz12Jp0WkZ3_NUVt8D78BH0KgdDd1krjt-oxQoT8"; 
 
     /** رابط عام ثابت بعد رفع الموقع. اتركه فارغاً ليستخدم الموقع الحالي أو قاعدة مخزنة.
      * يُستخدم في QR بدل localhost.
@@ -58,37 +59,37 @@
         return host === "localhost" || host === "127.0.0.1";
     };
 
-	window.getSupabaseClient = function getSupabaseClient() {
-		// 1. Check for existing initialized client
-		if (window.supabaseClient && typeof window.supabaseClient.from === "function") return window.supabaseClient;
-		
-		// 2. Check for library availability (supabase-js CDN)
-		const lib = window.supabase;
-		
-		if (lib && typeof lib.createClient === "function") {
-			try {
+    window.getSupabaseClient = function getSupabaseClient() {
+        // 1. التحقق من وجود عميل مهيأ مسبقاً
+        if (window.supabaseClient && typeof window.supabaseClient.from === "function") return window.supabaseClient;
+        
+        // 2. التحقق من توفر المكتبة (supabase-js CDN)
+        const lib = window.supabase;
+        
+        if (lib && typeof lib.createClient === "function") {
+            try {
                 // التحقق من صحة المفتاح قبل المحاولة
                 if (!SUPABASE_KEY.startsWith("eyJ")) {
-                    console.error("❌ خطأ حرج: المفتاح المستخدم في dependencies.js غير صالح. رفع الصور لن يعمل حتى تضع مفتاح يبدأ بـ eyJ");
-                    alert("خطأ في الربط: مفتاح Supabase غير صحيح. يرجى مراجعة Console المتصفح.");
+                    console.error("❌ خطأ حرج: المفتاح المستخدم غير صالح. يجب استخدام مفتاح anon (يبدأ بـ eyJ)");
+                    return null;
                 }
-				const client = lib.createClient(SUPABASE_URL, SUPABASE_KEY);
-				window.supabaseClient = client;
-				window.supabase = client; // توحيد المتغير لضمان عمل كافة السكربتات
+                const client = lib.createClient(SUPABASE_URL, SUPABASE_KEY);
+                window.supabaseClient = client;
+                window.supabase = client; 
                 return client;
-			} catch (e) {
-				console.error("خطأ أثناء إنشاء عميل Supabase:", e);
-			}
-		}
-		
-		// 3. Check if 'supabase' object itself is already a client (some CDN versions)
-		if (window.supabase && typeof window.supabase.from === "function") {
-			window.supabaseClient = window.supabase;
-			return window.supabase;
-		}
+            } catch (e) {
+                console.error("خطأ أثناء إنشاء عميل Supabase:", e);
+            }
+        }
+        
+        // 3. التحقق إذا كان الكائن نفسه هو العميل (بعض إصدارات CDN)
+        if (window.supabase && typeof window.supabase.from === "function") {
+            window.supabaseClient = window.supabase;
+            return window.supabase;
+        }
 
-		return null;
-	};
+        return null;
+    };
 
     try {
 		let attempts = 0;
