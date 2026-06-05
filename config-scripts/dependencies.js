@@ -4,8 +4,11 @@
  */
 (function initSupabaseClient() {
     // جلب البيانات من ملف الإعدادات المركزي
-    const SUPABASE_URL = window.getEnv("SUPABASE_URL");
-    const SUPABASE_KEY = window.getEnv("SUPABASE_KEY");
+    // إضافة تحقق لضمان عدم توقف النظام إذا تأخر تحميل ملف الإعدادات
+    const safeGetEnv = (key) => (typeof window.getEnv === "function" ? window.getEnv(key) : "");
+
+    const SUPABASE_URL = safeGetEnv("SUPABASE_URL");
+    const SUPABASE_KEY = safeGetEnv("SUPABASE_KEY");
 
     const PUBLIC_BASE_STORAGE_KEY = "COOF2_PUBLIC_BASE";
 
@@ -36,7 +39,7 @@
             return normalizeBase(window.location.href.replace(/[^/]*$/, ""));
         }
 
-        const siteBase = window.getEnv("SITE_BASE_URL");
+        const siteBase = safeGetEnv("SITE_BASE_URL");
         if (siteBase) return normalizeBase(siteBase);
         
         const stored = getCoof2PublicBase();

@@ -3,9 +3,12 @@
  * المسؤول عن إدارة كلمات المرور والصلاحيات والجلسات
  */
 
+// دالة مساعدة لجلب الإعدادات بأمان
+const safeGet = (key, fallback) => (typeof window.getEnv === "function" ? window.getEnv(key) : fallback);
+
 const AUTH_CONFIG = {
-    ADMIN_PASS: window.getEnv("ADMIN_PASS") || "12345",
-    WORKER_PASS: window.getEnv("WORKER_PASS") || "54321",
+    ADMIN_PASS: safeGet("ADMIN_PASS", "12345"),
+    WORKER_PASS: safeGet("WORKER_PASS", "54321"),
 };
 
 /**
