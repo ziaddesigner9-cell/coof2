@@ -47,6 +47,7 @@
                 <div class="space-y-3">
                     <input type="password" id="workerPassInput" 
                            class="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-4 text-white text-center text-xl tracking-widest placeholder:tracking-normal focus:border-amber-500/60 focus:ring-1 focus:ring-amber-500/30 outline-none transition" 
+                           onkeyup="if(event.key==='Enter') handleAuth('worker')"
                            placeholder="••••••••">
                     <button onclick="handleAuth('worker')" 
                             class="w-full bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-black font-black py-3.5 rounded-xl transition-all duration-300 shadow-lg shadow-amber-950/20 active:scale-[0.98]">
@@ -67,6 +68,7 @@
                 <div class="space-y-3">
                     <input type="password" id="deliveryPassInput" 
                            class="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-4 text-white text-center text-xl tracking-widest placeholder:tracking-normal focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/30 outline-none transition" 
+                           onkeyup="if(event.key==='Enter') handleAuth('delivery')"
                            placeholder="••••••••">
                     <button onclick="handleAuth('delivery')" 
                             class="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-black py-3.5 rounded-xl transition-all duration-300 shadow-lg shadow-emerald-950/20 active:scale-[0.98]">
@@ -92,9 +94,9 @@
             if (verifyLogin(password, role)) {
                 console.log("تم التحقق بنجاح! جاري التوجيه...");
                 if (role === 'worker') {
-                    window.location.href = '../kitchen.html'; // تأكد أن الملف بهذا الاسم في المجلد الرئيسي
+                    window.location.href = '../Front-end/kitchen.html';
                 } else {
-                    window.location.href = '../delivery_orders.html'; // تأكد أن الملف بهذا الاسم في المجلد الرئيسي
+                    window.location.href = '../Front-end/delivery_orders.html';
                 }
             } else {
                 alert("⚠️ كلمة المرور غير صحيحة، يرجى المحاولة مرة أخرى.");
