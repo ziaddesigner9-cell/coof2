@@ -205,6 +205,30 @@ function clearLocalPreparing(orderId) {
     localStorage.setItem(LOCAL_PREP_KEY, JSON.stringify(map));
 }
 
+async function markAsReady(orderId) {
+    const payload = { status: "ready" };
+    const result = await updateOrder(orderId, payload, "preparing");
+    if (result.ok) {
+        clearLocalPreparing(orderId);
+        clearOpenedAt(orderId);
+        localStorage.removeItem(`kitchen_timer_${orderId}`);
+        if (activeOrderId === orderId) closeActive();
+        loadOrders();
+    } else {
+        alert("فشل تحديث حالة الطلب إلى جاهز: " + result.error);
+    }
+}
+
+async function markAsPickedUp(orderId) {
+    const payload = { status: "completed" };
+    const result = await updateOrder(orderId, payload, "ready");
+    if (result.ok) {
+        loadOrders();
+    } else {
+        loadOrders();
+    }
+}
+
 function mergeWithLocalPreparing(orders) {
     const map = getLocalPreparingMap();
     return orders.map((o) => {
@@ -522,6 +546,12 @@ function initKitchen() {
     loadOrders();
     setInterval(loadOrders, 10000);
 }
+
+// تصدير الوظائف للنافذة لضمان عملها مع onclick في HTML
+window.openOrder = openOrder;
+window.markAsReady = markAsReady;
+window.markAsPickedUp = markAsPickedUp;
+window.closeActive = closeActive;
 
 document.addEventListener("DOMContentLoaded", () => {
     // ضمان تشغيل النظام فقط بعد جاهزية Supabase
