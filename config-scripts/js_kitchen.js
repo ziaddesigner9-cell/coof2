@@ -388,7 +388,7 @@ async function loadOrders() {
     }
 
     let orders = Array.isArray(activeRes.data) ? activeRes.data : [];
-    ordersCache = orders.filter((o) => o.status === "pending");
+    ordersCache = orders; // حفظ جميع الطلبات النشطة للتحقق من الحالة عند الفتح
     orders = mergeWithLocalPreparing(orders);
 
     if (!firstLoad && Array.isArray(orders)) {
@@ -475,7 +475,7 @@ async function updateOrder(orderId, payload, expectedStatus) {
         console.log("تم التحديث بنجاح في قاعدة البيانات.");
         return { ok: true, data };
     }
-    console.error("فشل التحديث:", error?.message);
+    console.error("فشل التحديث:", error?.message || "لم يتم تحديث أي صفوف (ربما تغيرت حالة الطلب بالفعل)");
     return { ok: false, error: error?.message || "فشل التحديث" };
 }
 
@@ -484,6 +484,15 @@ async function openOrder(orderId) {
     if (!client) return alert("النظام غير متصل");
 
     const order = ordersCache.find((o) => o.id === orderId) || { id: orderId };
+
+    // إذا كان الطلب قيد التجهيز بالفعل، نقوم بتفعيله في الواجهة فقط دون محاولة تحديثه كـ "pending"
+    if (order.status === "preparing") {
+        activeOrderId = orderId;
+        localStorage.setItem("kitchen_active_order", orderId);
+        loadOrders();
+        return;
+    }
+
     const payload = { status: "preparing", preparing_started_at: new Date().toISOString() };
 
     let result = await updateOrder(orderId, payload, "pending");
