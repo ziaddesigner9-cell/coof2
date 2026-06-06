@@ -72,6 +72,7 @@
         });
 
         uploadBtn.addEventListener('click', async () => {
+            console.log("0. تم الضغط على زر الرفع.");
             const file = imageInput.files[0];
             if (!file) return;
 
@@ -81,12 +82,15 @@
                 // 1. الرفع إلى Storage
                 const result = await window.uploadItemImage(file);
                 
-                if (result.url) {
+                if (result && result.url) {
+                    console.log("3. جاري حفظ البيانات في جدول gallery...");
                     // 2. الحفظ في جدول gallery (هذا هو زر "الحفظ" الذي طلبته)
                     const supabase = window.getSupabaseClient();
                     const { error: dbError } = await supabase
                         .from('gallery')
                         .insert([{ image_url: result.url, name: file.name }]);
+
+                    console.log("4. انتهت عملية الحفظ في الجدول. النتيجة:", dbError);
 
                     if (dbError) throw dbError;
 
@@ -96,10 +100,14 @@
                     imageInput.value = ""; 
                     previewContainer.classList.add('hidden');
                     imagePreview.src = "";
+                } else if (result && result.error) {
+                    throw new Error(result.error);
                 }
             } catch (err) {
+                console.error("حدث خطأ أثناء العملية:", err);
                 alert('فشل الرفع: ' + err.message);
             } finally {
+                console.log("5. تم الوصول لنهاية الدالة وإيقاف الدوران!");
                 hideAdminLoader(); // إخفاء التحميل عند الانتهاء (حتى لو فشل)
             }
         });

@@ -2,8 +2,12 @@
 
 /** دالة لرفع الصورة إلى Supabase Storage */
 async function uploadItemImage(file) {
+    console.log("1. بدء عملية الرفع إلى Storage...");
     const supabase = window.getSupabaseClient();
-    if (!supabase) return { error: "النظام غير متصل" };
+    if (!supabase) {
+        console.error("خطأ: عميل Supabase غير متاح.");
+        return { error: "النظام غير متصل" };
+    }
 
     const fileExt = file.name.split('.').pop();
     const fileName = `${Math.random()}.${fileExt}`;
@@ -16,6 +20,8 @@ async function uploadItemImage(file) {
             cacheControl: '3600',
             upsert: false
         });
+
+    console.log("2. انتهت محاولة الرفع للستورج. النتيجة:", { data, error });
 
     if (error) throw error;
 
