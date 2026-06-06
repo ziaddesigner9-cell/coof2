@@ -17,6 +17,13 @@
         .hero-glow {
             box-shadow: 0 0 40px rgba(212, 175, 55, 0.25);
         }
+        @keyframes star-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        .animate-star-pulse {
+            animation: star-pulse 2s infinite ease-in-out;
+        }
     </style>
 </head>
 <body class="min-h-screen text-white p-4 pb-10">
@@ -41,6 +48,21 @@
         </div>
 
         <p id="orderMeta" class="text-center mt-3 text-amber-200/90 text-sm font-semibold"></p>
+
+        <!-- قسم التقييم يظهر فقط عند اكتمال الطلب -->
+        <div id="ratingSection" class="hidden mt-6 p-4 rounded-2xl bg-zinc-900 border gold-border text-center shadow-xl">
+            <p class="gold-text font-bold mb-3">كيف كانت تجربتك معنا؟</p>
+            <a id="googleMapsLink" href="#" target="_blank" class="block group no-underline">
+                <div class="animate-star-pulse flex justify-center gap-1 mb-1 text-3xl transition-transform group-active:scale-95">
+                    <span class="text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.4)]">⭐</span>
+                    <span class="text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.4)]">⭐</span>
+                    <span class="text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.4)]">⭐</span>
+                    <span class="text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.4)]">⭐</span>
+                    <span class="text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.4)]">⭐</span>
+                </div>
+                <p class="text-zinc-300 font-bold group-hover:text-yellow-400 transition-colors">ننتظر تقييمك على جوجل</p>
+            </a>
+        </div>
 
         <div class="mt-6 rounded-2xl border gold-border bg-zinc-950/90 overflow-hidden">
             <div class="px-4 py-3 border-b gold-border bg-black/60">
@@ -114,6 +136,7 @@
         function setStatusUi(status) {
             const badge = document.getElementById("statusBadge");
             const readyMsg = document.getElementById("readyMessage");
+            const ratingSec = document.getElementById("ratingSection");
             const isReady = status === "completed";
             if (status === "completed") {
                 badge.textContent = "تم الاستلام";
@@ -121,22 +144,32 @@
                     "inline-block px-4 py-1.5 rounded-full text-sm font-bold border border-emerald-500/60 bg-emerald-950 text-emerald-400";
                 readyMsg.textContent = phrase(appSettings, "order_view_completed_msg");
                 readyMsg.classList.remove("hidden");
+                
+                // تفعيل قسم التقييم بالرابط المختار من المدير
+                if (ratingSec) {
+                    ratingSec.classList.remove("hidden");
+                    const link = document.getElementById("googleMapsLink");
+                    if (link) link.href = phrase(appSettings, "google_maps_review_url");
+                }
             } else if (status === "ready") {
                 badge.textContent = "جاهز للاستلام";
                 badge.className =
                     "inline-block px-4 py-1.5 rounded-full text-sm font-bold border border-emerald-500/60 bg-emerald-950 text-emerald-400";
                 readyMsg.textContent = phrase(appSettings, "order_view_ready_msg");
                 readyMsg.classList.remove("hidden");
+                ratingSec.classList.add("hidden");
             } else if (status === "preparing") {
                 badge.textContent = "قيد التجهيز";
                 badge.className =
                     "inline-block px-4 py-1.5 rounded-full text-sm font-bold border border-amber-500/60 bg-amber-950 gold-text";
                 readyMsg.classList.add("hidden");
+                ratingSec.classList.add("hidden");
             } else {
                 badge.textContent = "بانتظار العامل";
                 badge.className =
                     "inline-block px-4 py-1.5 rounded-full text-sm font-bold border gold-border bg-zinc-900 gold-text";
                 readyMsg.classList.add("hidden");
+                ratingSec.classList.add("hidden");
             }
         }
 
