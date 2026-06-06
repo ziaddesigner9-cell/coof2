@@ -33,6 +33,13 @@
             image-rendering: pixelated;
         }
         .order-item-row:last-child { border-bottom: none; }
+        @keyframes star-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        .animate-star-pulse {
+            animation: star-pulse 2s infinite ease-in-out;
+        }
     </style>
 </head>
 <body class="bg-black text-white min-h-screen flex items-center justify-center p-4 pb-8">
@@ -71,7 +78,7 @@
         <div id="ratingSection" class="hidden mt-6 p-4 rounded-2xl bg-zinc-800 border border-emerald-500/30 text-center">
             <p class="text-emerald-400 font-bold mb-3">كيف كانت تجربتك؟</p>
             <a href="#" target="_blank" class="block group no-underline">
-                <div class="flex justify-center gap-1 mb-1 text-3xl transition-transform group-active:scale-95">
+                <div class="animate-star-pulse flex justify-center gap-1 mb-1 text-3xl transition-transform group-active:scale-95">
                     <span class="text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.4)]">⭐</span>
                     <span class="text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.4)]">⭐</span>
                     <span class="text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.4)]">⭐</span>
