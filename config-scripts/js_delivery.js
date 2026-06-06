@@ -48,7 +48,7 @@ async function loadDeliveryOrders() {
         const { data: orders, error } = await client
             .from("orders")
             .select("*")
-            .in("status", ["ready", "out_for_delivery"])
+            .in("status", ["pending", "preparing", "ready", "out_for_delivery"])
             .order("created_at", { ascending: false });
 
         if (error) {
@@ -77,15 +77,26 @@ async function loadDeliveryOrders() {
 
             const appBaseUrl = window.resolveSiteBase();
             const qrCodeUpdateUrl = `${appBaseUrl}Front-end/delivery_status_update.html?orderId=${order.id}`;
-            const qrCodeImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrCodeUpdateUrl)}`;
+
+            // تحديد لون الكود: ذهبي للتحضير، أخضر للجاهزية
+            const isReady = order.status === 'ready' || order.status === 'out_for_delivery';
+            const qrColor = isReady ? '10B981' : 'D4AF37';
+            const qrCodeImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&color=${qrColor}&data=${encodeURIComponent(qrCodeUpdateUrl)}`;
 
             let actionContent = '';
             let statusLabel = '';
 
-            if (order.status === 'ready') {
+            if (order.status === 'pending' || order.status === 'preparing') {
+                statusLabel = `<span class="bg-amber-500/10 text-amber-500 text-[10px] px-2 py-1 rounded-lg border border-amber-500/20">جاري التحضير بالمطبخ</span>`;
+                actionContent = `
+                    <div class="text-center mt-4 bg-zinc-800 p-3 rounded-2xl border border-amber-500/20">
+                        <p class="text-amber-500 text-xs font-bold mb-2">انتظر اللون الأخضر:</p>
+                        <img src="${qrCodeImageUrl}" class="mx-auto w-32 h-32 opacity-80">
+                    </div>`;
+            } else if (order.status === 'ready') {
                 statusLabel = `<span class="bg-emerald-500/10 text-emerald-500 text-[10px] px-2 py-1 rounded-lg border border-emerald-500/20">جاهز للتوصيل</span>`;
                 actionContent = `
-                    <div class="text-center mt-4 bg-white p-3 rounded-2xl">
+                    <div class="text-center mt-4 bg-white p-3 rounded-2xl shadow-lg shadow-emerald-500/20">
                         <p class="text-black text-xs font-bold mb-2">امسح لبدء التوصيل:</p>
                         <img src="${qrCodeImageUrl}" class="mx-auto w-32 h-32">
                     </div>`;
@@ -97,12 +108,15 @@ async function loadDeliveryOrders() {
                     </button>`;
             }
 
+            const totalPrice = parseFloat(order.total_price || 0).toFixed(2);
+
             return `
             <div class="bg-zinc-900 border border-emerald-500/30 rounded-3xl p-5 shadow-xl">
                 <div class="flex justify-between items-start mb-4">
                     <div>
                         <h3 class="text-xl font-bold text-emerald-400">${info.name}</h3>
                         <a href="tel:${info.phone}" class="text-amber-500 font-mono text-lg font-bold">📞 ${info.phone}</a>
+                        <p class="text-lg font-black text-white mt-1">المجموع: ${totalPrice} ر.س</p>
                         <p class="text-xs text-zinc-400 mt-1">💳 طريقة الدفع: <span class="text-amber-300 font-bold">${info.payment}</span></p>
                     </div>
                     ${statusLabel}
