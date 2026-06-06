@@ -12,7 +12,8 @@ window.APP_ENV = {
 
     // كلمات مرور النظام
     ADMIN_PASS: "12345",
-    WORKER_PASS: "54321"
+    WORKER_PASS: "54321",
+    DELIVERY_PASS: "67890"
 };
 
 /**

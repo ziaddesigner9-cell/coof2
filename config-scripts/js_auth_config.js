@@ -6,6 +6,7 @@
 const AUTH_CONFIG = {
     ADMIN_PASS: "12345",
     WORKER_PASS: "54321",
+    DELIVERY_PASS: "67890",
 };
 
 /**
@@ -24,6 +25,10 @@ function verifyLogin(password, type) {
     }
     if (type === 'worker' && password === AUTH_CONFIG.WORKER_PASS) {
         localStorage.setItem('role', 'worker');
+        return true;
+    }
+    if (type === 'delivery' && password === AUTH_CONFIG.DELIVERY_PASS) {
+        localStorage.setItem('role', 'delivery');
         return true;
     }
     return false;
