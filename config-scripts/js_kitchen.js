@@ -9,6 +9,7 @@ let kitchenTickInterval = null;
 let knownOrderIds = new Set();
 let firstLoad = true;
 let audioContext = null;
+let isFetching = false;
 let ordersCache = []; 
 
 const LOCAL_PREP_KEY = "kitchen_local_preparing";
@@ -388,6 +389,9 @@ function renderOrderCard(order, type) {
 }
 
 async function loadOrders() {
+    if (isFetching) return;
+    isFetching = true;
+
     console.log("محاولة جلب الطلبات من السيرفر...");
     const container = document.getElementById("orders-container");
     if (!container) return;
@@ -398,94 +402,95 @@ async function loadOrders() {
         activeOrderId = localStorage.getItem("kitchen_active_order");
     }
 
-    if (!client) return;
-
-    const [activeRes, deliveredRes] = await Promise.all([
-        client.from("orders").select("*").in("status", ["pending", "preparing", "ready"]).order("created_at", { ascending: false }),
-        client.from("orders").select("*").eq("status", "completed").order("created_at", { ascending: false }).limit(12),
-    ]);
-
-    if (activeRes.error) {
-        console.error("خطأ أثناء جلب الطلبات:", activeRes.error.message);
-        container.innerHTML = '<p class="text-red-400 text-center p-8">تعذر تحميل الطلبات</p>';
+    if (!client) {
+        isFetching = false;
         return;
     }
 
-    let orders = Array.isArray(activeRes.data) ? activeRes.data : [];
-    ordersCache = orders; // حفظ جميع الطلبات النشطة للتحقق من الحالة عند الفتح
-    orders = mergeWithLocalPreparing(orders);
+    try {
+        const [activeRes, deliveredRes] = await Promise.all([
+            client.from("orders").select("*").in("status", ["pending", "preparing", "ready"]).order("created_at", { ascending: false }),
+            client.from("orders").select("*").eq("status", "completed").order("created_at", { ascending: false }).limit(12),
+        ]);
 
-    if (!firstLoad && Array.isArray(orders)) {
-        orders.forEach((o) => {
-            if (o.status === "pending" && !knownOrderIds.has(o.id)) playNewOrderSound();
-        });
-    }
-    if (Array.isArray(orders)) orders.forEach((o) => knownOrderIds.add(o.id));
-    firstLoad = false;
+        if (activeRes.error) {
+            console.error("خطأ أثناء جلب الطلبات:", activeRes.error.message);
+            container.innerHTML = '<p class="text-red-400 text-center p-8">تعذر تحميل الطلبات</p>';
+            return;
+        }
 
-    // البحث عن الطلب النشط بناءً على الـ ID فقط دون تقييد الحالة لتجنب التعليق
-    let activeOrder = activeOrderId ? orders.find((o) => String(o.id) === String(activeOrderId)) : null;
+        let orders = Array.isArray(activeRes.data) ? activeRes.data : [];
+        ordersCache = orders; 
+        orders = mergeWithLocalPreparing(orders);
 
-    if (activeOrder && !activeOrderId) {
-        activeOrderId = activeOrder.id;
-        localStorage.setItem("kitchen_active_order", activeOrderId);
-    }
+        if (!firstLoad && Array.isArray(orders)) {
+            orders.forEach((o) => {
+                if (o.status === "pending" && !knownOrderIds.has(o.id)) playNewOrderSound();
+            });
+        }
+        if (Array.isArray(orders)) orders.forEach((o) => knownOrderIds.add(o.id));
+        firstLoad = false;
 
-    // 3. عرض الطلبات الجديدة: تشمل الطلبات المنتظرة، وأي طلبات "preparing" ليست هي النشطة حالياً
-    const pendingList = sortNewestFirst(orders.filter((o) => (o.status === "pending" || (o.status === "preparing" && o.id !== activeOrderId))));
-    const pickupList = sortNewestFirst(orders.filter((o) => o.status === "ready"));
-    const deliveredList = Array.isArray(deliveredRes.data) ? deliveredRes.data : [];
+        // البحث عن الطلب النشط بناءً على الـ ID فقط دون تقييد الحالة لتجنب التعليق
+        let activeOrder = activeOrderId ? orders.find((o) => String(o.id) === String(activeOrderId)) : null;
 
-    if (activeOrder && (activeOrder.status === "ready" || activeOrder.status === "completed")) {
-        closeActive();
-        activeOrder = null;
-    }
+        if (activeOrder && !activeOrderId) {
+            activeOrderId = activeOrder.id;
+            localStorage.setItem("kitchen_active_order", activeOrderId);
+        }
 
-    // 4. إضافة زر "نظام عامل التوصيل" في أعلى الصفحة
-    let html = `
-        <div class="mb-6 flex justify-between items-center bg-zinc-900/80 p-5 rounded-2xl border border-amber-500/20 shadow-xl">
-            <h2 class="text-xl font-black text-amber-500">لوحة المطبخ</h2>
-            <a href="delivery_orders.html" class="flex items-center gap-2 bg-gradient-to-r from-amber-600 to-amber-500 text-black px-5 py-2.5 rounded-xl font-bold shadow-lg transition active:scale-95">
-                <span>🚚 نظام التوصيل</span>
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-            </a>
-        </div>
-    `;
+        const pendingList = sortNewestFirst(orders.filter((o) => (o.status === "pending" || (o.status === "preparing" && o.id !== activeOrderId))));
+        const pickupList = sortNewestFirst(orders.filter((o) => o.status === "ready"));
+        const deliveredList = Array.isArray(deliveredRes.data) ? deliveredRes.data : [];
 
-    if (activeOrder) html += renderOrderCard(activeOrder, "active");
+        if (activeOrder && (activeOrder.status === "ready" || activeOrder.status === "completed")) {
+            closeActive();
+            activeOrder = null;
+        }
 
-    if (pendingList.length > 0) {
-        html += `<div class="mt-4 space-y-2"><h3 class="text-amber-500/80 text-sm font-bold">طلبات جديدة</h3>`;
-        html += pendingList.map((o) => `
-            <button type="button" onclick="openOrder('${o.id}')"
-                class="w-full text-right p-4 rounded-xl border border-amber-700/40 bg-zinc-950 hover:border-amber-500 transition ${activeOrderId ? "" : "animate-pulse"}">
-                <div class="flex justify-between items-start gap-2">
-                    <span class="text-amber-400 font-bold">🆕 طلب جديد</span>
-                    <span class="text-zinc-400 text-sm">${formatOrderHeader(o.table_no ?? "—")}</span>
-                </div>
-                ${renderTimeBadges(o, "pending")}
-            </button>`).join("");
+        let html = `
+            <div class="mb-6 flex justify-between items-center bg-zinc-900/80 p-5 rounded-2xl border border-amber-500/20 shadow-xl">
+                <h2 class="text-xl font-black text-amber-500">لوحة المطبخ</h2>
+                <a href="delivery_orders.html" class="flex items-center gap-2 bg-gradient-to-r from-amber-600 to-amber-500 text-black px-5 py-2.5 rounded-xl font-bold shadow-lg transition active:scale-95">
+                    <span>🚚 نظام التوصيل</span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                </a>
+            </div>
+        `;
+
+        if (activeOrder) html += renderOrderCard(activeOrder, "active");
+
+        if (pendingList.length > 0) {
+            html += `<div class="mt-4 space-y-2"><h3 class="text-amber-500/80 text-sm font-bold">طلبات جديدة</h3>`;
+            html += pendingList.map((o) => `
+                <button type="button" onclick="openOrder('${o.id}')"
+                    class="w-full text-right p-4 rounded-xl border border-amber-700/40 bg-zinc-950 hover:border-amber-500 transition ${activeOrderId ? "" : "animate-pulse"}">
+                    <div class="flex justify-between items-start gap-2">
+                        <span class="text-amber-400 font-bold">🆕 طلب جديد</span>
+                        <span class="text-zinc-400 text-sm">${formatOrderHeader(o.table_no ?? "—")}</span>
+                    </div>
+                    ${renderTimeBadges(o, "pending")}
+                </button>`).join("");
+            html += `</div>`;
+        }
+
+        html += `<div class="mt-6 space-y-2"><h3 class="text-emerald-500 text-sm font-bold">خانة الاستلام</h3>`;
+        if (pickupList.length === 0) html += '<p class="text-zinc-600 text-sm text-center py-4 border border-zinc-800 rounded-xl">لا طلبات للاستلام</p>';
+        else html += pickupList.map((o) => renderOrderCard(o, "pickup")).join("");
         html += `</div>`;
+
+        html += `<div class="mt-6 space-y-2"><h3 class="text-zinc-500 text-sm font-bold">الطلبات المسلّمة</h3>`;
+        if (deliveredList.length === 0) html += '<p class="text-zinc-700 text-sm text-center py-3">لا توجد طلبات مسلّمة بعد</p>';
+        else html += deliveredList.map((o) => renderOrderCard(o, "delivered")).join("");
+        html += `</div>`;
+
+        container.innerHTML = html;
+        if (activeOrder) startTimerDisplay(activeOrder);
+        else stopTimer();
+        startKitchenTicks();
+    } finally {
+        isFetching = false;
     }
-
-    html += `<div class="mt-6 space-y-2"><h3 class="text-emerald-500 text-sm font-bold">خانة الاستلام</h3>`;
-    if (pickupList.length === 0) html += '<p class="text-zinc-600 text-sm text-center py-4 border border-zinc-800 rounded-xl">لا طلبات للاستلام</p>';
-    else html += pickupList.map((o) => renderOrderCard(o, "pickup")).join("");
-    html += `</div>`;
-
-    html += `<div class="mt-6 space-y-2"><h3 class="text-zinc-500 text-sm font-bold">الطلبات المسلّمة</h3>`;
-    if (deliveredList.length === 0) html += '<p class="text-zinc-700 text-sm text-center py-3">لا توجد طلبات مسلّمة بعد</p>';
-    else html += deliveredList.map((o) => renderOrderCard(o, "delivered")).join("");
-    html += `</div>`;
-
-    if (!activeOrder && pendingList.length === 0 && pickupList.length === 0 && deliveredList.length === 0) {
-        html = '<p class="text-zinc-500 text-center p-10 rounded-2xl bg-zinc-900 border border-amber-800/30">لا توجد طلبات</p>';
-    }
-
-    container.innerHTML = html;
-    if (activeOrder) startTimerDisplay(activeOrder);
-    else stopTimer();
-    startKitchenTicks();
 }
 
 async function updateOrder(orderId, payload, expectedStatus) {
