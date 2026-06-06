@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لوحة دخول الموظفين</title>
-    
+
+    <script src="../config-scripts/app_env.js"></script>
+    <script src="../config-scripts/js_auth_config.js"></script>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -78,50 +81,27 @@
     </div>
 
     <script>
-    // 1. قراءة وإعداد كلمات المرور من البيئة المحلية
-    const AUTH_CONFIG = {
-        ADMIN_PASS: (window.getEnv && window.getEnv("ADMIN_PASS")) || "12345",
-        WORKER_PASS: (window.getEnv && window.getEnv("WORKER_PASS")) || "54321",
-        DELIVERY_PASS: (window.getEnv && window.getEnv("DELIVERY_PASS")) || "67890",
-    };
-
-    // 2. الدالة المدمجة للتحقق من الصلاحيات وحفظ الجلسة
-    function verifyLogin(password, type) {
-        // تنظيف الجلسة السابقة قبل المحاولة الجديدة
-        localStorage.removeItem('role');
-
-        if (type === 'admin' && password === AUTH_CONFIG.ADMIN_PASS) {
-            localStorage.setItem('role', 'admin');
-            return true;
-        }
-        if (type === 'worker' && password === AUTH_CONFIG.WORKER_PASS) {
-            localStorage.setItem('role', 'worker');
-            return true;
-        }
-        if (type === 'delivery' && password === AUTH_CONFIG.DELIVERY_PASS) {
-            localStorage.setItem('role', 'delivery');
-            return true;
-        }
-        return false;
-    }
-
-    // 3. دالة معالجة الضغط على أزرار الدخول والتوجيه للروابط الصحيحة
     function handleAuth(role) {
         const inputId = role === 'worker' ? 'workerPassInput' : 'deliveryPassInput';
         const password = document.getElementById(inputId).value;
         
-        console.log("محاولة تسجيل دخول مدمجة للدور:", role);
+        console.log("محاولة تسجيل دخول للدور:", role);
 
-        // الآن الدالة verifyLogin موجودة في نفس الصفحة ومضمونة القراءة 100%
-        if (verifyLogin(password, role)) {
-            console.log("تم التحقق بنجاح! جاري التوجيه...");
-            if (role === 'worker') {
-                window.location.href = 'kitchen.html';
+        // التحقق من أن الدالة verifyLogin تم تحميلها بنجاح من ملف js_auth_config.js
+        if (typeof verifyLogin === "function") {
+            if (verifyLogin(password, role)) {
+                console.log("تم التحقق بنجاح! جاري التوجيه...");
+                if (role === 'worker') {
+                    window.location.href = '../kitchen.html'; // تأكد أن الملف بهذا الاسم في المجلد الرئيسي
+                } else {
+                    window.location.href = '../delivery_orders.html'; // تأكد أن الملف بهذا الاسم في المجلد الرئيسي
+                }
             } else {
-                window.location.href = 'delivery_orders.html';
+                alert("⚠️ كلمة المرور غير صحيحة، يرجى المحاولة مرة أخرى.");
             }
         } else {
-            alert("⚠️ كلمة المرور غير صحيحة، يرجى المحاولة مرة أخرى.");
+            console.error("خطأ: دالة verifyLogin غير معرفة. تأكد من مسار ملف js_auth_config.js");
+            alert("⚠️ خطأ داخلي: لم يتم العثور على نظام التحقق، تأكد من وجود ملف الحماية.");
         }
     }
     </script>
