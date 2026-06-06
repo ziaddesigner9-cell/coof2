@@ -537,8 +537,26 @@ let isKitchenInit = false;
 function initKitchen() {
     if (isKitchenInit) return;
     isKitchenInit = true;
+
     loadOrders();
-    setInterval(loadOrders, 10000);
+
+    // التحديث التلقائي كل 20 ثانية كاحتياط فقط
+    setInterval(loadOrders, 20000);
+
+    // تفعيل خاصية الوقت الفعلي (Realtime) لاستلام الطلبات فوراً
+    const client = getClient();
+    if (client) {
+        client.channel('kitchen_orders_realtime')
+            .on('postgres_changes', { 
+                event: '*', 
+                schema: 'public', 
+                table: 'orders' 
+            }, (payload) => {
+                console.log("تنبيه: حدث تغيير في الطلبات (Realtime)، جاري التحديث...");
+                loadOrders();
+            })
+            .subscribe();
+    }
 }
 
 // تصدير الوظائف للنافذة لضمان عملها مع onclick في HTML
