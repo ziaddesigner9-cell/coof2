@@ -21,7 +21,7 @@
     </style>
     
     <!-- واجهة التحميل التي تظهر في البداية -->
-    <div id="admin-loader" class="fixed inset-0 bg-black z-[100] flex items-center justify-center">
+    <div id="admin-loader" class="fixed inset-0 bg-black z-[100] flex items-center justify-center hidden">
         <div class="text-center">
             <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500 mx-auto"></div>
             <p class="mt-4 text-amber-500 font-bold">جاري التحميل...</p>
@@ -109,12 +109,12 @@
 
                     if (dbError) throw dbError;
 
-                    alert('تم الرفع والحفظ في المكتبة بنجاح! ✓');
-                    
                     // إعادة تعيين الواجهة لرفع صورة أخرى
                     imageInput.value = ""; 
                     previewContainer.classList.add('hidden');
                     imagePreview.src = "";
+
+                    alert('تم الرفع والحفظ في المكتبة بنجاح! ✓');
 
                     // تحديث قائمة الصور فوراً
                     if (typeof window.fetchGallery === "function") window.fetchGallery();

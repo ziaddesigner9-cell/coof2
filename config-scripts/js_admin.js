@@ -81,13 +81,19 @@ async function uploadItemImage(file) {
     return { url: urlData.publicUrl };
 }
 
+let loaderCount = 0;
+
 /** إخفاء واجهة التحميل عند الجاهزية */
 function hideAdminLoader() {
-    const loader = document.getElementById("admin-loader");
-    if (loader) loader.classList.add("hidden");
+    loaderCount = Math.max(0, loaderCount - 1);
+    if (loaderCount === 0) {
+        const loader = document.getElementById("admin-loader");
+        if (loader) loader.classList.add("hidden");
+    }
 }
 
 function showAdminLoader() {
+    loaderCount++;
     const loader = document.getElementById("admin-loader");
     if (loader) loader.classList.remove("hidden");
 }
