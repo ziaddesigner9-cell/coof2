@@ -448,15 +448,7 @@ async function loadOrders() {
             activeOrder = null;
         }
 
-        let html = `
-            <div class="mb-6 flex flex-row-reverse justify-between items-center bg-zinc-900/80 p-5 rounded-2xl border border-amber-500/20 shadow-xl">
-                <h2 class="text-xl font-black text-amber-500">لوحة المطبخ</h2>
-                <a href="./delivery_orders.html" class="flex items-center gap-2 bg-gradient-to-r from-amber-600 to-amber-500 text-black px-5 py-2.5 rounded-xl font-bold shadow-lg transition active:scale-95">
-                    <svg class="w-4 h-4 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                    <span>🚚 نظام التوصيل</span>
-                </a>
-            </div>
-        `;
+        let html = ''; // تم حذف الهيدر والزر لتنظيف الواجهة
 
         if (activeOrder) html += renderOrderCard(activeOrder, "active");
 
