@@ -423,8 +423,8 @@ async function loadOrders() {
     if (Array.isArray(orders)) orders.forEach((o) => knownOrderIds.add(o.id));
     firstLoad = false;
 
-    // 2. البحث عن الطلب النشط أو استعادة أول طلب "قيد التجهيز" موجود في قاعدة البيانات
-    let activeOrder = activeOrderId ? orders.find((o) => o.id === activeOrderId) : orders.find(o => o.status === "preparing");
+    // البحث عن الطلب النشط بناءً على الـ ID فقط دون تقييد الحالة لتجنب التعليق
+    let activeOrder = activeOrderId ? orders.find((o) => String(o.id) === String(activeOrderId)) : null;
 
     if (activeOrder && !activeOrderId) {
         activeOrderId = activeOrder.id;
