@@ -1,124 +1,52 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة دخول الموظفين</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Cairo', sans-serif; }
-    </style>
-</head>
-<body class="bg-black text-zinc-100 min-h-screen flex items-center justify-center p-4 relative overflow-x-hidden">
+/**
+ * ملف: js_auth_config.js
+ * المسؤول عن إدارة كلمات المرور والصلاحيات والجلسات
+ */
 
-    <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-[120px] pointer-events-none"></div>
-    <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none"></div>
+const AUTH_CONFIG = {
+    ADMIN_PASS: (window.getEnv && window.getEnv("ADMIN_PASS")) || "12345",
+    WORKER_PASS: (window.getEnv && window.getEnv("WORKER_PASS")) || "54321",
+    DELIVERY_PASS: (window.getEnv && window.getEnv("DELIVERY_PASS")) || "67890",
+};
 
-    <div class="w-full max-w-md mx-auto z-10 space-y-8">
-        
-        <div class="text-center space-y-2">
-            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-zinc-900 border border-zinc-800 shadow-2xl mb-2 text-3xl">
-                👨‍🍳
-            </div>
-            <h1 class="text-3xl font-black tracking-tight text-white bg-gradient-to-r from-zinc-100 to-zinc-400 bg-clip-text text-transparent">
-                بوابة الموظفين الرقمية
-            </h1>
-            <p class="text-sm text-zinc-400">مرحباً بك مجدداً، يرجى اختيار قسمك لتسجيل الدخول</p>
-        </div>
+/**
+ * دالة التحقق من الدخول
+ * @param {string} password - كلمة المرور المدخلة
+ * @param {string} type - نوع المستخدم ('admin' أو 'worker')
+ * @returns {boolean}
+ */
+function verifyLogin(password, type) {
+    // تنظيف الجلسة السابقة قبل المحاولة الجديدة
+    logout();
 
-        <div class="space-y-5">
-            
-            <div class="group bg-zinc-900/40 backdrop-blur-md p-6 rounded-3xl border border-zinc-800/80 hover:border-amber-500/40 shadow-2xl transition-all duration-300">
-                <div class="flex items-center gap-3 mb-4">
-                    <span class="text-2xl p-2 bg-amber-500/10 rounded-xl text-amber-500 group-hover:scale-110 transition-transform">🔐</span>
-                    <div>
-                        <h2 class="text-lg font-bold text-amber-500">لوحة المطبخ</h2>
-                        <p class="text-xs text-zinc-500">إدارة وتجهيز الطلبات الحالية</p>
-                    </div>
-                </div>
-                
-                <div class="space-y-3">
-                    <input type="password" id="workerPassInput" 
-                           class="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-4 text-white text-center text-xl tracking-widest placeholder:tracking-normal focus:border-amber-500/60 focus:ring-1 focus:ring-amber-500/30 outline-none transition" 
-                           placeholder="••••••••">
-                    <button onclick="handleAuth('worker')" 
-                            class="w-full bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-black font-black py-3.5 rounded-xl transition-all duration-300 shadow-lg shadow-amber-950/20 active:scale-[0.98]">
-                        دخول المطبخ ←
-                    </button>
-                </div>
-            </div>
+    if (type === 'admin' && password === AUTH_CONFIG.ADMIN_PASS) {
+        localStorage.setItem('role', 'admin');
+        return true;
+    }
+    if (type === 'worker' && password === AUTH_CONFIG.WORKER_PASS) {
+        localStorage.setItem('role', 'worker');
+        return true;
+    }
+    if (type === 'delivery' && password === AUTH_CONFIG.DELIVERY_PASS) {
+        localStorage.setItem('role', 'delivery');
+        return true;
+    }
+    return false;
+}
 
-            <div class="group bg-zinc-900/40 backdrop-blur-md p-6 rounded-3xl border border-zinc-800/80 hover:border-emerald-500/40 shadow-2xl transition-all duration-300">
-                <div class="flex items-center gap-3 mb-4">
-                    <span class="text-2xl p-2 bg-emerald-500/10 rounded-xl text-emerald-500 group-hover:scale-110 transition-transform">🚚</span>
-                    <div>
-                        <h2 class="text-lg font-bold text-emerald-500">نظام التوصيل</h2>
-                        <p class="text-xs text-zinc-500">استلام الطلبات الجاهزة وتوصيلها</p>
-                    </div>
-                </div>
-                
-                <div class="space-y-3">
-                    <input type="password" id="deliveryPassInput" 
-                           class="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-4 text-white text-center text-xl tracking-widest placeholder:tracking-normal focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/30 outline-none transition" 
-                           placeholder="••••••••">
-                    <button onclick="handleAuth('delivery')" 
-                            class="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-black py-3.5 rounded-xl transition-all duration-300 shadow-lg shadow-emerald-950/20 active:scale-[0.98]">
-                        دخول السائق ←
-                    </button>
-                </div>
-            </div>
+/**
+ * دالة تسجيل الخروج (لمسح الجلسة)
+ */
+function logout() {
+    localStorage.removeItem('role');
+}
 
-        </div>
-
-        <p class="text-center text-xs text-zinc-600 tracking-wide">جميع الحقوق محفوظة © النظام الذكي لإدارة المطاعم</p>
-    </div>
-
-    <script>
-    // الإعدادات المحلية لحماية الدخول وضمان عدم الاعتماد على ملفات خارجية
-    const AUTH_CONFIG = {
-        ADMIN_PASS: "12345",
-        WORKER_PASS: "54321",
-        DELIVERY_PASS: "67890"
-    };
-
-    function verifyLoginLocal(password, type) {
-        localStorage.removeItem('role'); // تنظيف الجلسة السابقة
-
-        if (type === 'admin' && password === AUTH_CONFIG.ADMIN_PASS) {
-            localStorage.setItem('role', 'admin');
-            return true;
-        }
-        if (type === 'worker' && password === AUTH_CONFIG.WORKER_PASS) {
-            localStorage.setItem('role', 'worker');
-            return true;
-        }
-        if (type === 'delivery' && password === AUTH_CONFIG.DELIVERY_PASS) {
-            localStorage.setItem('role', 'delivery');
-            return true;
-        }
-        return false;
-    }
-
-    function handleAuth(role) {
-        const inputId = role === 'worker' ? 'workerPassInput' : 'deliveryPassInput';
-        const password = document.getElementById(inputId).value;
-        
-        console.log("محاولة تسجيل دخول مدمجة للدور:", role);
-
-        if (verifyLoginLocal(password, role)) {
-            console.log("تم التحقق بنجاح! جاري التوجيه...");
-            if (role === 'worker') {
-                window.location.href = 'kitchen.html';
-            } else {
-                window.location.href = 'delivery_orders.html';
-            }
-        } else {
-            alert("⚠️ كلمة المرور غير صحيحة، يرجى المحاولة مرة أخرى.");
-        }
-    }
-    </script>
-</body>
-</html>
+/**
+ * دالة للتحقق مما إذا كان المستخدم مسجلاً للدخول بالفعل
+ * @param {string} requiredRole - الدور المطلوب (مثلاً 'admin')
+ * @returns {boolean}
+ */
+function checkAccess(requiredRole) {
+    const currentRole = localStorage.getItem('role');
+    return currentRole === requiredRole;
+}
