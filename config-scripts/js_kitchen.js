@@ -406,26 +406,28 @@ async function loadOrders() {
 	ordersCache = orders.filter((o) => o.status === "pending");
 	orders = mergeWithLocalPreparing(orders);
 
-	if (!firstLoad) {
+	if (!firstLoad && Array.isArray(orders)) {
 		orders.forEach((o) => {
 			if (o.status === "pending" && !knownOrderIds.has(o.id)) playNewOrderSound();
 		});
 	}
-	orders.forEach((o) => knownOrderIds.add(o.id));
+	if (Array.isArray(orders)) orders.forEach((o) => knownOrderIds.add(o.id));
 	firstLoad = false;
 
-	// تحديد الطلب النشط: نقبل الطلب سواء كان قيد التجهيز أو لا يزال "جديد" في قاعدة البيانات لسد فجوة زمن التحديث
+	// تحديد الطلب النشط: تحسين البحث ليشمل الحالات الانتقالية ومنع الاختفاء الفجائي
 	const activeOrder = activeOrderId 
 		? orders.find((o) => o.id === activeOrderId && (o.status === "preparing" || o.status === "pending"))
 		: null;
 
-	// قائمة الطلبات الجديدة (مع استثناء الطلب الذي فتحه العامل حالياً لكي لا يظهر مرتين)
+	// قائمة الطلبات الجديدة: استثناء الطلب النشط حالياً لمنع التكرار في القائمة الجانبية
 	const pendingList = sortNewestFirst(orders.filter((o) => o.status === "pending" && o.id !== activeOrderId));
 	const pickupList = sortNewestFirst(orders.filter((o) => o.status === "ready"));
 	const deliveredList = Array.isArray(deliveredRes.data) ? deliveredRes.data : [];
 
-	// نغلق حالة "النشط" فقط إذا لم يعد الطلب موجوداً في القائمة النشطة أو انتقل لخانة الاستلام (Ready)
-	if (activeOrderId && (!activeOrder || activeOrder.status === "ready")) closeActive();
+	// الإغلاق الذكي للبطاقة: يتم فقط إذا تم استلام الطلب أو حذفه
+	if (activeOrderId && (!activeOrder || activeOrder.status === "ready" || activeOrder.status === "completed")) {
+		if (!activeOrder || activeOrder.status !== "preparing") closeActive();
+	}
 
 	let html = "";
 
