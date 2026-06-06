@@ -12,6 +12,7 @@ const DEFAULT_APP_SETTINGS = {
     category_dessert_image: "",
     phrases: {
         brand_tagline: "COOF2",
+        home_slogan: "استمتع بمشروبك المفضل",
         home_welcome_title: "أهلاً بك",
         home_welcome_sub: "استمتع بمشروبك المفضل من COOF2",
         category_hot_label: "المشروبات الساخنة",

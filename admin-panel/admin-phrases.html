@@ -13,6 +13,14 @@
     </script>
 </head>
 <body class="bg-black text-white min-h-screen p-4 md:p-8">
+    <!-- واجهة التحميل المركزية -->
+    <div id="admin-loader" class="fixed inset-0 bg-black z-[100] flex items-center justify-center hidden">
+        <div class="text-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500 mx-auto"></div>
+            <p class="mt-4 text-amber-500 font-bold">جاري حفظ التعديلات...</p>
+        </div>
+    </div>
+
     <div class="max-w-3xl mx-auto">
         <a href="admin-dashboard.html" class="text-amber-500 text-sm hover:text-amber-300">← لوحة المدير</a>
         <h1 class="text-2xl font-bold text-amber-400 mt-4 mb-2">تعديل العبارات</h1>
@@ -114,6 +122,8 @@
 
         async function init() {
             settings = await loadAppSettings(true);
+            // التأكد من وجود كائن ui لتجنب الأخطاء عند القراءة الأولى
+            settings.ui = settings.ui || window.DEFAULT_APP_SETTINGS?.ui || {};
             renderForm();
             populateUiControls();
         }
@@ -126,10 +136,18 @@
             document.getElementById('style-modal').classList.add('hidden');
         }
 
+        function showLoader() {
+            document.getElementById('admin-loader')?.classList.remove('hidden');
+        }
+
+        function hideLoader() {
+            document.getElementById('admin-loader')?.classList.add('hidden');
+        }
+
         async function saveAll(source) {
             const isModal = source === 'modal';
             
-            // مزامنة العبارات من الحقول
+            // مزامنة العبارات من كافة حقول الإدخال في الصفحة
             document.querySelectorAll("[data-phrase-key]").forEach((input) => {
                 settings.phrases[input.dataset.phraseKey] = input.value;
             });
@@ -155,14 +173,17 @@
                 btn.disabled = true;
                 btn.textContent = "جاري الحفظ...";
             }
+            showLoader();
             
             try {
                 await saveAppSettings(settings);
-                alert("تم حفظ جميع التغييرات بنجاح!");
+                alert("تم حفظ المظهر والعبارات بنجاح! ✓");
                 if (isModal) closeStyleModal();
             } catch (e) {
+                console.error("خطأ في الحفظ:", e);
                 alert("فشل الحفظ: " + e.message);
             } finally {
+                hideLoader();
                 btn.disabled = false;
                 if (btn) btn.textContent = originalText;
             }
