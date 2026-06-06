@@ -95,6 +95,7 @@ async function loadDeliveryOrders() {
 
         if (error) {
             container.innerHTML = `<p class="text-red-400 text-center">خطأ: ${error.message}</p>`;
+            isFetching = false;
             return;
         }
 

@@ -23,6 +23,7 @@
     </main>
 
     <!-- ملفات التهيئة والبرمجة -->
+    <script src="../app_global_env.js"></script>
     <script src="../config-scripts/app_env.js"></script>
     <script src="../config-scripts/dependencies.js"></script>
     <script src="../config-scripts/js_delivery.js"></script>
@@ -35,7 +36,7 @@
             window.location.href = 'delivery_login.html';
         }
         document.addEventListener('DOMContentLoaded', () => {
-            if (typeof startDeliverySystem === 'function') startDeliverySystem();
+            // js_delivery.js يقوم بالتشغيل تلقائياً، لا داعي لاستدعاء دوال يدوية هنا
         });
     </script>
 </body>
