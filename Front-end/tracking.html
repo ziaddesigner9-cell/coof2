@@ -33,6 +33,8 @@
             image-rendering: pixelated;
         }
         .order-item-row:last-child { border-bottom: none; }
+        
+        /* تحسين الظهور الناعم */
         @keyframes star-pulse {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.1); }
@@ -40,10 +42,17 @@
         .animate-star-pulse {
             animation: star-pulse 2s infinite ease-in-out;
         }
+        .fade-in-up {
+            animation: fadeInUp 0.5s ease-out forwards;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body class="bg-black text-white min-h-screen flex items-center justify-center p-4 pb-8">
-    <div class="w-full max-w-md bg-zinc-900 border border-yellow-600/40 rounded-3xl p-6 shadow-2xl">
+    <div class="w-full max-w-md bg-zinc-900 border border-yellow-600/40 rounded-3xl p-6 shadow-2xl fade-in-up">
         <!-- QR فعلي يُولَّد محلياً ويُمسح بالكاميرا -->
         <div id="qrBox" class="mx-auto rounded-2xl p-2 flex items-center justify-center">
             <div id="qrHost" aria-label="رمز QR للطلب"></div>

@@ -83,6 +83,9 @@
             font-size: 0.8rem;
             letter-spacing: 0.05em;
         }
+        /* منع الوميض عند تحميل الصور */
+        .category-cover-img { opacity: 0; transition: opacity 0.4s ease; }
+        .category-cover-img[src] { opacity: 1; }
     </style>
 </head>
 <body class="app-theme min-h-screen">

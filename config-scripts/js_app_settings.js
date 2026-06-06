@@ -74,22 +74,21 @@ async function loadAppSettings(forceRemote = false) {
         typeof window.getSupabaseClient === "function" ? window.getSupabaseClient() : null;
     if (!client) return mergeSettings(null);
 
-    const { data, error } = await client
-        .from("app_settings")
+    // جلب البيانات من السيرفر في الخلفية لتحديث الكاش للمرة القادمة
+    client.from("app_settings")
         .select("value")
         .eq("key", APP_SETTINGS_KEY)
-        .maybeSingle();
+        .maybeSingle()
+        .then(({ data, error }) => {
+            if (!error && data?.value) {
+                const merged = mergeSettings(data.value);
+                localStorage.setItem(APP_SETTINGS_CACHE, JSON.stringify(merged));
+            }
+        });
 
-    if (error) {
-        console.warn("تعذر جلب الإعدادات:", error.message);
-        return mergeSettings(null);
-    }
-
-    const merged = mergeSettings(data?.value);
-    try {
-        localStorage.setItem(APP_SETTINGS_CACHE, JSON.stringify(merged));
-    } catch (_) {}
-    return merged;
+    // نعود فوراً بالكاش المتاح (أو الافتراضي) لمنع تأخر الواجهة
+    const cached = localStorage.getItem(APP_SETTINGS_CACHE);
+    return mergeSettings(cached ? JSON.parse(cached) : null);
 }
 
 async function saveAppSettings(settings) {

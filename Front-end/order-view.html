@@ -24,9 +24,18 @@
         .animate-star-pulse {
             animation: star-pulse 2s infinite ease-in-out;
         }
+        .fade-in {
+            animation: fadeIn 0.6s ease-in forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        #orderItemsList img { transition: opacity 0.3s ease; }
+        #orderItemsList img[loading] { opacity: 0; }
     </style>
 </head>
-<body class="min-h-screen text-white p-4 pb-10">
+<body class="min-h-screen text-white p-4 pb-10 fade-in">
     <div class="max-w-md mx-auto">
         <header class="text-center pt-4 pb-2">
             <p id="brand-en" class="text-xs tracking-[0.35em] text-amber-600/80 uppercase">Cafe Al-Saada</p>
