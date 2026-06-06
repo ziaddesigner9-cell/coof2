@@ -10,7 +10,13 @@
     <script src="../config-scripts/dependencies.js"></script>
     <script src="../config-scripts/js_admin.js"></script>
 </head>
-<body class="bg-black text-white p-6">
+<body class="bg-black text-white p-4 md:p-8 min-h-screen flex items-center justify-center">
+    
+    <style>
+        .gold-glow {
+            box-shadow: 0 0 20px rgba(245, 215, 110, 0.1);
+        }
+    </style>
     
     <!-- واجهة التحميل التي تظهر في البداية -->
     <div id="admin-loader" class="fixed inset-0 bg-black z-[100] flex items-center justify-center">
@@ -20,25 +26,39 @@
         </div>
     </div>
 
-    <div class="max-w-md mx-auto">
-        <h1 class="text-2xl font-bold text-amber-500 mb-6">رفع صورة صنف جديد</h1>
+    <div class="w-full max-w-md">
+        <a href="admin-dashboard.html" class="inline-block text-amber-600 text-sm mb-4 hover:text-amber-400 transition">← العودة للوحة المدير</a>
+        <h1 class="text-3xl font-bold text-amber-500 mb-2">مكتبة الصور</h1>
+        <p class="text-zinc-500 text-sm mb-8">ارفع صور الأصناف هنا لتظهر في قائمة الاختيار</p>
         
-        <div class="bg-zinc-900 p-6 rounded-2xl border border-amber-800/30">
+        <div class="bg-zinc-900 p-8 rounded-[2.5rem] border border-amber-500/20 shadow-2xl gold-glow">
             <input type="file" id="imageInput" class="hidden" accept="image/*">
-            <label for="imageInput" class="block w-full border-2 border-dashed border-zinc-700 rounded-xl p-8 text-center cursor-pointer hover:border-amber-500 transition">
-                <span class="text-4xl block mb-2">📸</span>
-                <span class="text-sm text-zinc-400">اضغط لاختيار صورة</span>
+            <label for="imageInput" class="flex flex-col items-center justify-center w-full aspect-square border-4 border-dashed border-amber-600/20 rounded-[2rem] cursor-pointer hover:border-amber-500 hover:bg-amber-500/5 transition-all group">
+                <div class="p-6 rounded-full bg-amber-500/10 mb-4 group-hover:scale-110 transition-transform">
+                    <svg class="w-12 h-12 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                </div>
+                <span class="text-amber-500 font-bold text-lg">اضغط لاختيار صورة</span>
+                <span class="text-zinc-500 text-xs mt-2 italic">PNG, JPG حتى 5MB</span>
             </label>
             
-            <div id="previewContainer" class="mt-4 hidden text-center">
-                <img id="imagePreview" class="w-32 h-32 object-cover rounded-xl mx-auto border border-amber-500/50">
-                <button id="uploadBtn" class="w-full mt-4 bg-amber-600 text-black font-bold py-3 rounded-xl">رفع الآن</button>
+            <div id="previewContainer" class="mt-8 hidden text-center animate-in fade-in zoom-in duration-300">
+                <div class="relative inline-block">
+                    <img id="imagePreview" class="w-48 h-48 object-cover rounded-3xl mx-auto border-2 border-amber-500/50 shadow-lg shadow-amber-500/10">
+                    <div class="absolute -top-2 -right-2 bg-amber-500 text-black text-[10px] font-bold px-2 py-1 rounded-lg">معاينة</div>
+                </div>
+                <button id="uploadBtn" class="w-full mt-8 bg-amber-500 hover:bg-amber-400 text-black font-extrabold py-4 rounded-2xl shadow-xl shadow-amber-600/20 transition-all active:scale-95">
+                    رفع وحفظ في المكتبة ✓
+                </button>
             </div>
         </div>
     </div>
 
     <script>
-        const imageInput = document.getElementById('imageInput');
+        (function() {
+            const imageInput = document.getElementById('imageInput');
         const previewContainer = document.getElementById('previewContainer');
         const imagePreview = document.getElementById('imagePreview');
         const uploadBtn = document.getElementById('uploadBtn');
@@ -57,12 +77,21 @@
 
             try {
                 showAdminLoader(); // إظهار التحميل عند بدء الرفع
+                
+                // 1. الرفع إلى Storage
                 const result = await window.uploadItemImage(file);
                 
                 if (result.url) {
-                    alert('تم الرفع بنجاح!');
-                    console.log("URL الصورة:", result.url);
-                    // هنا يمكنك إرسال الرابط لجدول items
+                    // 2. الحفظ في جدول gallery (هذا هو زر "الحفظ" الذي طلبته)
+                    const supabase = window.getSupabaseClient();
+                    const { error: dbError } = await supabase
+                        .from('gallery')
+                        .insert([{ image_url: result.url, name: file.name }]);
+
+                    if (dbError) throw dbError;
+
+                    alert('تم الرفع والحفظ في المكتبة بنجاح! ✓');
+                    location.href = "manage-menu.html"; // التوجه لإضافة صنف جديد
                 }
             } catch (err) {
                 alert('فشل الرفع: ' + err.message);
@@ -72,9 +101,10 @@
         });
 
         // السطر 57 - التأكد من إغلاق الدوال قبل أي جملة if
-        if (window.location.search.includes('status=ready')) {
-            console.log("النظام جاهز تماماً");
-        }
+            if (window.location.search && window.location.search.indexOf('status=ready') !== -1) {
+                console.log("النظام جاهز تماماً");
+            }
+        })();
     </script>
 </body>
 </html>

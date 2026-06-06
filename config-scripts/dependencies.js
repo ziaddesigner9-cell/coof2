@@ -7,7 +7,7 @@
     const SUPABASE_URL = "https://jdaggrzdaxcnnfmdyvic.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkYWdncnpkYXhjbm5mbWR5dmljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1ODMyMzgsImV4cCI6MjA5NjE1OTIzOH0.75Pcz12Jp0WkZ3_NUVt8D78BH0KgdDd1krjt-oxQoT8";
     const SITE_BASE_URL = "https://ziaddesigner9-cell.github.io/coof2/";
-
+    
     const PUBLIC_BASE_STORAGE_KEY = "COOF2_PUBLIC_BASE";
 
     function normalizeBase(url) {
@@ -64,7 +64,7 @@
         if (lib && typeof lib.createClient === "function") {
             try {
                 // التحقق من صحة المفتاح قبل المحاولة
-                if (!SUPABASE_KEY || !SUPABASE_KEY.startsWith("eyJ")) {
+                if (!SUPABASE_KEY || String(SUPABASE_KEY).trim().indexOf("eyJ") !== 0) {
                     console.error("❌ خطأ حرج: المفتاح غير صالح أو مفقود.");
                     return null;
                 }
