@@ -414,19 +414,18 @@ async function loadOrders() {
 	if (Array.isArray(orders)) orders.forEach((o) => knownOrderIds.add(o.id));
 	firstLoad = false;
 
-	// تحديد الطلب النشط: تحسين البحث ليشمل الحالات الانتقالية ومنع الاختفاء الفجائي
-	const activeOrder = activeOrderId 
-		? orders.find((o) => o.id === activeOrderId && (o.status === "preparing" || o.status === "pending"))
-		: null;
+	// جلب بيانات الطلب النشط من القائمة الحالية (بدون شروط صارمة على الحالة لمنع الاختفاء)
+	let activeOrder = activeOrderId ? orders.find((o) => o.id === activeOrderId) : null;
 
 	// قائمة الطلبات الجديدة: استثناء الطلب النشط حالياً لمنع التكرار في القائمة الجانبية
 	const pendingList = sortNewestFirst(orders.filter((o) => o.status === "pending" && o.id !== activeOrderId));
 	const pickupList = sortNewestFirst(orders.filter((o) => o.status === "ready"));
 	const deliveredList = Array.isArray(deliveredRes.data) ? deliveredRes.data : [];
 
-	// الإغلاق الذكي للبطاقة: يتم فقط إذا تم استلام الطلب أو حذفه
-	if (activeOrderId && (!activeOrder || activeOrder.status === "ready" || activeOrder.status === "completed")) {
-		if (!activeOrder || activeOrder.status !== "preparing") closeActive();
+	// نغلق حالة "النشط" فقط إذا أصبح الطلب جاهزاً أو تم تسليمه فعلياً
+	if (activeOrder && (activeOrder.status === "ready" || activeOrder.status === "completed")) {
+		closeActive();
+		activeOrder = null;
 	}
 
 	let html = "";
