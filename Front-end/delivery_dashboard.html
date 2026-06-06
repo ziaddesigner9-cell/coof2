@@ -27,8 +27,11 @@
     <script src="../config-scripts/dependencies.js"></script>
     <script src="../config-scripts/js_delivery.js"></script>
     <script>
-        // حماية الصفحة
-        if (sessionStorage.getItem('delivery_auth') !== 'true') {
+        // حماية الصفحة - تسمح بالدخول عبر صفحة الدخول الموحدة أو صفحة دخول السائق الخاصة
+        const role = localStorage.getItem("role");
+        const isDeliveryAuth = sessionStorage.getItem('delivery_auth') === 'true';
+        
+        if (role !== "admin" && role !== "delivery" && !isDeliveryAuth) {
             window.location.href = 'delivery_login.html';
         }
         document.addEventListener('DOMContentLoaded', () => {
