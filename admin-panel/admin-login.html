@@ -1,37 +1,46 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="../config-scripts/js_auth_config.js?v=16"></script>
-</head>
-<body class="bg-gray-100 flex items-center justify-center h-screen">
-    <div class="bg-white p-8 rounded-xl shadow-md w-96 text-center">
-        <h2 class="text-xl font-bold mb-4">تسجيل الدخول</h2>
-        <input type="password" id="pass" placeholder="كلمة المرور" class="w-full p-2 border rounded mb-4 focus:outline-none focus:border-orange-500">
-        <button onclick="checkLogin()" class="w-full bg-orange-600 text-white py-2 rounded hover:bg-orange-700 transition">
-            دخول
+<!-- حاوية تسجيل الدخول الموحدة -->
+<div class="max-w-md mx-auto p-6 space-y-8">
+    
+    <!-- قسم المطبخ (العامل) -->
+    <div class="bg-zinc-900/80 p-6 rounded-3xl border border-amber-600/30 shadow-xl text-center">
+        <div class="text-4xl mb-3">👨‍🍳</div>
+        <h2 class="text-xl font-bold text-amber-500 mb-4">دخول طاقم المطبخ</h2>
+        <input type="password" id="workerPass" 
+               class="w-full bg-black border border-zinc-800 rounded-2xl p-4 text-white text-center text-xl mb-4 focus:border-amber-500 outline-none" 
+               placeholder="كلمة مرور المطبخ">
+        <button onclick="handleRoleLogin('worker')" 
+                class="w-full bg-amber-600 hover:bg-amber-500 text-black font-black py-4 rounded-2xl transition active:scale-95">
+            دخول المطبخ
         </button>
     </div>
 
-    <script>
-        async function checkLogin() {
-            const passEl = document.getElementById('pass');
-            const pass = passEl ? passEl.value : '';
-            
-            if (verifyLogin(pass, 'admin')) {
-                localStorage.setItem('role', 'admin');
-                window.location.href = "admin-dashboard.html";
-            } 
-            else if (verifyLogin(pass, 'worker')) {
-                localStorage.setItem('role', 'worker');
-                // هذا هو التعديل الوحيد المطلوب: توجيه العامل للمطبخ مباشرة
-                window.location.href = "../Front-end/kitchen.html?v=16";
-            } 
-            else {
-                alert("كلمة المرور غير صحيحة!");
-            }
-        }
-    </script>
-</body>
-</html>
+    <!-- قسم سائق التوصيل -->
+    <div class="bg-zinc-900/80 p-6 rounded-3xl border border-emerald-600/30 shadow-xl text-center">
+        <div class="text-4xl mb-3">🚚</div>
+        <h2 class="text-xl font-bold text-emerald-500 mb-4">دخول سائق التوصيل</h2>
+        <input type="password" id="deliveryPass" 
+               class="w-full bg-black border border-zinc-800 rounded-2xl p-4 text-white text-center text-xl mb-4 focus:border-emerald-500 outline-none" 
+               placeholder="كلمة مرور التوصيل">
+        <button onclick="handleRoleLogin('delivery')" 
+                class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-4 rounded-2xl transition active:scale-95">
+            دخول نظام التوصيل
+        </button>
+    </div>
+
+</div>
+
+<script>
+/** دالة معالجة الدخول بناءً على الدور المختيار */
+function handleRoleLogin(role) {
+    const inputId = role === 'worker' ? 'workerPass' : 'deliveryPass';
+    const password = document.getElementById(inputId).value;
+    
+    // التحقق باستخدام ملف js_auth_config.js
+    if (typeof verifyLogin === "function" && verifyLogin(password, role)) {
+        // التوجه للصفحة المناسبة (نستخدم ../ للعودة للمجلد الرئيسي)
+        window.location.href = (role === 'worker') ? '../kitchen.html' : '../delivery_orders.html';
+    } else {
+        alert("⚠️ كلمة المرور غير صحيحة");
+    }
+}
+</script>
