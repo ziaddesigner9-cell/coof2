@@ -143,16 +143,22 @@ async function loadDeliveryOrders() {
             if (order.status === 'pending' || order.status === 'preparing') {
                 statusLabel = `<span class="bg-amber-500/10 text-amber-500 text-[10px] px-2 py-1 rounded-lg border border-amber-500/20">جاري التحضير بالمطبخ</span>`;
                 actionContent = `
-                    <div class="text-center mt-4 bg-zinc-800 p-3 rounded-2xl border border-amber-500/20">
+                    <div class="text-center mt-4 bg-zinc-800/50 p-3 rounded-2xl border border-amber-500/20">
                         <p class="text-amber-500 text-xs font-bold mb-2">انتظر اللون الأخضر:</p>
-                        <img src="${qrCodeImageUrl}" class="mx-auto w-32 h-32 opacity-80">
+                        <img src="${qrCodeImageUrl}" class="mx-auto w-32 h-32 opacity-50 mb-3">
+                        <button disabled class="w-full bg-zinc-800 text-zinc-600 py-3 rounded-xl font-bold cursor-not-allowed border border-zinc-700">
+                            الطلب في الطريق (بانتظار المطبخ) ⏳
+                        </button>
                     </div>`;
             } else if (order.status === 'ready') {
                 statusLabel = `<span class="bg-emerald-500/10 text-emerald-500 text-[10px] px-2 py-1 rounded-lg border border-emerald-500/20">جاهز للتوصيل</span>`;
                 actionContent = `
                     <div class="text-center mt-4 bg-white p-3 rounded-2xl shadow-lg shadow-emerald-500/20">
-                        <p class="text-black text-xs font-bold mb-2">امسح لبدء التوصيل:</p>
-                        <img src="${qrCodeImageUrl}" class="mx-auto w-32 h-32">
+                        <p class="text-black text-xs font-bold mb-2">امسح أو اضغط للبدء:</p>
+                        <img src="${qrCodeImageUrl}" class="mx-auto w-32 h-32 mb-3">
+                        <button onclick="startDeliveryManually('${order.id}')" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold hover:bg-emerald-500 transition shadow-md">
+                            تأكيد الاستلام (الطلب في الطريق) 🚚
+                        </button>
                     </div>`;
             } else {
                 statusLabel = `<span class="bg-blue-500/10 text-blue-500 text-[10px] px-2 py-1 rounded-lg border border-blue-500/20">في الطريق</span>`;
@@ -195,6 +201,15 @@ async function loadDeliveryOrders() {
 
     } finally {
         isFetching = false;
+    }
+}
+
+async function startDeliveryManually(orderId) {
+    const result = await markAsOutForDelivery(orderId);
+    if (!result.ok) {
+        alert("⚠️ فشل تحديث الحالة: " + result.error);
+    } else {
+        loadDeliveryOrders();
     }
 }
 
@@ -248,3 +263,4 @@ document.addEventListener("DOMContentLoaded", () => {
 
 window.finishDelivery = finishDelivery;
 window.markAsOutForDelivery = markAsOutForDelivery;
+window.startDeliveryManually = startDeliveryManually;
