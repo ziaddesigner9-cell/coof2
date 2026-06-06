@@ -1,27 +1,75 @@
 // [كود محسن لعرض البيانات]
 
+/** وظيفة لتحويل الصورة إلى صيغة WebP لتقليل الحجم مع الحفاظ على الجودة */
+async function convertToWebP(file, quality = 0.8) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                canvas.toBlob((blob) => {
+                    if (blob) {
+                        const newFileName = file.name.replace(/\.[^/.]+$/, "") + ".webp";
+                        resolve(new File([blob], newFileName, { type: 'image/webp' }));
+                    } else {
+                        reject(new Error("فشل معالجة الصورة"));
+                    }
+                }, 'image/webp', quality);
+            };
+            img.onerror = () => reject(new Error("خطأ في قراءة ملف الصورة"));
+            img.src = event.target.result;
+        };
+        reader.onerror = () => reject(new Error("خطأ في قراءة الملف"));
+        reader.readAsDataURL(file);
+    });
+}
+
+/** استخراج مسار الملف من الرابط العام بدقة */
+function storagePathFromPublicUrl(url) {
+    try {
+        const u = new URL(url);
+        const markers = ["/menu-images/", "/object/public/menu-images/"];
+        for (const marker of markers) {
+            const idx = u.pathname.indexOf(marker);
+            if (idx !== -1) return decodeURIComponent(u.pathname.slice(idx + marker.length));
+        }
+    } catch (_) {}
+    return null;
+}
+
 /** دالة لرفع الصورة إلى Supabase Storage */
 async function uploadItemImage(file) {
-    console.log("1. بدء عملية الرفع إلى Storage...");
     const supabase = window.getSupabaseClient();
     if (!supabase) {
         console.error("خطأ: عميل Supabase غير متاح.");
         return { error: "النظام غير متصل" };
     }
 
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Math.random()}.${fileExt}`;
-    const filePath = `items/${fileName}`;
+    let fileToUpload = file;
+    // تحويل تلقائي إلى WebP لتقليل الحجم
+    if (file.type !== 'image/webp') {
+        try {
+            fileToUpload = await convertToWebP(file);
+        } catch (e) {
+            console.warn("تعذر التحويل، سيتم الرفع بالتنسيق الأصلي:", e);
+        }
+    }
+
+    const cleanName = fileToUpload.name.replace(/[^a-zA-Z0-9.]/g, "_");
+    const filePath = `assets/${Date.now()}_${cleanName}`;
 
     // 1. رفع الملف إلى Bucket 'menu-images'
     const { data, error } = await supabase.storage
         .from('menu-images')
-        .upload(filePath, file, {
+        .upload(filePath, fileToUpload, {
             cacheControl: '3600',
-            upsert: false
+            upsert: true
         });
-
-    console.log("2. انتهت محاولة الرفع للستورج. النتيجة:", { data, error });
 
     if (error) throw error;
 
@@ -69,10 +117,76 @@ async function fetchItems() {
     }
 }
 
+/** جلب الصور من مكتبة الصور */
+async function fetchGallery() {
+    const container = document.getElementById('gallery-container');
+    if (!container) return;
+
+    const supabase = window.getSupabaseClient();
+    if (!supabase) return;
+
+    try {
+        const { data, error } = await supabase
+            .from('gallery')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+            container.innerHTML = '<p class="text-zinc-500 text-center col-span-full py-10">المكتبة فارغة</p>';
+            return;
+        }
+
+        container.innerHTML = data.map(img => `
+            <div class="relative group aspect-square rounded-2xl overflow-hidden border border-amber-500/20 bg-zinc-800">
+                <img src="${img.image_url}" class="w-full h-full object-cover" alt="${img.name}" loading="lazy">
+                <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                    <button onclick="deleteGalleryItem('${img.id}', '${img.image_url}')" class="p-2 bg-red-500 rounded-full text-white hover:bg-red-400 shadow-lg transition-transform hover:scale-110">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    } catch (err) {
+        console.error("خطأ في جلب المكتبة:", err);
+    }
+}
+
+/** حذف صورة من المكتبة والستورج */
+async function deleteGalleryItem(id, url) {
+    if (!confirm("هل أنت متأكد من حذف هذه الصورة نهائياً من المكتبة؟")) return;
+    
+    const supabase = window.getSupabaseClient();
+    if (!supabase) return;
+
+    try {
+        showAdminLoader();
+        
+        // 1. حذف من الجدول
+        const { error: dbError } = await supabase.from('gallery').delete().eq('id', id);
+        if (dbError) throw dbError;
+
+        // 2. محاولة الحذف من Storage باستخدام الدالة المحسنة
+        const path = storagePathFromPublicUrl(url);
+        if (path) {
+            await supabase.storage.from('menu-images').remove([path]);
+        }
+
+        fetchGallery();
+    } catch (err) {
+        console.error("خطأ في الحذف:", err);
+        alert("فشل الحذف: " + err.message);
+    } finally {
+        hideAdminLoader();
+    }
+}
+
 /** تشغيل النظام */
 function initAdmin() {
     hideAdminLoader();
     fetchItems();
+    fetchGallery();
 }
 
 window.addEventListener("supabaseReady", initAdmin);
@@ -81,3 +195,5 @@ if (document.readyState !== "loading") {
 }
 
 window.uploadItemImage = uploadItemImage;
+window.fetchGallery = fetchGallery;
+window.deleteGalleryItem = deleteGalleryItem;
