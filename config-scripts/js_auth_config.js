@@ -4,9 +4,9 @@
  */
 
 const AUTH_CONFIG = {
-    ADMIN_PASS: "12345",
-    WORKER_PASS: "54321",
-    DELIVERY_PASS: "67890",
+    ADMIN_PASS: (window.getEnv && window.getEnv("ADMIN_PASS")) || "12345",
+    WORKER_PASS: (window.getEnv && window.getEnv("WORKER_PASS")) || "54321",
+    DELIVERY_PASS: (window.getEnv && window.getEnv("DELIVERY_PASS")) || "67890",
 };
 
 /**
