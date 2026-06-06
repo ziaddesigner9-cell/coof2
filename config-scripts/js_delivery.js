@@ -61,11 +61,11 @@ function parseDeliveryDetails(text) {
     if (!text || !text.includes("توصيل")) return null;
     // الصيغة: توصيل - الاسم: زيد | الجوال: 05... | الموقع: رابط أو نص
     try {
-        const parts = text.split('|');
-        const name = parts[0]?.split('الاسم:')[1]?.trim() || "غير معروف";
-        const phone = parts[1]?.split('الجوال:')[1]?.trim() || "غير معروف";
-        const payment = parts[2]?.split('الدفع:')[1]?.trim() || "غير محدد";
-        const location = parts[3]?.split('الموقع:')[1]?.trim() || "";
+        const parts = text.split('|').map(p => p.trim());
+        const name = parts.find(p => p.includes("الاسم:"))?.split("الاسم:")[1]?.trim() || "غير معروف";
+        const phone = parts.find(p => p.includes("الجوال:"))?.split("الجوال:")[1]?.trim() || "غير معروف";
+        const payment = parts.find(p => p.includes("الدفع:"))?.split("الدفع:")[1]?.trim() || "غير محدد";
+        const location = parts.find(p => p.includes("الموقع:"))?.split("الموقع:")[1]?.trim() || "";
         return { name, phone, payment, location };
     } catch (e) {
         return { name: "خطأ في البيانات", phone: text, location: "" };
