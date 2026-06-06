@@ -173,10 +173,11 @@ async function deleteGalleryItem(id, url) {
         const { error: dbError } = await supabase.from('gallery').delete().eq('id', id);
         if (dbError) throw dbError;
 
-        // 2. محاولة الحذف من Storage باستخدام الدالة المحسنة
+        // 2. محاولة الحذف من Storage
         const path = storagePathFromPublicUrl(url);
         if (path) {
-            await supabase.storage.from('menu-images').remove([path]);
+            const { error: storageErr } = await supabase.storage.from('menu-images').remove([path]);
+            if (storageErr) console.warn("تنبيه: تم حذف السجل ولكن تعذر حذف الملف الفيزيائي:", storageErr.message);
         }
 
         fetchGallery();
@@ -188,11 +189,23 @@ async function deleteGalleryItem(id, url) {
     }
 }
 
+/** تحديث البيانات عند حدوث تغيير خارجي (Realtime) */
+function setupAdminRealtime() {
+    const client = window.getSupabaseClient();
+    if (!client) return;
+
+    client.channel('admin_changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'items' }, () => fetchItems())
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'gallery' }, () => fetchGallery())
+        .subscribe();
+}
+
 /** تشغيل النظام */
 function initAdmin() {
     hideAdminLoader();
     fetchItems();
     fetchGallery();
+    setupAdminRealtime();
 }
 
 window.addEventListener("supabaseReady", initAdmin);
