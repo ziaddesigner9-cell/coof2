@@ -91,7 +91,11 @@
                     if (dbError) throw dbError;
 
                     alert('تم الرفع والحفظ في المكتبة بنجاح! ✓');
-                    location.href = "manage-menu.html"; // التوجه لإضافة صنف جديد
+                    
+                    // إعادة تعيين الواجهة لرفع صورة أخرى
+                    imageInput.value = ""; 
+                    previewContainer.classList.add('hidden');
+                    imagePreview.src = "";
                 }
             } catch (err) {
                 alert('فشل الرفع: ' + err.message);
