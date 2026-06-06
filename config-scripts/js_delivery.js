@@ -3,6 +3,48 @@
  */
 
 let isFetching = false;
+let previousStatuses = new Map();
+let isFirstLoad = true;
+let audioContext = null;
+
+function initAudio() {
+    if (audioContext) return;
+    try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (AudioCtx) audioContext = new AudioCtx();
+    } catch (_) {}
+}
+
+function playReadyAlert() {
+    if (!audioContext) initAudio();
+    if (!audioContext) return;
+
+    if (audioContext.state === 'suspended') {
+        audioContext.resume().then(() => _playTone());
+    } else {
+        _playTone();
+    }
+}
+
+function _playTone() {
+    const now = audioContext.currentTime;
+    const osc = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+    
+    osc.connect(gain);
+    gain.connect(audioContext.destination);
+    
+    osc.type = 'sine';
+    // نغمة مزدوجة سريعة وصاعدة (تنبيه إيجابي)
+    osc.frequency.setValueAtTime(880, now); 
+    osc.frequency.exponentialRampToValueAtTime(1320, now + 0.15); 
+    
+    gain.gain.setValueAtTime(0.2, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+    
+    osc.start(now);
+    osc.stop(now + 0.5);
+}
 
 function parseItems(raw) {
     if (!raw) return [];
@@ -56,8 +98,20 @@ async function loadDeliveryOrders() {
             return;
         }
 
+        const currentOrders = orders || [];
+
+        // التحقق من تغير الحالة من ذهبي (preparing/pending) إلى أخضر (ready)
+        if (!isFirstLoad) {
+            currentOrders.forEach(order => {
+                const prevStatus = previousStatuses.get(order.id);
+                if (order.status === 'ready' && (prevStatus === 'pending' || prevStatus === 'preparing')) {
+                    playReadyAlert();
+                }
+            });
+        }
+
         // تصفية الطلبات التي هي "توصيل" فقط
-        const deliveryOnly = (orders || []).filter(o => o.table_no && o.table_no.includes("توصيل"));
+        const deliveryOnly = currentOrders.filter(o => o.table_no && o.table_no.includes("توصيل"));
 
         if (deliveryOnly.length === 0) {
             container.innerHTML = `
@@ -133,6 +187,12 @@ async function loadDeliveryOrders() {
                 ${actionContent}
             </div>`;
         }).join('');
+
+        // تحديث سجل الحالات للمرة القادمة
+        previousStatuses.clear();
+        currentOrders.forEach(o => previousStatuses.set(o.id, o.status));
+        isFirstLoad = false;
+
     } finally {
         isFetching = false;
     }
