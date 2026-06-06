@@ -32,6 +32,7 @@ const DEFAULT_APP_SETTINGS = {
         order_view_brand_ar: "كوفي 2",
         order_view_ready_msg: "✓ الطلب جاهز — تفضّل بالاستلام",
         order_view_completed_msg: "✓ شكراً لزيارتكم",
+        google_maps_review_url: "https://maps.google.com/?q=مقهى+السعادة",
     },
     /* UI / typography and code display settings */
     ui: {
