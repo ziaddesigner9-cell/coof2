@@ -5,6 +5,11 @@ DROP POLICY IF EXISTS "gallery_all_access" ON public.gallery;
 CREATE POLICY "gallery_all_access"
 ON public.gallery FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
 
+-- إنشاء الحاوية (Bucket) إذا لم تكن موجودة وتجعلها عامة (Public)
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('menu-images', 'menu-images', true)
+ON CONFLICT (id) DO NOTHING;
+
 -- منح صلاحيات الوصول الأساسية للمخطط لضمان قدرة النظام على القراءة والكتابة
 GRANT USAGE ON SCHEMA storage TO anon, authenticated;
 GRANT ALL ON TABLE storage.objects TO anon, authenticated;
