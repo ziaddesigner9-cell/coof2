@@ -278,10 +278,24 @@ function formatLocationInfo(text) {
     });
 }
 
+/** تحسين عرض مصدر الطلب (محلي أو توصيل) في القائمة */
+function formatOrderHeader(tableNo) {
+    if (!tableNo) return "—";
+    if (tableNo.includes("توصيل")) {
+        const parts = tableNo.split('|').map(p => p.trim());
+        const namePart = parts.find(p => p.includes("الاسم:"));
+        const name = namePart ? namePart.replace("توصيل - الاسم:", "").trim() : "طلب توصيل";
+        const paymentPart = parts.find(p => p.includes("الدفع:"));
+        const payment = paymentPart ? paymentPart.replace("الدفع:", "").trim() : "";
+        return `🚗 ${escapeHtml(name)} ${payment ? `<span class="text-[10px] bg-amber-500/20 px-2 py-0.5 rounded text-amber-500 mr-2">${escapeHtml(payment)}</span>` : ""}`;
+    }
+    return `طاولة ${escapeHtml(tableNo)}`;
+}
+
 function renderOrderCard(order, type) {
 	const items = parseItems(order.items);
     const tableRaw = order.table_no ?? "—";
-    const tableHtml = formatLocationInfo(escapeHtml(tableRaw));
+    const tableHtml = tableRaw.includes("توصيل") ? formatLocationInfo(escapeHtml(tableRaw)) : `طاولة ${escapeHtml(tableRaw)}`;
 	const priceText = `${parseFloat(order.total_price || 0).toFixed(2)} ريال`;
 
 	if (type === "active") {
@@ -300,7 +314,7 @@ function renderOrderCard(order, type) {
 			</div>
 			${renderTimeBadges(order, "active")}
 			<ul class="my-4 space-y-2 border-y border-amber-800/30 py-3">${renderItemsList(items)}</ul>
-			<button type="button" onclick="markAsReady('${order.id}')" <!-- Already safe -->
+			<button type="button" onclick="markAsReady('${order.id}')"
 				class="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-4 rounded-xl font-bold text-lg">
 				تم التجهيز ✓
 			</button>
@@ -317,7 +331,7 @@ function renderOrderCard(order, type) {
 			<p class="text-amber-400 text-sm font-bold mb-2 mt-1">المجموع: ${priceText}</p>
 			${renderTimeBadges(order, "pickup")}
 			<ul class="mb-3 space-y-1">${renderItemsList(items)}</ul>
-			<button type="button" onclick="markAsPickedUp('${order.id}')" <!-- Already safe -->
+			<button type="button" onclick="markAsPickedUp('${order.id}')"
 				class="w-full bg-amber-600 hover:bg-amber-500 text-black py-3 rounded-xl font-bold">
 				تم الاستلام ✓
 			</button>
@@ -396,11 +410,11 @@ async function loadOrders() {
 		html += pendingList
 			.map(
 				(o) => `
-			<button type="button" onclick="openOrder('${o.id}')" <!-- Already safe -->
+			<button type="button" onclick="openOrder('${o.id}')"
 				class="w-full text-right p-4 rounded-xl border border-amber-700/40 bg-zinc-950 hover:border-amber-500 transition ${activeOrderId ? "" : "animate-pulse"}">
 				<div class="flex justify-between items-start gap-2">
 					<span class="text-amber-400 font-bold">🆕 طلب جديد</span>
-					<span class="text-zinc-400 text-sm">طاولة ${escapeHtml(o.table_no ?? "—")}</span>
+					<span class="text-zinc-400 text-sm">${formatOrderHeader(o.table_no)}</span>
 				</div>
 				${renderTimeBadges(o, "pending")}
 			</button>`
