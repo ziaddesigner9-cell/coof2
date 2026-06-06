@@ -141,28 +141,14 @@
                 btn.textContent = "جاري الحفظ...";
             }
             try {
-                // read UI controls into settings.ui
-                settings.ui = settings.ui || {};
-                const fsEl = document.getElementById('ui_font_size');
-                const bwEl = document.getElementById('ui_box_width');
-                const bhEl = document.getElementById('ui_box_height');
-                const gcEl = document.getElementById('ui_gold_color');
-                const scEl = document.getElementById('ui_silver_color');
-                const gotEl = document.getElementById('ui_gold_on_top');
-                const sctEl = document.getElementById('ui_show_code_text');
-
-                settings.ui.text_font_size = fsEl ? parseInt(fsEl.value || 16, 10) : 16;
-                settings.ui.box_width = bwEl ? parseInt(bwEl.value || 220, 10) : 220;
-                settings.ui.box_height = bhEl ? parseInt(bhEl.value || 220, 10) : 220;
-                settings.ui.gold_color = gcEl ? gcEl.value : '#D4AF37';
-                settings.ui.silver_color = scEl ? scEl.value : '#C0C0C0';
-                settings.ui.gold_on_top = gotEl ? gotEl.checked : false;
-                settings.ui.show_code_text = sctEl ? sctEl.checked : false;
-
+                // التأكد من عدم مسح إعدادات UI السابقة بما أن الحقول غير موجودة في هذه الصفحة
+                const currentSettings = await loadAppSettings(true);
+                settings.ui = currentSettings.ui || settings.ui;
+                
                 await saveAppSettings(settings);
-                alert("تم حفظ المظهر بنجاح!");
+                alert("تم حفظ الصور وتحديث المظهر بنجاح! ✓");
             } catch (e) {
-                alert("فشل الحفظ: " + e.message + "\n\nشغّل supabase-settings-migration.sql في Supabase");
+                alert("فشل الحفظ: " + e.message + "\n\nتأكد من تشغيل ملف supabase-app-settings-migration.sql في Supabase");
             } finally {
                 if (btn) {
                     btn.disabled = false;

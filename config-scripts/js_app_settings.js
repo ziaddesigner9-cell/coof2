@@ -97,11 +97,12 @@ async function saveAppSettings(settings) {
     if (!client) throw new Error("Supabase غير متصل");
 
     const payload = mergeSettings(settings);
-    const { error } = await client.from("app_settings").upsert({
-        key: APP_SETTINGS_KEY,
-        value: payload,
-        updated_at: new Date().toISOString(),
-    });
+    const { error } = await client
+        .from("app_settings")
+        .upsert(
+            { key: APP_SETTINGS_KEY, value: payload, updated_at: new Date().toISOString() },
+            { onConflict: 'key' }
+        );
 
     if (error) throw error;
     localStorage.setItem(APP_SETTINGS_CACHE, JSON.stringify(payload));
