@@ -278,16 +278,26 @@ function formatLocationInfo(text) {
     });
 }
 
+/** تحليل تفاصيل التوصيل لاستخدامها في البطاقات بشكل منظم */
+function parseDeliveryString(text) {
+    if (!text || !text.includes("توصيل")) return null;
+    try {
+        const parts = text.split('|').map(p => p.trim());
+        const name = parts.find(p => p.includes("الاسم:"))?.split("الاسم:")[1]?.trim() || "غير معروف";
+        const phone = parts.find(p => p.includes("الجوال:"))?.split("الجوال:")[1]?.trim() || "";
+        const payment = parts.find(p => p.includes("الدفع:"))?.split("الدفع:")[1]?.trim() || "";
+        const location = parts.find(p => p.includes("الموقع:"))?.split("الموقع:")[1]?.trim() || "";
+        return { name, phone, payment, location };
+    } catch (e) { return null; }
+}
+
 /** تحسين عرض مصدر الطلب (محلي أو توصيل) في القائمة */
 function formatOrderHeader(tableNo) {
     if (!tableNo) return "—";
     if (tableNo.includes("توصيل")) {
-        const parts = tableNo.split('|').map(p => p.trim());
-        const namePart = parts.find(p => p.includes("الاسم:"));
-        const name = namePart ? namePart.replace("توصيل - الاسم:", "").trim() : "طلب توصيل";
-        const paymentPart = parts.find(p => p.includes("الدفع:"));
-        const payment = paymentPart ? paymentPart.replace("الدفع:", "").trim() : "";
-        return `🚗 ${escapeHtml(name)} ${payment ? `<span class="text-[10px] bg-amber-500/20 px-2 py-0.5 rounded text-amber-500 mr-2">${escapeHtml(payment)}</span>` : ""}`;
+        const info = parseDeliveryString(tableNo);
+        if (!info) return "🚗 طلب توصيل";
+        return `🚗 ${escapeHtml(info.name)} ${info.payment ? `<span class="text-[10px] bg-amber-500/20 px-2 py-0.5 rounded text-amber-500 mr-2">${escapeHtml(info.payment)}</span>` : ""}`;
     }
     return `طاولة ${escapeHtml(tableNo)}`;
 }
@@ -295,7 +305,19 @@ function formatOrderHeader(tableNo) {
 function renderOrderCard(order, type) {
 	const items = parseItems(order.items);
     const tableRaw = order.table_no ?? "—";
-    const tableHtml = tableRaw.includes("توصيل") ? formatLocationInfo(escapeHtml(tableRaw)) : `طاولة ${escapeHtml(tableRaw)}`;
+    const isDelivery = tableRaw.includes("توصيل");
+    const deliveryInfo = isDelivery ? parseDeliveryString(tableRaw) : null;
+    
+    // العنوان الأساسي النظيف (اسم الزبون أو رقم الطاولة)
+    const titleHtml = formatOrderHeader(tableRaw);
+    
+    // تفاصيل إضافية للتوصيل (تظهر داخل البطاقة بشكل أنيق)
+    const detailsHtml = deliveryInfo ? `
+        <div class="mt-2 text-xs text-amber-200/60 bg-black/30 p-2 rounded-lg border border-amber-900/20">
+            <p>📞 الجوال: <span class="text-amber-400 font-mono">${escapeHtml(deliveryInfo.phone)}</span></p>
+            <div class="mt-1">${formatLocationInfo(escapeHtml(deliveryInfo.location))}</div>
+        </div>` : "";
+
 	const priceText = `${parseFloat(order.total_price || 0).toFixed(2)} ريال`;
 
 	if (type === "active") {
@@ -303,9 +325,10 @@ function renderOrderCard(order, type) {
 		<div class="rounded-2xl border-2 border-amber-500 bg-zinc-900 p-5 shadow-lg">
 			<div class="flex justify-between items-start gap-3 mb-3">
 				<div>
-					<span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-amber-600 text-black mb-2">قيد التجهيز</span> <!-- Already safe -->
-                    <h2 class="text-xl font-bold text-amber-400">${tableHtml}</h2>
+					<span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-amber-600 text-black mb-2">قيد التجهيز</span>
+                    <h2 class="text-xl font-bold text-amber-400">${titleHtml}</h2>
 					<p class="text-amber-200/70 text-xl font-bold mt-1">المجموع: ${priceText}</p>
+                    ${detailsHtml}
 				</div>
 				<div class="text-center shrink-0">
 					<p class="text-xs text-zinc-500 mb-1">مؤقت التجهيز</p>
@@ -326,8 +349,9 @@ function renderOrderCard(order, type) {
 		<div class="p-4 rounded-xl border border-emerald-700/40 bg-emerald-950/30">
 			<div class="flex justify-between items-center mb-2">
 				<span class="text-emerald-400 font-bold">📦 جاهز</span>
-				<span class="text-zinc-400 text-sm">${tableHtml}</span>
+				<span class="text-zinc-400 text-sm">${titleHtml}</span>
 			</div>
+            ${detailsHtml}
 			<p class="text-amber-400 text-sm font-bold mb-2 mt-1">المجموع: ${priceText}</p>
 			${renderTimeBadges(order, "pickup")}
 			<ul class="mb-3 space-y-1">${renderItemsList(items)}</ul>
@@ -342,7 +366,7 @@ function renderOrderCard(order, type) {
 	<div class="p-3 rounded-lg border border-zinc-800 bg-zinc-950/50 opacity-80">
 		<div class="flex justify-between text-sm">
 			<span class="text-zinc-500">✓ مسلّم</span>
-			<span class="text-zinc-400">${tableHtml} · المجموع: ${priceText}</span>
+			<span class="text-zinc-400">${titleHtml} · المجموع: ${priceText}</span>
 		</div>
 	</div>`;
 }
@@ -390,13 +414,18 @@ async function loadOrders() {
 	orders.forEach((o) => knownOrderIds.add(o.id));
 	firstLoad = false;
 
-	const pendingList = sortNewestFirst(orders.filter((o) => o.status === "pending"));
-	const activeOrder =
-		activeOrderId && orders.find((o) => o.id === activeOrderId && o.status === "preparing");
+	// تحديد الطلب النشط: نقبل الطلب سواء كان قيد التجهيز أو لا يزال "جديد" في قاعدة البيانات لسد فجوة زمن التحديث
+	const activeOrder = activeOrderId 
+		? orders.find((o) => o.id === activeOrderId && (o.status === "preparing" || o.status === "pending"))
+		: null;
+
+	// قائمة الطلبات الجديدة (مع استثناء الطلب الذي فتحه العامل حالياً لكي لا يظهر مرتين)
+	const pendingList = sortNewestFirst(orders.filter((o) => o.status === "pending" && o.id !== activeOrderId));
 	const pickupList = sortNewestFirst(orders.filter((o) => o.status === "ready"));
 	const deliveredList = Array.isArray(deliveredRes.data) ? deliveredRes.data : [];
 
-	if (!activeOrder && activeOrderId) closeActive();
+	// نغلق حالة "النشط" فقط إذا لم يعد الطلب موجوداً في القائمة النشطة أو انتقل لخانة الاستلام (Ready)
+	if (activeOrderId && (!activeOrder || activeOrder.status === "ready")) closeActive();
 
 	let html = "";
 
