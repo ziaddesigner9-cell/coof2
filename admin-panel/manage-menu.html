@@ -46,42 +46,62 @@
         async function loadGalleryForMenu() {
             const client = window.getSupabaseClient?.();
             if (!client) return;
+            
             const { data, error } = await client.from("gallery").select("*");
-            if (error) return console.error("خطأ في جلب الصور:", error);
-
+            
             const grid = document.getElementById("galleryGrid");
-            if (!grid) return;
-            grid.innerHTML = "";
-            (data || []).forEach((img) => {
-                grid.innerHTML += `
-                    <img src="${img.image_url}" onclick="selectImage('${img.image_url}', this)" 
-                         class="cursor-pointer rounded border-2 border-transparent hover:border-orange-500 w-full h-16 object-cover">`;
-            });
+            if (error) {
+                if (grid) grid.innerHTML = `<p class="col-span-full text-red-400 text-center py-10">${error.message}</p>`;
+                return;
+            }
+
+            if (!data || data.length === 0) {
+                if (grid) grid.innerHTML = `<p class="col-span-full text-zinc-600 text-center py-10">لا توجد صور. ارفع صوراً أولاً.</p>`;
+                return;
+            }
+
+            if (grid) {
+                grid.innerHTML = data.map(img => `
+                    <div class="relative aspect-square">
+                        <img src="${img.image_url}" onclick="selectImage('${img.image_url}', this)" 
+                             class="gallery-img cursor-pointer rounded-xl border-4 border-transparent hover:border-amber-500/50 w-full h-full object-cover transition-all">
+                    </div>
+                `).join('');
+            }
         }
-        window.addEventListener("supabaseReady", loadGalleryForMenu);
-        if (window.getSupabaseClient?.()) loadGalleryForMenu();
 
         function selectImage(url, element) {
             selectedImageUrl = url;
-            document.querySelectorAll('#galleryGrid img').forEach(img => img.classList.remove('border-orange-500'));
-            element.classList.add('border-orange-500');
+            document.querySelectorAll('.gallery-img').forEach(img => {
+                img.classList.remove('border-amber-500');
+                img.classList.add('border-transparent');
+            });
+            element.classList.remove('border-transparent');
+            element.classList.add('border-amber-500');
         }
 
         async function handleSave() {
+            const nameEl = document.getElementById('name');
+            const priceEl = document.getElementById('price');
+            const catEl = document.getElementById('category');
+
+            if (!nameEl?.value.trim()) return alert("يرجى إدخال اسم الصنف");
+            if (!priceEl?.value || parseFloat(priceEl.value) <= 0) return alert("يرجى إدخال سعر صحيح");
             if (!selectedImageUrl) return alert("يرجى اختيار صورة من المكتبة أولاً");
 
             const btn = document.getElementById('saveBtn');
+            const loader = document.getElementById('admin-loader');
+
             if (btn) {
                 btn.disabled = true;
                 btn.innerText = "جاري الحفظ...";
             }
+            if (loader) loader.classList.remove('hidden');
 
             try {
                 const client = window.getSupabaseClient?.();
                 if (!client) throw new Error("قاعدة البيانات غير متصلة");
-                const nameEl = document.getElementById('name');
-                const priceEl = document.getElementById('price');
-                const catEl = document.getElementById('category');
+
                 const { error } = await client.from("items").insert([{
                     name: nameEl ? nameEl.value : "",
                     price: priceEl ? parseFloat(priceEl.value) : 0,
@@ -97,10 +117,15 @@
                 alert("فشل الحفظ: " + error.message);
                 if (btn) {
                     btn.disabled = false;
-                    btn.innerText = "حفظ الصنف";
+                    btn.innerText = "حفظ الصنف في القائمة ✓";
                 }
+            } finally {
+                if (loader) loader.classList.add('hidden');
             }
         }
+
+        window.addEventListener("supabaseReady", loadGalleryForMenu);
+        if (window.getSupabaseClient?.()) loadGalleryForMenu();
     </script>
 </body>
 </html>
