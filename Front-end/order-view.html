@@ -144,8 +144,10 @@
             const items = parseItems(order.items);
             const list = document.getElementById("orderItemsList");
             const priceDisplay = `${parseFloat(order.total_price || 0).toFixed(2)} ريال`;
+            const tableRaw = order.table_no ?? "—";
+            const prefix = tableRaw.includes("توصيل") ? "طلب" : "طاولة";
             document.getElementById("orderMeta").textContent =
-                `طاولة ${order.table_no ?? "—"} · ${priceDisplay}`;
+                `${prefix} ${tableRaw} · ${priceDisplay}`;
 
             if (items.length === 0) {
                 list.innerHTML =
