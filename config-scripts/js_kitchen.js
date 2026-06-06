@@ -499,8 +499,9 @@ async function updateOrder(orderId, payload, expectedStatus) {
         console.log("تم التحديث بنجاح في قاعدة البيانات.");
         return { ok: true, data };
     }
-    console.error("فشل التحديث:", error?.message || "لم يتم تحديث أي صفوف (ربما تغيرت حالة الطلب بالفعل)");
-    return { ok: false, error: error?.message || "فشل التحديث" };
+    const errorMessage = String(error?.message || "لم يتم تحديث أي صفوف (ربما تغيرت حالة الطلب بالفعل)");
+    console.error("فشل التحديث:", errorMessage);
+    return { ok: false, error: errorMessage };
 }
 
 async function openOrder(orderId) {
