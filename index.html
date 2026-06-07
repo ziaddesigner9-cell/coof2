@@ -22,6 +22,14 @@
     <link rel="stylesheet" href="config-scripts/theme.css" />
     <style>
         body.has-bottom-nav { padding-bottom: 5.5rem; }
+        
+        /* تحسين استجابة اللمس وإلغاء تأخير الـ 300ms في الآيفون */
+        a, button, .category-row, [role="button"], [onclick] {
+            touch-action: manipulation;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+
         #app-bg-layer {
             position: fixed;
             inset: 0;

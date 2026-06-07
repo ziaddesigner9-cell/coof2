@@ -1,5 +1,6 @@
-.vscode/
-*.log
+# ملفات النظام
 .DS_Store
-thumbs.db
-desktop.ini
+Thumbs.db
+
+# ملفات البيئة الحساسة (إذا وجدت مستقبلاً)
+.env
