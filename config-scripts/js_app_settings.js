@@ -3,6 +3,7 @@
  */
 const APP_SETTINGS_KEY = "app_config";
 const APP_SETTINGS_CACHE = "coof2_app_settings_cache";
+let globalSettingsCache = null; // مخزن مؤقت في الذاكرة لسرعة الوصول الاستجابة
 
 const DEFAULT_APP_SETTINGS = {
     background_image: "",
@@ -64,11 +65,12 @@ function mergeSettings(raw) {
     // ضمان دمج العبارات الجديدة (Feedback) حتى لو لم تكن موجودة في البيانات القادمة
     if (raw.phrases && typeof raw.phrases === "object") {
         // الحفاظ على العبارات الافتراضية إذا كانت فارغة في البيانات القادمة
+        const mergedPhrases = { ...base.phrases, ...raw.phrases };
         for (let i = 1; i <= 6; i++) {
             const key = `cart_feedback_${i}`;
-            if (!raw.phrases[key]) raw.phrases[key] = DEFAULT_APP_SETTINGS.phrases[key];
+            if (!mergedPhrases[key]) mergedPhrases[key] = DEFAULT_APP_SETTINGS.phrases[key];
         }
-        base.phrases = { ...base.phrases, ...raw.phrases };
+        base.phrases = mergedPhrases;
     }
     // merge ui settings
     if (raw.ui && typeof raw.ui === "object") base.ui = { ...base.ui, ...raw.ui };
@@ -76,10 +78,16 @@ function mergeSettings(raw) {
 }
 
 async function loadAppSettings(forceRemote = false) {
+    // إذا كانت الإعدادات موجودة في الذاكرة، نرجعها فوراً (الأسرع على الإطلاق)
+    if (globalSettingsCache && !forceRemote) return globalSettingsCache;
+
     if (!forceRemote) {
         try {
             const cached = localStorage.getItem(APP_SETTINGS_CACHE);
-            if (cached) return mergeSettings(JSON.parse(cached));
+            if (cached) {
+                globalSettingsCache = mergeSettings(JSON.parse(cached));
+                return globalSettingsCache;
+            }
         } catch (_) {}
     }
 
@@ -87,21 +95,26 @@ async function loadAppSettings(forceRemote = false) {
         typeof window.getSupabaseClient === "function" ? window.getSupabaseClient() : null;
     if (!client) return mergeSettings(null);
 
-    // جلب البيانات من السيرفر في الخلفية لتحديث الكاش للمرة القادمة
-    client.from("app_settings")
-        .select("value")
-        .eq("key", APP_SETTINGS_KEY)
-        .maybeSingle()
-        .then(({ data, error }) => {
-            if (!error && data?.value) {
-                const merged = mergeSettings(data.value);
-                localStorage.setItem(APP_SETTINGS_CACHE, JSON.stringify(merged));
-            }
-        });
+    try {
+        const { data, error } = await client.from("app_settings")
+            .select("value")
+            .eq("key", APP_SETTINGS_KEY)
+            .maybeSingle();
 
-    // نعود فوراً بالكاش المتاح (أو الافتراضي) لمنع تأخر الواجهة
-    const cached = localStorage.getItem(APP_SETTINGS_CACHE);
-    return mergeSettings(cached ? JSON.parse(cached) : null);
+        if (!error && data?.value) {
+            globalSettingsCache = mergeSettings(data.value);
+            localStorage.setItem(APP_SETTINGS_CACHE, JSON.stringify(globalSettingsCache));
+            return globalSettingsCache;
+        }
+    } catch (e) {
+        console.error("خطأ أثناء جلب الإعدادات من سوبابيس:", e);
+    }
+
+    // العودة للقيم الافتراضية كخيار أخير
+    if (!globalSettingsCache) {
+        globalSettingsCache = mergeSettings(null);
+    }
+    return globalSettingsCache;
 }
 
 async function saveAppSettings(settings) {
@@ -116,6 +129,7 @@ async function saveAppSettings(settings) {
             { key: APP_SETTINGS_KEY, value: payload, updated_at: new Date().toISOString() },
             { onConflict: 'key' }
         );
+    globalSettingsCache = payload;
 
     if (error) throw error;
     localStorage.setItem(APP_SETTINGS_CACHE, JSON.stringify(payload));

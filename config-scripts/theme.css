@@ -76,6 +76,7 @@ body.app-theme {
     white-space: nowrap;
     text-align: center;
     min-width: max-content;
+    will-change: transform, opacity;
     animation: phrase-fall 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
 

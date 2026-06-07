@@ -11,17 +11,17 @@ function escapeHtml(value) {
         .replace(/'/g, "&#039;");
 }
 
+let isMenuLoading = false;
 async function loadMenu() {
+    if (isMenuLoading) return; // منع التكرار
+    isMenuLoading = true;
+
     const menuContainer = document.getElementById("menu-items");
-    if (!menuContainer) return;
+    if (!menuContainer) { isMenuLoading = false; return; }
 
     const supabaseClient =
         typeof window.getSupabaseClient === "function" ? window.getSupabaseClient() : null;
-    if (!supabaseClient) {
-        // لا نطبع خطأ هنا لأننا ننتظر حدث supabaseReady
-        // سيتم استدعاء loadMenu تلقائياً مرة أخرى عند جاهزية سوبابيس
-        return;
-    }
+    if (!supabaseClient) { isMenuLoading = false; return; }
 
     const urlParams = new URLSearchParams(window.location.search);
     const category = urlParams.get("cat");
@@ -82,9 +82,12 @@ async function loadMenu() {
             .join("");
 
         updateCartCount();
+        await loadAppSettings(); // تحميل مسبق للإعدادات لضمان سرعة العبارات
     } catch (err) {
         console.error("فشل جلب الأصناف:", err);
         menuContainer.innerHTML = "<p class='text-center text-red-400 p-4'>تعذر تحميل الأصناف.</p>";
+    } finally {
+        isMenuLoading = false;
     }
 }
 
@@ -105,9 +108,9 @@ function playCartSound() {
 /** إظهار عبارة عشوائية متساقطة من الإعدادات */
 async function showCartFeedback() {
     let text = "تمت الإضافة للسلة"; // نص احتياطي في حال فشل التحميل
-    
+
     try {
-        const settings = await loadAppSettings();
+        const settings = await loadAppSettings(); // سيجلبها من الذاكرة فوراً الآن
         const phrases = [
             phrase(settings, 'cart_feedback_1'),
             phrase(settings, 'cart_feedback_2'),
@@ -165,10 +168,14 @@ function updateCartCount() {
     }
     if (typeof window.updateCartBadge === "function") window.updateCartBadge();
 }
+
+let isMenuInitialized = false;
 document.addEventListener("DOMContentLoaded", () => {
-    loadMenu();
+    if (isMenuInitialized) return;
+    isMenuInitialized = true;
+    if (window.getSupabaseClient()) loadMenu();
     window.addEventListener("supabaseReady", loadMenu);
-    
+
     document.getElementById("menu-items")?.addEventListener("click", (e) => {
         const btn = e.target.closest(".add-to-cart-btn");
         if (btn) {

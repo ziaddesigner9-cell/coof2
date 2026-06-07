@@ -167,14 +167,16 @@
     <script src="config-scripts/js_home.js"></script>
     <script src="config-scripts/bottom-nav.js"></script>
     <script>
+        let isHomeBooted = false;
         async function bootHome() {
+            if (isHomeBooted) return;
+            isHomeBooted = true;
             const s = await loadAppSettings();
             applyHomeSettings(s);
         }
-        // التشغيل
         document.addEventListener("DOMContentLoaded", () => {
-            bootHome();
-        }); // Already safe
+            if (window.getSupabaseClient()) bootHome();
+        });
         window.addEventListener("supabaseReady", bootHome); // Already safe
     </script>
 </body>
