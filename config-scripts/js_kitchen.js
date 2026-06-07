@@ -1,5 +1,5 @@
 /**
- * لوحة العامل (المطبخ): النسخة الكاملة والنهائية المتوافقة
+ * لوحة العامل (المطبخ): النسخة الكاملة والمصلحة من تعليق الاتصال والطلبات السابقة
  */
 
 let activeOrderId = null;
@@ -213,7 +213,7 @@ async function markAsReady(orderId) {
         clearLocalPreparing(orderId);
         clearOpenedAt(orderId);
         localStorage.removeItem(`kitchen_timer_${orderId}`);
-        if (activeOrderId === orderId) closeActive();
+        if (String(activeOrderId) === String(orderId)) closeActive();
         loadOrders();
     } else {
         alert("فشل تحديث حالة الطلب إلى جاهز: " + result.error);
@@ -352,11 +352,15 @@ function renderOrderCard(order, type) {
     }
 
     if (type === "finished") {
+        let displayStatus = "جاهز 🚚";
+        if (order.status === "completed") displayStatus = "تم التسليم ✓";
+        if (order.status === "out_for_delivery") displayStatus = "مع السائق 🚴";
+
         return `
-        <div class="p-3 rounded-xl border border-zinc-800/50 bg-zinc-900/30 opacity-70 text-sm">
+        <div class="p-3 rounded-xl border border-zinc-800/50 bg-zinc-900/30 opacity-80 text-sm">
             <div class="flex justify-between items-center mb-1">
                 <div class="flex items-center gap-2">
-                    <span class="text-emerald-500 text-xs">✓</span>
+                    <span class="text-emerald-500 text-xs font-bold">${displayStatus}</span>
                     <span class="text-zinc-300 font-bold">${titleHtml}</span>
                 </div>
                 <span class="text-zinc-500 text-[10px]">${formatClock(order.created_at)}</span>
@@ -390,7 +394,6 @@ async function loadOrders() {
     }
 
     try {
-        // جلب الطلبات النشطة والمنتهية حديثاً (بحد أقصى 40 طلب لضمان السرعة)
         const { data: ordersData, error: activeResError } = await client
             .from("orders")
             .select("*")
@@ -400,6 +403,7 @@ async function loadOrders() {
         if (activeResError) {
             console.error("خطأ أثناء جلب الطلبات:", activeResError.message);
             container.innerHTML = '<p class="text-red-400 text-center p-8">تعذر تحميل الطلبات</p>';
+            isFetching = false;
             return;
         }
 
@@ -414,15 +418,17 @@ async function loadOrders() {
         if (Array.isArray(orders)) orders.forEach((o) => knownOrderIds.add(o.id));
         firstLoad = false;
 
-        let activeOrder = activeOrderId ? orders.find((o) => String(o.id) === String(activeOrderId)) : null;
+        // التصحيح الذكي: لا نعتبر الطلب نشطاً إلا لو كانت حالته فعلاً معلق أو قيد التحضير
+        let activeOrder = activeOrderId ? orders.find((o) => String(o.id) === String(activeOrderId) && ["pending", "preparing"].includes(o.status)) : null;
 
-        if (activeOrder && !activeOrderId) {
-            activeOrderId = activeOrder.id;
-            localStorage.setItem("kitchen_active_order", activeOrderId);
+        // في حال تم تغيير حالته خارجياً، نقوم بمسحه فوراً من الذاكرة النشطة
+        if (activeOrderId && !activeOrder) {
+            activeOrderId = null;
+            localStorage.removeItem("kitchen_active_order");
         }
 
-        const pendingList = sortNewestFirst(orders.filter((o) => (o.status === "pending" || (o.status === "preparing" && o.id !== activeOrderId))));
-        const finishedList = sortNewestFirst(orders.filter((o) => ["ready", "out_for_delivery", "completed"].includes(o.status))).slice(0, 8);
+        const pendingList = sortNewestFirst(orders.filter((o) => (o.status === "pending" || (o.status === "preparing" && String(o.id) !== String(activeOrderId)))));
+        const finishedList = sortNewestFirst(orders.filter((o) => ["ready", "out_for_delivery", "completed"].includes(o.status))).slice(0, 10);
 
         let html = ''; 
 
@@ -444,7 +450,7 @@ async function loadOrders() {
 
         if (finishedList.length > 0) {
             html += `<div class="mt-10 pt-6 border-t border-zinc-800/60 space-y-3">
-                        <h3 class="text-zinc-500 text-[11px] font-black uppercase tracking-widest px-1">طلبات سابقة تم تجهيزها</h3>`;
+                        <h3 class="text-zinc-400 text-[12px] font-black uppercase tracking-widest px-1">📦 طلبات سابقة تم تجهيزها</h3>`;
             html += finishedList.map((o) => renderOrderCard(o, "finished")).join("");
             html += `</div>`;
         }
@@ -527,7 +533,6 @@ function initKitchen() {
 
 window.openOrder = openOrder;
 window.markAsReady = markAsReady;
-window.markAsPickedUp = markAsPickedUp;
 window.closeActive = closeActive;
 
 document.addEventListener("DOMContentLoaded", () => {
