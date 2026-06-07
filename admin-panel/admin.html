@@ -16,24 +16,72 @@
     </div>
 
     <script>
-        // جلب الطلبات المفتوحة فقط
+        // دالة آمنة لجلب عميل Supabase المستقر في مشروعك
+        function getClient() {
+            if (window.supabase) return window.supabase;
+            if (typeof window.getSupabaseClient === "function") return window.getSupabaseClient();
+            return null;
+        }
+
+        // جلب الطلبات المفتوحة فقط (بأداء خفيف ومستقر)
         async function fetchLiveOrders() {
-            const { data } = await window.supabase
+            const client = getClient();
+            if (!client) return;
+
+            const { data, error } = await client
                 .from('orders')
                 .select('*')
-                .eq('status', 'pending');
+                .eq('status', 'pending')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error("خطأ أثناء تحديث شاشة المراقبة:", error.message);
+                return;
+            }
 
             const container = document.getElementById('live-orders');
             if (!container) return;
+            
             const rows = Array.isArray(data) ? data : [];
-            container.innerHTML = rows.length ? rows.map(o => `
-                <div class="bg-white p-4 rounded-xl shadow">
-                    <p class="font-bold">طاولة رقم: ${o.table_no ?? o.table_number ?? '---'}</p>
-                    <p class="text-sm text-gray-500">تم الطلب منذ: ${new Date(o.created_at).toLocaleTimeString()}</p>
-                </div>
-            `).join('') : '<p>لا توجد طلبات معلقة حالياً.</p>';
+            
+            container.innerHTML = rows.length ? rows.map(o => {
+                const tableRaw = o.table_no ?? o.table_number ?? '---';
+                // فحص إذا كان الطلب توصيل أو طاولة محلي لتنسيق العرض
+                const isDelivery = tableRaw.includes("توصيل");
+                const displayName = isDelivery ? "🚗 طلب توصيل خارجي" : `🍽️ طاولة رقم: ${tableRaw}`;
+
+                return `
+                    <div class="bg-white p-4 rounded-xl shadow border-r-4 ${isDelivery ? 'border-blue-500' : 'border-amber-500'}">
+                        <p class="font-bold text-lg text-gray-800">${displayName}</p>
+                        <p class="text-sm text-gray-500 mt-1">🕒 وقت الطلب: ${new Date(o.created_at).toLocaleTimeString('ar-SA', {hour: '2-digit', minute:'2-digit'})}</p>
+                    </div>
+                `;
+            }).join('') : `
+                <div class="text-center py-12 text-gray-400">
+                    <p class="text-xl">👍 لا توجد طلبات معلقة حالياً.</p>
+                </div>`;
         }
-        window.addEventListener('DOMContentLoaded', fetchLiveOrders);
+
+        // تفعيل الاستماع الفوري والتحديث التلقائي (Realtime)
+        function initLiveMonitor() {
+            fetchLiveOrders();
+
+            const client = getClient();
+            if (client) {
+                // تحديث الشاشة فوراً عند حدوث أي تغيير في قاعدة البيانات
+                client.channel('live_monitor_changes')
+                    .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
+                        fetchLiveOrders();
+                    })
+                    .subscribe();
+            }
+        }
+
+        // التشغيل الآمن فور الجاهزية
+        document.addEventListener('DOMContentLoaded', () => {
+            if (getClient()) initLiveMonitor();
+            window.addEventListener("supabaseReady", initLiveMonitor);
+        });
     </script>
 </body>
 </html>

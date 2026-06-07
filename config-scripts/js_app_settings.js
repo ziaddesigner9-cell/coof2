@@ -60,7 +60,14 @@ function mergeSettings(raw) {
     if (raw.category_hot_image) base.category_hot_image = raw.category_hot_image;
     if (raw.category_cold_image) base.category_cold_image = raw.category_cold_image;
     if (raw.category_dessert_image) base.category_dessert_image = raw.category_dessert_image;
+    
+    // ضمان دمج العبارات الجديدة (Feedback) حتى لو لم تكن موجودة في البيانات القادمة
     if (raw.phrases && typeof raw.phrases === "object") {
+        // الحفاظ على العبارات الافتراضية إذا كانت فارغة في البيانات القادمة
+        for (let i = 1; i <= 6; i++) {
+            const key = `cart_feedback_${i}`;
+            if (!raw.phrases[key]) raw.phrases[key] = DEFAULT_APP_SETTINGS.phrases[key];
+        }
         base.phrases = { ...base.phrases, ...raw.phrases };
     }
     // merge ui settings
