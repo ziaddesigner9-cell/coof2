@@ -57,3 +57,27 @@ body.app-theme {
     border-color: rgba(245, 215, 110, 0.75);
     box-shadow: 0 6px 28px rgba(232, 184, 74, 0.15);
 }
+
+/* حركة العبارات المتساقطة */
+@keyframes phrase-fall {
+    0% { transform: translate(-50%, -20px); opacity: 0; }
+    20% { transform: translate(-50%, 20px); opacity: 1; }
+    80% { transform: translate(-50%, 30px); opacity: 1; }
+    100% { transform: translate(-50%, 60px); opacity: 0; }
+}
+
+.falling-phrase {
+    position: fixed;
+    top: 15%;
+    left: 50%;
+    z-index: 9999;
+    pointer-events: none;
+    animation: phrase-fall 2s ease-out forwards;
+}
+
+/* حركة اهتزاز السلة */
+@keyframes cart-shake {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+}
+.cart-animate { animation: cart-shake 0.4s cubic-bezier(.36,.07,.19,.97); }

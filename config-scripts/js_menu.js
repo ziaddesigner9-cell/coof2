@@ -88,6 +88,45 @@ async function loadMenu() {
     }
 }
 
+/** تشغيل صوت خفيف عند الإضافة */
+function playCartSound() {
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.frequency.setValueAtTime(880, ctx.currentTime);
+        gain.gain.setValueAtTime(0.1, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+        osc.start(); osc.stop(ctx.currentTime + 0.2);
+    } catch(e) {}
+}
+
+/** إظهار عبارة عشوائية متساقطة من الإعدادات */
+async function showCartFeedback() {
+    const settings = await loadAppSettings();
+    const phrases = [
+        phrase(settings, 'cart_feedback_1'),
+        phrase(settings, 'cart_feedback_2'),
+        phrase(settings, 'cart_feedback_3'),
+        phrase(settings, 'cart_feedback_4'),
+        phrase(settings, 'cart_feedback_5'),
+        phrase(settings, 'cart_feedback_6')
+    ].filter(p => p);
+
+    const text = phrases[Math.floor(Math.random() * phrases.length)];
+    const el = document.createElement("div");
+    el.className = "falling-phrase gold-text font-bold text-xl px-6 py-2 bg-black/80 backdrop-blur-md rounded-full border border-amber-500/40 shadow-lg shadow-amber-900/20";
+    el.textContent = text;
+    document.body.appendChild(el);
+    
+    // تحريك أيقونة السلة في الشريط السفلي
+    const cartNav = document.querySelector('[data-nav="cart"]');
+    if (cartNav) { cartNav.classList.add('cart-animate'); setTimeout(() => cartNav.classList.remove('cart-animate'), 500); }
+    
+    setTimeout(() => el.remove(), 2000);
+}
+
 function addToCart(id, name, price, imageUrl) {
     let cart = JSON.parse(localStorage.getItem("cart") || "[]");
     const existingItem = cart.find((item) => item.id === id);
@@ -97,6 +136,8 @@ function addToCart(id, name, price, imageUrl) {
         cart.push({ id, name, price: parseFloat(price || 0), quantity: 1, image_url: imageUrl });
     }
     localStorage.setItem("cart", JSON.stringify(cart));
+    playCartSound();
+    showCartFeedback();
     updateCartCount();
 }
 

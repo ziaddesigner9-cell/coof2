@@ -33,6 +33,12 @@ const DEFAULT_APP_SETTINGS = {
         order_view_ready_msg: "✓ الطلب جاهز — تفضّل بالاستلام",
         order_view_completed_msg: "✓ شكراً لزيارتكم",
         google_maps_review_url: "https://maps.google.com/?q=مقهى+السعادة",
+        cart_feedback_1: "أحسنت الاختيار",
+        cart_feedback_2: "اختيار موفق",
+        cart_feedback_3: "هذا اختيار الأذكياء",
+        cart_feedback_4: "هذا اختيار الأمراء",
+        cart_feedback_5: "اختيار الشيوخ",
+        cart_feedback_6: "ذوق رفيع",
     },
     /* UI / typography and code display settings */
     ui: {
