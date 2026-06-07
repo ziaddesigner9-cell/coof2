@@ -1,5 +1,5 @@
 /**
- * لوحة العامل (المطبخ): نسخة سريعة ومحسنة الأداء لمنع ثقل الشاشة واختفاء الطلبات
+ * لوحة العامل (المطبخ): النسخة النهائية والمستقرة مع إرجاع منطق تسليم المحلي
  */
 
 let activeOrderId = null;
@@ -198,6 +198,17 @@ async function markAsReady(orderId) {
     }
 }
 
+// 🌟 دالة تسليم المحلي (الطاولات) لتتحول الحالة إلى مكتمل فوراً وينتهي الطلب
+async function markAsPickedUp(orderId) {
+    const payload = { status: "completed" };
+    const result = await updateOrder(orderId, payload, "ready");
+    if (result.ok) {
+        loadOrders();
+    } else {
+        loadOrders();
+    }
+}
+
 function closeActive() {
     activeOrderId = null;
     localStorage.removeItem("kitchen_active_order");
@@ -320,6 +331,9 @@ function renderOrderCard(order, type) {
         if (order.status === "completed") displayStatus = "تم التسليم ✓";
         if (order.status === "out_for_delivery") displayStatus = "مع السائق 🚴";
 
+        // إظهار زر التسليم فقط إذا كان الطلب محلي (طاولة) وحالته "ready" (جاهز ولم يُسلّم بعد)
+        const showPickupButton = !isDelivery && order.status === "ready";
+
         return `
         <div class="p-3 rounded-xl border border-zinc-800/40 bg-zinc-900/40 text-sm">
             <div class="flex justify-between items-center mb-1">
@@ -329,9 +343,14 @@ function renderOrderCard(order, type) {
                 </div>
                 <span class="text-zinc-500 text-[10px]">${formatClock(order.created_at)}</span>
             </div>
-            <ul class="mt-2 space-y-0.5 text-zinc-400 text-[12px] border-t border-zinc-800/30 pt-1">
+            <ul class="my-2 space-y-0.5 text-zinc-400 text-[12px] border-t border-zinc-800/30 pt-1">
                 ${items.map(i => `<li class="truncate">• ${escapeHtml(i.name)} × ${i.quantity}</li>`).join('')}
             </ul>
+            ${showPickupButton ? `
+            <button type="button" onclick="markAsPickedUp('${order.id}')"
+                class="w-full mt-2 bg-blue-600 hover:bg-blue-500 text-white py-1.5 px-3 rounded-lg font-bold text-xs transition">
+                🤝 تم تسليم الطلب للزبون (إنهاء)
+            </button>` : ""}
         </div>`;
     }
     return "";
@@ -355,7 +374,6 @@ async function loadOrders() {
     }
 
     try {
-        // تحسين ضخم: جلب منفصل وسريع جداً بحد أقصى للطلبات لمنع بطء السيستم وتجمد السلة
         const [activeRes, finishedRes] = await Promise.all([
             client.from("orders").select("*").in("status", ["pending", "preparing"]).order("created_at", { ascending: false }),
             client.from("orders").select("*").in("status", ["ready", "out_for_delivery", "completed"]).order("created_at", { ascending: false }).limit(5)
@@ -406,10 +424,9 @@ async function loadOrders() {
             html += `</div>`;
         }
 
-        // خانة مراجعة الطلبات السابقة (خفيفة وسريعة جداً بحد أقصى 5 طلبات)
         if (finishedList.length > 0) {
             html += `<div class="mt-8 pt-6 border-t border-zinc-800/60 space-y-3">
-                        <h3 class="text-zinc-500 text-[12px] font-black uppercase tracking-widest px-1">📦 طلبات سابقة (للمراجعة السريعة)</h3>`;
+                        <h3 class="text-zinc-400 text-[12px] font-black uppercase tracking-widest px-1">📦 طلبات سابقة (للمراجعة والتسليم)</h3>`;
             html += finishedList.map((o) => renderOrderCard(o, "finished")).join("");
             html += `</div>`;
         }
@@ -459,7 +476,7 @@ function initKitchen() {
     isKitchenInit = true;
 
     loadOrders();
-    setInterval(loadOrders, 15000); // تحديث دوري خفيف كل 15 ثانية لضمان استقرار السيرفر
+    setInterval(loadOrders, 15000);
 
     const client = getClient();
     if (client) {
@@ -473,6 +490,7 @@ function initKitchen() {
 
 window.openOrder = openOrder;
 window.markAsReady = markAsReady;
+window.markAsPickedUp = markAsPickedUp; // 🌟 تفعيل الدالة عالمياً للوصول إليها من أزرار الكروت السفلية
 window.closeActive = closeActive;
 
 document.addEventListener("DOMContentLoaded", () => {
