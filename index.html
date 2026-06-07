@@ -24,10 +24,11 @@
         body.has-bottom-nav { padding-bottom: 5.5rem; }
         
         /* تحسين استجابة اللمس وإلغاء تأخير الـ 300ms في الآيفون */
-        a, button, .category-row, [role="button"], [onclick] {
-            touch-action: manipulation;
+        a, button, .category-row, [role="button"], [onclick], input[type="button"], input[type="submit"] {
+            touch-action: manipulation !important;
             cursor: pointer;
             -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
         }
 
         #app-bg-layer {

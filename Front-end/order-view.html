@@ -13,6 +13,13 @@
         body {
             background: radial-gradient(ellipse at top, #1a1508 0%, #000 55%);
         }
+        /* تحسين اللمس الفوري في الآيفون */
+        a, button, [role="button"], [onclick] {
+            touch-action: manipulation !important;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+        }
         .gold-text { color: #d4af37; }
         .gold-border { border-color: rgba(212, 175, 55, 0.45); }
         .hero-glow {

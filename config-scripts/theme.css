@@ -10,6 +10,14 @@
     --app-font-size: 16px;
 }
 
+/* تحسين استجابة اللمس وإلغاء تأخير الـ 300ms في الآيفون */
+a, button, .category-row, [role="button"], [onclick], input[type="button"], input[type="submit"] {
+    touch-action: manipulation !important;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-user-select: none;
+}
+
 body.app-theme {
     background: #080808;
     color: #fafafa;

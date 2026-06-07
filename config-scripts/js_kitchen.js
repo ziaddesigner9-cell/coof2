@@ -356,36 +356,12 @@ function renderOrderCard(order, type) {
             <ul class="my-4 space-y-2 border-y border-amber-800/30 py-3">${renderItemsList(items)}</ul>
             <button type="button" onclick="markAsReady('${order.id}')"
                 class="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-4 rounded-xl font-bold text-lg">
-                تم التجهيز ✓
+                تم التجهيز ✓ (إرسال للسائق)
             </button>
         </div>`;
     }
 
-    if (type === "pickup") {
-        return `
-        <div class="p-4 rounded-xl border border-emerald-700/40 bg-emerald-950/30">
-            <div class="flex justify-between items-center mb-2">
-                <span class="text-emerald-400 font-bold">📦 جاهز</span>
-                <span class="text-zinc-400 text-sm">${titleHtml}</span>
-            </div>
-            ${detailsHtml}
-            <p class="text-amber-400 text-sm font-bold mb-2 mt-1">المجموع: ${priceText}</p>
-            ${renderTimeBadges(order, "pickup")}
-            <ul class="mb-3 space-y-1">${renderItemsList(items)}</ul>
-            <button type="button" onclick="markAsPickedUp('${order.id}')"
-                class="w-full bg-amber-600 hover:bg-amber-500 text-black py-3 rounded-xl font-bold">
-                تم الاستلام ✓
-            </button>
-        </div>`;
-    }
-
-    return `
-    <div class="p-3 rounded-lg border border-zinc-800 bg-zinc-950/50 opacity-80">
-        <div class="flex justify-between text-sm">
-            <span class="text-zinc-500">✓ مسلّم</span>
-            <span class="text-zinc-400">${titleHtml} · المجموع: ${priceText}</span>
-        </div>
-    </div>`;
+    return "";
 }
 
 async function loadOrders() {
@@ -397,7 +373,6 @@ async function loadOrders() {
     if (!container) return;
     const client = getClient();
 
-    // 1. استعادة معرف الطلب النشط من الذاكرة المحلية لضمان عدم اختفاء الطلب عند التحديث
     if (!activeOrderId) {
         activeOrderId = localStorage.getItem("kitchen_active_order");
     }
@@ -408,8 +383,9 @@ async function loadOrders() {
     }
 
     try {
+        // 🔴 التعديل الجوهري: جلب حالات pending و preparing فقط، وحذف ready لكي يطير الطلب مباشرة بعد تجهيزه
         const [activeRes, deliveredRes] = await Promise.all([
-            client.from("orders").select("*").in("status", ["pending", "preparing", "ready"]).order("created_at", { ascending: false }),
+            client.from("orders").select("*").in("status", ["pending", "preparing"]).order("created_at", { ascending: false }),
             client.from("orders").select("*").eq("status", "completed").order("created_at", { ascending: false }).limit(12),
         ]);
 
@@ -431,7 +407,6 @@ async function loadOrders() {
         if (Array.isArray(orders)) orders.forEach((o) => knownOrderIds.add(o.id));
         firstLoad = false;
 
-        // البحث عن الطلب النشط بناءً على الـ ID فقط دون تقييد الحالة لتجنب التعليق
         let activeOrder = activeOrderId ? orders.find((o) => String(o.id) === String(activeOrderId)) : null;
 
         if (activeOrder && !activeOrderId) {
@@ -440,15 +415,13 @@ async function loadOrders() {
         }
 
         const pendingList = sortNewestFirst(orders.filter((o) => (o.status === "pending" || (o.status === "preparing" && o.id !== activeOrderId))));
-        const pickupList = sortNewestFirst(orders.filter((o) => o.status === "ready"));
-        const deliveredList = Array.isArray(deliveredRes.data) ? deliveredRes.data : [];
 
         if (activeOrder && (activeOrder.status === "ready" || activeOrder.status === "completed")) {
             closeActive();
             activeOrder = null;
         }
 
-        let html = ''; // تم حذف الهيدر والزر لتنظيف الواجهة
+        let html = ''; 
 
         if (activeOrder) html += renderOrderCard(activeOrder, "active");
 
@@ -466,15 +439,13 @@ async function loadOrders() {
             html += `</div>`;
         }
 
-        html += `<div class="mt-6 space-y-2"><h3 class="text-emerald-500 text-sm font-bold">خانة الاستلام</h3>`;
-        if (pickupList.length === 0) html += '<p class="text-zinc-600 text-sm text-center py-4 border border-zinc-800 rounded-xl">لا طلبات للاستلام</p>';
-        else html += pickupList.map((o) => renderOrderCard(o, "pickup")).join("");
-        html += `</div>`;
-
-        html += `<div class="mt-6 space-y-2"><h3 class="text-zinc-500 text-sm font-bold">الطلبات المسلّمة</h3>`;
-        if (deliveredList.length === 0) html += '<p class="text-zinc-700 text-sm text-center py-3">لا توجد طلبات مسلّمة بعد</p>';
-        else html += deliveredList.map((o) => renderOrderCard(o, "delivered")).join("");
-        html += `</div>`;
+        if (!activeOrder && pendingList.length === 0) {
+            html += `
+                <div class="text-center py-20">
+                    <span class="text-5xl block mb-4">👨‍🍳</span>
+                    <p class="text-zinc-500">لا توجد طلبات نشطة حالياً</p>
+                </div>`;
+        }
 
         container.innerHTML = html;
         if (activeOrder) startTimerDisplay(activeOrder);
@@ -492,16 +463,12 @@ async function updateOrder(orderId, payload, expectedStatus) {
     
     let q = client.from("orders").update(payload).eq("id", orderId).select();
     
-    // سنقوم بإلغاء الشرط الصارم مؤقتاً لضمان التحديث القسري
-    // if (expectedStatus) q = q.eq("status", expectedStatus); 
-    
     const { data, error } = await q;
     if (!error && data && data.length > 0) {
         console.log("تم التحديث بنجاح في قاعدة البيانات.");
         return { ok: true, data };
     }
     
-    // إذا لم يجد صفوفاً محدثة، سنعتبر العملية ناجحة محلياً لمنع تعليق الواجهة
     console.warn("تنبيه: لم تتأثر صفوف، ولكن سيتم فرض التحديث بالواجهة.");
     return { ok: true, forced: true }; 
 }
@@ -515,7 +482,6 @@ async function openOrder(orderId) {
 
     let result = await updateOrder(orderId, payload, "pending");
 
-    // إزالة صلاحيات الـ RLS المحلية فوراً لتختفي الدوامة
     clearLocalPreparing(orderId);
     hideRlsBanner();
 
@@ -532,10 +498,8 @@ function initKitchen() {
 
     loadOrders();
 
-    // التحديث التلقائي كل 20 ثانية كاحتياط فقط
     setInterval(loadOrders, 20000);
 
-    // تفعيل خاصية الوقت الفعلي (Realtime) لاستلام الطلبات فوراً
     const client = getClient();
     if (client) {
         client.channel('kitchen_orders_realtime')
@@ -551,14 +515,12 @@ function initKitchen() {
     }
 }
 
-// تصدير الوظائف للنافذة لضمان عملها مع onclick في HTML
 window.openOrder = openOrder;
 window.markAsReady = markAsReady;
 window.markAsPickedUp = markAsPickedUp;
 window.closeActive = closeActive;
 
 document.addEventListener("DOMContentLoaded", () => {
-    // ضمان تشغيل النظام فقط بعد جاهزية Supabase
     if (getClient()) initKitchen();
     window.addEventListener("supabaseReady", initKitchen);
 });
