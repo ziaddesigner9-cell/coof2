@@ -67,7 +67,11 @@
                     console.error("❌ خطأ حرج: المفتاح غير صالح أو مفقود.");
                     return null;
                 }
-                const client = lib.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                const client = lib.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+                    auth: {
+                        persistSession: false // Prevents browser storage block warnings since we use custom auth
+                    }
+                });
                 window.supabaseClient = client;
                 window.supabase = client; 
                 return client;
