@@ -104,27 +104,41 @@ function playCartSound() {
 
 /** إظهار عبارة عشوائية متساقطة من الإعدادات */
 async function showCartFeedback() {
-    const settings = await loadAppSettings();
-    const phrases = [
-        phrase(settings, 'cart_feedback_1'),
-        phrase(settings, 'cart_feedback_2'),
-        phrase(settings, 'cart_feedback_3'),
-        phrase(settings, 'cart_feedback_4'),
-        phrase(settings, 'cart_feedback_5'),
-        phrase(settings, 'cart_feedback_6')
-    ].filter(p => p);
+    let text = "تمت الإضافة للسلة"; // نص احتياطي في حال فشل التحميل
+    
+    try {
+        const settings = await loadAppSettings();
+        const phrases = [
+            phrase(settings, 'cart_feedback_1'),
+            phrase(settings, 'cart_feedback_2'),
+            phrase(settings, 'cart_feedback_3'),
+            phrase(settings, 'cart_feedback_4'),
+            phrase(settings, 'cart_feedback_5'),
+            phrase(settings, 'cart_feedback_6')
+        ].filter(p => p && p.trim() !== "");
 
-    const text = phrases[Math.floor(Math.random() * phrases.length)];
+        if (phrases.length > 0) {
+            text = phrases[Math.floor(Math.random() * phrases.length)];
+        }
+    } catch (err) {
+        console.warn("تعذر جلب العبارات المخصصة، استخدام النص الافتراضي.");
+    }
+
     const el = document.createElement("div");
-    el.className = "falling-phrase gold-text font-bold text-xl px-6 py-2 bg-black/80 backdrop-blur-md rounded-full border border-amber-500/40 shadow-lg shadow-amber-900/20";
+    // إضافة فئات Tailwind للظهور بوضوح مع التأكد من بقاء التنسيق الذهبي
+    el.className = "falling-phrase gold-title text-xl px-8 py-3 bg-black/90 backdrop-blur-lg rounded-full border-2 border-amber-500/50 shadow-[0_0_30px_rgba(232,184,74,0.3)]";
     el.textContent = text;
     document.body.appendChild(el);
     
     // تحريك أيقونة السلة في الشريط السفلي
     const cartNav = document.querySelector('[data-nav="cart"]');
-    if (cartNav) { cartNav.classList.add('cart-animate'); setTimeout(() => cartNav.classList.remove('cart-animate'), 500); }
+    if (cartNav) { 
+        cartNav.classList.remove('cart-animate'); // إعادة ضبط الحركة
+        void cartNav.offsetWidth; // Force reflow
+        cartNav.classList.add('cart-animate'); 
+    }
     
-    setTimeout(() => el.remove(), 2000);
+    setTimeout(() => el.remove(), 2600);
 }
 
 function addToCart(id, name, price, imageUrl) {
