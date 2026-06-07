@@ -56,7 +56,7 @@ async function loadMenu() {
                 (item) => {
                     const safeName = escapeHtml(item.name || "غير معروف");
                     const safePrice = escapeHtml(parseFloat(item.price || 0).toFixed(2));
-                    const safeImage = escapeHtml(item.image_url || "https://via.placeholder.com/150");
+                    const safeImage = escapeHtml(window.getSafeImageUrl(item.image_url));
                     return `
         <div class="menu-card menu-item p-4 rounded-2xl flex items-center gap-4 transition">
               <img src="${safeImage}" alt="${safeName}" loading="lazy"

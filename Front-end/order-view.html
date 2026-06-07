@@ -200,8 +200,7 @@
                     .map((item) => {
                         const qty = parseInt(item.quantity) || 1;
                         const price = parseFloat(item.price) || 0;
-                        const img =
-                            item.image_url ||
+                        const img = window.getSafeImageUrl(item.image_url) ||
                             "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=200&h=200&fit=crop";
                         return `
                         <li class="flex gap-3 items-center py-3 border-b border-zinc-800/80 last:border-0">
@@ -231,7 +230,7 @@
             const heroImg = document.getElementById("heroImage");
             const heroCaption = document.getElementById("heroCaption");
             if (firstWithImage?.image_url) {
-                heroImg.src = firstWithImage.image_url;
+                heroImg.src = window.getSafeImageUrl(firstWithImage.image_url);
                 heroCaption.textContent = firstWithImage.name || "طلبك من مقهى السعادة";
                 heroWrap.classList.remove("hidden");
             } else if (items.length > 0) {

@@ -144,16 +144,18 @@ async function fetchGallery() {
             return;
         }
 
-        container.innerHTML = data.map(img => `
+        container.innerHTML = data.map(img => {
+            const safeUrl = window.getSafeImageUrl(img.image_url);
+            return `
             <div class="relative group aspect-square rounded-2xl overflow-hidden border border-amber-500/20 bg-zinc-800">
-                <img src="${img.image_url}" class="w-full h-full object-cover" alt="${img.name}" loading="lazy">
+                <img src="${safeUrl}" class="w-full h-full object-cover" alt="${img.name}" loading="lazy">
                 <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                    <button onclick="deleteGalleryItem('${img.id}', '${img.image_url}')" class="p-2 bg-red-500 rounded-full text-white hover:bg-red-400 shadow-lg transition-transform hover:scale-110">
+                    <button onclick="deleteGalleryItem('${img.id}', '${safeUrl}')" class="p-2 bg-red-500 rounded-full text-white hover:bg-red-400 shadow-lg transition-transform hover:scale-110">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                     </button>
                 </div>
             </div>
-        `).join('');
+        `;}).join('');
     } catch (err) {
         console.error("خطأ في جلب المكتبة:", err);
     }

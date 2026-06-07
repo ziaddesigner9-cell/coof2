@@ -54,7 +54,7 @@
         // 1. التحقق من وجود عميل مهيأ مسبقاً
         if (window.supabaseClient && typeof window.supabaseClient.from === "function") return window.supabaseClient;
         
-        if (!SUPABASE_URL || !SUPABASE_KEY) return null;
+        if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return null;
 
         // 2. التحقق من توفر المكتبة (supabase-js CDN)
         // ملاحظة: الـ CDN يعرّف المتغير باسم supabasejs بدلاً من supabase
@@ -63,11 +63,11 @@
         if (lib && typeof lib.createClient === "function") {
             try {
                 // التحقق من صحة المفتاح قبل المحاولة
-                if (!SUPABASE_KEY || String(SUPABASE_KEY).trim().indexOf("eyJ") !== 0) {
+                if (!SUPABASE_ANON_KEY || String(SUPABASE_ANON_KEY).trim().indexOf("eyJ") !== 0) {
                     console.error("❌ خطأ حرج: المفتاح غير صالح أو مفقود.");
                     return null;
                 }
-                const client = lib.createClient(SUPABASE_URL, SUPABASE_KEY);
+                const client = lib.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
                 window.supabaseClient = client;
                 window.supabase = client; 
                 return client;
@@ -85,6 +85,39 @@
         return null;
     };
 
+    /**
+     * دالة ذكية لجلب رابط الصورة العام.
+     * تحل مشكلة الروابط المحلية (localhost) المخزنة في قاعدة البيانات وتضمن استخدام getPublicUrl.
+     */
+    window.getSafeImageUrl = function(urlOrPath, bucket = 'menu-images') {
+        if (!urlOrPath) return "https://via.placeholder.com/300?text=No+Image";
+        
+        const isFullUrl = urlOrPath.startsWith('http');
+        const isLocal = urlOrPath.includes('localhost') || urlOrPath.includes('127.0.0.1');
+
+        // إذا كان الرابط خارجياً وصحيحاً (وليس محلياً في بيئة أونلاين) نستخدمه كما هو
+        if (isFullUrl && (!isLocal || window.isLocalOnlyEnvironment())) {
+            return urlOrPath;
+        }
+
+        const client = window.getSupabaseClient();
+        if (!client) return urlOrPath;
+
+        // استخراج المسار الصافي للملف
+        let path = urlOrPath;
+        const markers = ["/menu-images/", "/object/public/menu-images/"];
+        for (const marker of markers) {
+            const idx = urlOrPath.indexOf(marker);
+            if (idx !== -1) {
+                path = urlOrPath.slice(idx + marker.length);
+                break;
+            }
+        }
+
+        const { data } = client.storage.from(bucket).getPublicUrl(path);
+        return data.publicUrl;
+    };
+
     try {
 		let attempts = 0;
 		const maxAttempts = 20;
@@ -100,7 +133,7 @@
 				}
 			} else if (attempts >= maxAttempts) {
 				clearInterval(checkInit);
-				if (!SUPABASE_URL || !SUPABASE_KEY) {
+				if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
 					console.error("❌ فشل التهيئة: المفاتيح مفقودة. يرجى التأكد من كتابة المفاتيح يدوياً داخل dependencies.js");
 				} else {
 					console.error("❌ فشل التهيئة: مكتبة Supabase (CDN) مفقودة في هذه الصفحة.");
