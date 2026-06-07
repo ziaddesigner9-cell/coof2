@@ -3,10 +3,10 @@
  * يوفّر: window.supabaseClient و window.getSupabaseClient()
  */
 (function initSupabaseClient() {
-    const SUPABASE_URL = window.APP_ENV ? window.APP_ENV.SUPABASE_URL : "";
-    const SUPABASE_ANON_KEY = window.APP_ENV ? window.APP_ENV.SUPABASE_ANON_KEY : "";
-    const SITE_BASE_URL = "https://ziaddesigner9-cell.github.io/coof2/";
-    
+    // 🔴 ضع بياناتك الحقيقية هنا مباشرة لحل مشكلة قراءة المفاتيح أونلاين
+const DIRECT_SUPABASE_URL = "https://jdaggrzdaxcnnfmdyvic.supabase.co";    const DIRECT_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkYWdncnpkYXhjbm5mbWR5dmljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1ODMyMzgsImV4cCI6MjA5NjE1OTIzOH0.75Pcz12Jp0WkZ3_NUVt8D78BH0KgdDd1krjt-oxQoT8"; //  مفتاح الأنون الخاص بك هنا
+
+    const SITE_BASE_URL = "";
     const PUBLIC_BASE_STORAGE_KEY = "COOF2_PUBLIC_BASE";
 
     function normalizeBase(url) {
@@ -31,17 +31,18 @@
 
     /** عنوان يعمل من الجوال عند مسح QR */
     window.resolveSiteBase = function resolveSiteBase() {
-        // إذا كنا في بيئة محلية، نستخدم رابط الجهاز الحالي بدلاً من الرابط الثابت
-        if (window.isLocalOnlyEnvironment()) {
-            return normalizeBase(window.location.href.replace(/[^/]*$/, ""));
+        const currentPath = window.location.href.replace(/[^/]*$/, "");
+
+        // إذا كنا أونلاين (Netlify أو GitHub) نعتمد دائماً على الرابط الحالي
+        if (!window.isLocalOnlyEnvironment()) {
+            return normalizeBase(currentPath);
         }
 
-        if (SITE_BASE_URL) return normalizeBase(SITE_BASE_URL);
-        
+        // إذا كنا في بيئة محلية، نستخدم الإعداد اليدوي إذا وجد (لاختبار الجوال على نفس الشبكة)
         const stored = getCoof2PublicBase();
         if (stored) return normalizeBase(stored);
 
-        return normalizeBase(window.location.href.replace(/[^/]*$/, ""));
+        return normalizeBase(currentPath);
     };
 
     window.isLocalOnlyEnvironment = function isLocalOnlyEnvironment() {
@@ -54,20 +55,24 @@
         // 1. التحقق من وجود عميل مهيأ مسبقاً
         if (window.supabaseClient && typeof window.supabaseClient.from === "function") return window.supabaseClient;
         
-        if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return null;
+        // الاعتماد على المفاتيح الثابتة المباشرة، أو جلبها حياً من المتصفح كخيار احتياطي
+        const env = window.APP_ENV || {};
+        const url = DIRECT_SUPABASE_URL || env.SUPABASE_URL || window.SUPABASE_URL || "";
+        const key = DIRECT_SUPABASE_ANON_KEY || env.SUPABASE_ANON_KEY || env.SUPABASE_KEY || window.SUPABASE_ANON_KEY || "";
+
+        if (!url || !key) return null;
 
         // 2. التحقق من توفر المكتبة (supabase-js CDN)
-        // ملاحظة: الـ CDN يعرّف المتغير باسم supabasejs بدلاً من supabase
         const lib = window.supabasejs || window.supabase;
         
         if (lib && typeof lib.createClient === "function") {
             try {
                 // التحقق من صحة المفتاح قبل المحاولة
-                if (!SUPABASE_ANON_KEY || String(SUPABASE_ANON_KEY).trim().indexOf("eyJ") !== 0) {
+                if (!key || String(key).trim().indexOf("eyJ") !== 0) {
                     console.error("❌ خطأ حرج: المفتاح غير صالح أو مفقود.");
                     return null;
                 }
-                const client = lib.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+                const client = lib.createClient(url, key, {
                     auth: {
                         persistSession: false // Prevents browser storage block warnings since we use custom auth
                     }
@@ -91,23 +96,12 @@
 
     /**
      * دالة ذكية لجلب رابط الصورة العام.
-     * تحل مشكلة الروابط المحلية (localhost) المخزنة في قاعدة البيانات وتضمن استخدام getPublicUrl.
+     * تحل مشكلة الروابط المحلية وتضمن استخدام getPublicUrl الصافي دائماً.
      */
     window.getSafeImageUrl = function(urlOrPath, bucket = 'menu-images') {
         if (!urlOrPath) return "https://via.placeholder.com/300?text=No+Image";
         
-        const isFullUrl = urlOrPath.startsWith('http');
-        const isLocal = urlOrPath.includes('localhost') || urlOrPath.includes('127.0.0.1');
-
-        // إذا كان الرابط خارجياً وصحيحاً (وليس محلياً في بيئة أونلاين) نستخدمه كما هو
-        if (isFullUrl && (!isLocal || window.isLocalOnlyEnvironment())) {
-            return urlOrPath;
-        }
-
-        const client = window.getSupabaseClient();
-        if (!client) return urlOrPath;
-
-        // استخراج المسار الصافي للملف
+        // تنظيف المسار لضمان الحصول على الرابط العام الصافي دائماً أونلاين
         let path = urlOrPath;
         const markers = ["/menu-images/", "/object/public/menu-images/"];
         for (const marker of markers) {
@@ -117,33 +111,43 @@
                 break;
             }
         }
+        
+        // إذا كان الرابط لا يزال يحتوي على نطاق كامل (مثال جلب قديم من لوكال هوست)، نأخذ اسم الملف الأخير فقط
+        if (path.startsWith('http')) {
+            try {
+                const segments = path.split('/');
+                path = segments[segments.length - 1];
+            } catch(e) {}
+        }
+
+        const client = window.getSupabaseClient();
+        if (!client) {
+            // إذا لم يتم تهيئة العميل بعد، نرجع رابطاً تقريبياً مباشراً بناءً على الإعدادات الثابتة
+            return `${DIRECT_SUPABASE_URL}/storage/v1/object/public/${bucket}/${path}`;
+        }
 
         const { data } = client.storage.from(bucket).getPublicUrl(path);
         return data.publicUrl;
     };
 
     try {
-		let attempts = 0;
-		const maxAttempts = 20;
-		const checkInit = setInterval(() => {
-			attempts++;
-			const client = window.getSupabaseClient();
-			if (client) {
-				clearInterval(checkInit);
-				if (!window.supabaseInitialized) {
-					window.supabaseInitialized = true;
-					window.dispatchEvent(new Event("supabaseReady"));
-					console.log("تم تهيئة Supabase بنجاح.");
-				}
-			} else if (attempts >= maxAttempts) {
-				clearInterval(checkInit);
-				if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-					console.error("❌ فشل التهيئة: المفاتيح مفقودة. يرجى التأكد من كتابة المفاتيح يدوياً داخل dependencies.js");
-				} else {
-					console.error("❌ فشل التهيئة: مكتبة Supabase (CDN) مفقودة في هذه الصفحة.");
-				}
-			}
-		}, 500);
+        let attempts = 0;
+        const maxAttempts = 20;
+        const checkInit = setInterval(() => {
+            attempts++;
+            const client = window.getSupabaseClient();
+            if (client) {
+                clearInterval(checkInit);
+                if (!window.supabaseInitialized) {
+                    window.supabaseInitialized = true;
+                    window.dispatchEvent(new Event("supabaseReady"));
+                    console.log("تم تهيئة Supabase بنجاح عبر البيانات المباشرة.");
+                }
+            } else if (attempts >= maxAttempts) {
+                clearInterval(checkInit);
+                console.error("❌ فشل تهيئة المكتبة: تأكد من تحديث رابط CDN في ملف index.html إلى unpkg كخيار مستقر.");
+            }
+        }, 500);
     } catch (error) {
         console.error("فشل تهيئة Supabase:", error);
     }

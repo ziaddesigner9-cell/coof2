@@ -18,7 +18,8 @@ async function loadMenu() {
     const supabaseClient =
         typeof window.getSupabaseClient === "function" ? window.getSupabaseClient() : null;
     if (!supabaseClient) {
-        console.error("خطأ: Supabase غير معرف!");
+        // لا نطبع خطأ هنا لأننا ننتظر حدث supabaseReady
+        // سيتم استدعاء loadMenu تلقائياً مرة أخرى عند جاهزية سوبابيس
         return;
     }
 
