@@ -1,5 +1,5 @@
 /**
- * لوحة العامل (المطبخ): النسخة الكاملة والمصلحة من تعليق الاتصال والطلبات السابقة
+ * لوحة العامل (المطبخ): نسخة سريعة ومحسنة الأداء لمنع ثقل الشاشة واختفاء الطلبات
  */
 
 let activeOrderId = null;
@@ -111,14 +111,6 @@ function renderTimeBadges(order, mode) {
             </span>
         </div>`;
     }
-
-    if (mode === "pickup") {
-        return `
-        <div class="flex flex-wrap gap-1.5 mt-1 mb-2 text-[10px]">
-            <span class="px-2 py-0.5 rounded bg-zinc-900 text-zinc-400">📥 ${formatClock(arrived)}</span>
-            ${opened ? `<span class="px-2 py-0.5 rounded bg-zinc-900 text-zinc-400">▶ ${formatClock(opened)}</span>` : ""}
-        </div>`;
-    }
     return "";
 }
 
@@ -178,26 +170,12 @@ function _playNewOrderSoundLogic() {
     });
 }
 
-function hideRlsBanner() {
-    document.getElementById("rls-warning")?.classList.add("hidden");
-}
-
-function showRlsBanner() {
-    document.getElementById("rls-warning")?.classList.remove("hidden");
-}
-
 function getLocalPreparingMap() {
     try {
         return JSON.parse(localStorage.getItem(LOCAL_PREP_KEY) || "{}");
     } catch {
         return {};
     }
-}
-
-function setLocalPreparing(order) {
-    const map = getLocalPreparingMap();
-    map[order.id] = { startedAt: Date.now(), order };
-    localStorage.setItem(LOCAL_PREP_KEY, JSON.stringify(map));
 }
 
 function clearLocalPreparing(orderId) {
@@ -218,20 +196,6 @@ async function markAsReady(orderId) {
     } else {
         alert("فشل تحديث حالة الطلب إلى جاهز: " + result.error);
     }
-}
-
-function mergeWithLocalPreparing(orders) {
-    const map = getLocalPreparingMap();
-    return orders.map((o) => {
-        if (o.status === "pending" && map[o.id]) {
-            return {
-                ...o,
-                status: "preparing",
-                preparing_started_at: new Date(map[o.id].startedAt).toISOString(),
-            };
-        }
-        return o;
-    });
 }
 
 function closeActive() {
@@ -357,21 +321,19 @@ function renderOrderCard(order, type) {
         if (order.status === "out_for_delivery") displayStatus = "مع السائق 🚴";
 
         return `
-        <div class="p-3 rounded-xl border border-zinc-800/50 bg-zinc-900/30 opacity-80 text-sm">
+        <div class="p-3 rounded-xl border border-zinc-800/40 bg-zinc-900/40 text-sm">
             <div class="flex justify-between items-center mb-1">
                 <div class="flex items-center gap-2">
-                    <span class="text-emerald-500 text-xs font-bold">${displayStatus}</span>
+                    <span class="text-emerald-400 text-xs font-bold bg-emerald-950 px-1.5 py-0.5 rounded">${displayStatus}</span>
                     <span class="text-zinc-300 font-bold">${titleHtml}</span>
                 </div>
                 <span class="text-zinc-500 text-[10px]">${formatClock(order.created_at)}</span>
             </div>
-            <p class="text-amber-500/60 text-[11px] font-bold">المجموع: ${priceText}</p>
-            <ul class="mt-2 space-y-0.5 text-zinc-400 text-[12px] border-t border-zinc-800/40 pt-1">
+            <ul class="mt-2 space-y-0.5 text-zinc-400 text-[12px] border-t border-zinc-800/30 pt-1">
                 ${items.map(i => `<li class="truncate">• ${escapeHtml(i.name)} × ${i.quantity}</li>`).join('')}
             </ul>
         </div>`;
     }
-
     return "";
 }
 
@@ -379,7 +341,6 @@ async function loadOrders() {
     if (isFetching) return;
     isFetching = true;
 
-    console.log("محاولة جلب الطلبات من السيرفر...");
     const container = document.getElementById("orders-container");
     if (!container) return;
     const client = getClient();
@@ -394,41 +355,38 @@ async function loadOrders() {
     }
 
     try {
-        const { data: ordersData, error: activeResError } = await client
-            .from("orders")
-            .select("*")
-            .in("status", ["pending", "preparing", "ready", "out_for_delivery", "completed"])
-            .order("created_at", { ascending: false });
+        // تحسين ضخم: جلب منفصل وسريع جداً بحد أقصى للطلبات لمنع بطء السيستم وتجمد السلة
+        const [activeRes, finishedRes] = await Promise.all([
+            client.from("orders").select("*").in("status", ["pending", "preparing"]).order("created_at", { ascending: false }),
+            client.from("orders").select("*").in("status", ["ready", "out_for_delivery", "completed"]).order("created_at", { ascending: false }).limit(5)
+        ]);
 
-        if (activeResError) {
-            console.error("خطأ أثناء جلب الطلبات:", activeResError.message);
-            container.innerHTML = '<p class="text-red-400 text-center p-8">تعذر تحميل الطلبات</p>';
+        if (activeRes.error) {
+            console.error("خطأ أثناء جلب الطلبات:", activeRes.error.message);
             isFetching = false;
             return;
         }
 
-        let orders = Array.isArray(ordersData) ? ordersData : [];
-        ordersCache = orders;
+        let activeOrders = Array.isArray(activeRes.data) ? activeRes.data : [];
+        let finishedList = Array.isArray(finishedRes.data) ? finishedRes.data : [];
+        ordersCache = activeOrders;
 
-        if (!firstLoad && Array.isArray(orders)) {
-            orders.forEach((o) => {
+        if (!firstLoad) {
+            activeOrders.forEach((o) => {
                 if (o.status === "pending" && !knownOrderIds.has(o.id)) playNewOrderSound();
             });
         }
-        if (Array.isArray(orders)) orders.forEach((o) => knownOrderIds.add(o.id));
+        activeOrders.forEach((o) => knownOrderIds.add(o.id));
         firstLoad = false;
 
-        // التصحيح الذكي: لا نعتبر الطلب نشطاً إلا لو كانت حالته فعلاً معلق أو قيد التحضير
-        let activeOrder = activeOrderId ? orders.find((o) => String(o.id) === String(activeOrderId) && ["pending", "preparing"].includes(o.status)) : null;
+        let activeOrder = activeOrderId ? activeOrders.find((o) => String(o.id) === String(activeOrderId)) : null;
 
-        // في حال تم تغيير حالته خارجياً، نقوم بمسحه فوراً من الذاكرة النشطة
         if (activeOrderId && !activeOrder) {
             activeOrderId = null;
             localStorage.removeItem("kitchen_active_order");
         }
 
-        const pendingList = sortNewestFirst(orders.filter((o) => (o.status === "pending" || (o.status === "preparing" && String(o.id) !== String(activeOrderId)))));
-        const finishedList = sortNewestFirst(orders.filter((o) => ["ready", "out_for_delivery", "completed"].includes(o.status))).slice(0, 10);
+        const pendingList = sortNewestFirst(activeOrders.filter((o) => o.status === "pending" || (o.status === "preparing" && String(o.id) !== String(activeOrderId))));
 
         let html = ''; 
 
@@ -448,9 +406,10 @@ async function loadOrders() {
             html += `</div>`;
         }
 
+        // خانة مراجعة الطلبات السابقة (خفيفة وسريعة جداً بحد أقصى 5 طلبات)
         if (finishedList.length > 0) {
-            html += `<div class="mt-10 pt-6 border-t border-zinc-800/60 space-y-3">
-                        <h3 class="text-zinc-400 text-[12px] font-black uppercase tracking-widest px-1">📦 طلبات سابقة تم تجهيزها</h3>`;
+            html += `<div class="mt-8 pt-6 border-t border-zinc-800/60 space-y-3">
+                        <h3 class="text-zinc-500 text-[12px] font-black uppercase tracking-widest px-1">📦 طلبات سابقة (للمراجعة السريعة)</h3>`;
             html += finishedList.map((o) => renderOrderCard(o, "finished")).join("");
             html += `</div>`;
         }
@@ -473,19 +432,10 @@ async function loadOrders() {
 }
 
 async function updateOrder(orderId, payload, expectedStatus) {
-    console.log("جاري تحديث حالة الطلب رقم:", orderId, "بالبيانات:", payload);
     const client = getClient();
     if (!client) return { ok: false, error: "غير متصل" };
-    
-    let q = client.from("orders").update(payload).eq("id", orderId).select();
-    
-    const { data, error } = await q;
-    if (!error && data && data.length > 0) {
-        console.log("تم التحديث بنجاح في قاعدة البيانات.");
-        return { ok: true, data };
-    }
-    
-    console.warn("تنبيه: لم تتأثر صفوف، ولكن سيتم فرض التحديث بالواجهة.");
+    const { data, error } = await client.from("orders").update(payload).eq("id", orderId).select();
+    if (!error && data && data.length > 0) return { ok: true, data };
     return { ok: true, forced: true }; 
 }
 
@@ -493,14 +443,10 @@ async function openOrder(orderId) {
     const client = getClient();
     if (!client) return alert("النظام غير متصل");
 
-    const order = ordersCache.find((o) => o.id === orderId) || { id: orderId };
     const payload = { status: "preparing", preparing_started_at: new Date().toISOString() };
-
-    let result = await updateOrder(orderId, payload, "pending");
+    await updateOrder(orderId, payload, "pending");
 
     clearLocalPreparing(orderId);
-    hideRlsBanner();
-
     rememberOpenedAt(orderId);
     activeOrderId = orderId;
     localStorage.setItem("kitchen_active_order", orderId);
@@ -513,18 +459,12 @@ function initKitchen() {
     isKitchenInit = true;
 
     loadOrders();
-
-    setInterval(loadOrders, 20000);
+    setInterval(loadOrders, 15000); // تحديث دوري خفيف كل 15 ثانية لضمان استقرار السيرفر
 
     const client = getClient();
     if (client) {
         client.channel('kitchen_orders_realtime')
-            .on('postgres_changes', { 
-                event: '*', 
-                schema: 'public', 
-                table: 'orders' 
-            }, (payload) => {
-                console.log("تنبيه: حدث تغيير في الطلبات (Realtime)، جاري التحديث...");
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
                 loadOrders();
             })
             .subscribe();
