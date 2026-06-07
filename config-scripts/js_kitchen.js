@@ -220,16 +220,6 @@ async function markAsReady(orderId) {
     }
 }
 
-async function markAsPickedUp(orderId) {
-    const payload = { status: "completed" };
-    const result = await updateOrder(orderId, payload, "ready");
-    if (result.ok) {
-        loadOrders();
-    } else {
-        loadOrders();
-    }
-}
-
 function mergeWithLocalPreparing(orders) {
     const map = getLocalPreparingMap();
     return orders.map((o) => {
@@ -361,6 +351,23 @@ function renderOrderCard(order, type) {
         </div>`;
     }
 
+    if (type === "finished") {
+        return `
+        <div class="p-3 rounded-xl border border-zinc-800/50 bg-zinc-900/30 opacity-70 text-sm">
+            <div class="flex justify-between items-center mb-1">
+                <div class="flex items-center gap-2">
+                    <span class="text-emerald-500 text-xs">✓</span>
+                    <span class="text-zinc-300 font-bold">${titleHtml}</span>
+                </div>
+                <span class="text-zinc-500 text-[10px]">${formatClock(order.created_at)}</span>
+            </div>
+            <p class="text-amber-500/60 text-[11px] font-bold">المجموع: ${priceText}</p>
+            <ul class="mt-2 space-y-0.5 text-zinc-400 text-[12px] border-t border-zinc-800/40 pt-1">
+                ${items.map(i => `<li class="truncate">• ${escapeHtml(i.name)} × ${i.quantity}</li>`).join('')}
+            </ul>
+        </div>`;
+    }
+
     return "";
 }
 
@@ -383,21 +390,21 @@ async function loadOrders() {
     }
 
     try {
-        // 🔴 التعديل الجوهري: جلب حالات pending و preparing فقط، وحذف ready لكي يطير الطلب مباشرة بعد تجهيزه
-        const [activeRes, deliveredRes] = await Promise.all([
-            client.from("orders").select("*").in("status", ["pending", "preparing"]).order("created_at", { ascending: false }),
-            client.from("orders").select("*").eq("status", "completed").order("created_at", { ascending: false }).limit(12),
-        ]);
+        // جلب الطلبات النشطة والمنتهية حديثاً (بحد أقصى 40 طلب لضمان السرعة)
+        const { data: ordersData, error: activeResError } = await client
+            .from("orders")
+            .select("*")
+            .in("status", ["pending", "preparing", "ready", "out_for_delivery", "completed"])
+            .order("created_at", { ascending: false });
 
-        if (activeRes.error) {
-            console.error("خطأ أثناء جلب الطلبات:", activeRes.error.message);
+        if (activeResError) {
+            console.error("خطأ أثناء جلب الطلبات:", activeResError.message);
             container.innerHTML = '<p class="text-red-400 text-center p-8">تعذر تحميل الطلبات</p>';
             return;
         }
 
-        let orders = Array.isArray(activeRes.data) ? activeRes.data : [];
-        ordersCache = orders; 
-        orders = mergeWithLocalPreparing(orders);
+        let orders = Array.isArray(ordersData) ? ordersData : [];
+        ordersCache = orders;
 
         if (!firstLoad && Array.isArray(orders)) {
             orders.forEach((o) => {
@@ -415,11 +422,7 @@ async function loadOrders() {
         }
 
         const pendingList = sortNewestFirst(orders.filter((o) => (o.status === "pending" || (o.status === "preparing" && o.id !== activeOrderId))));
-
-        if (activeOrder && (activeOrder.status === "ready" || activeOrder.status === "completed")) {
-            closeActive();
-            activeOrder = null;
-        }
+        const finishedList = sortNewestFirst(orders.filter((o) => ["ready", "out_for_delivery", "completed"].includes(o.status))).slice(0, 8);
 
         let html = ''; 
 
@@ -436,6 +439,13 @@ async function loadOrders() {
                     </div>
                     ${renderTimeBadges(o, "pending")}
                 </button>`).join("");
+            html += `</div>`;
+        }
+
+        if (finishedList.length > 0) {
+            html += `<div class="mt-10 pt-6 border-t border-zinc-800/60 space-y-3">
+                        <h3 class="text-zinc-500 text-[11px] font-black uppercase tracking-widest px-1">طلبات سابقة تم تجهيزها</h3>`;
+            html += finishedList.map((o) => renderOrderCard(o, "finished")).join("");
             html += `</div>`;
         }
 
