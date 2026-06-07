@@ -389,7 +389,11 @@
                 applyQrLabelStyle(status);
                 statusText.classList.remove("text-yellow-400");
                 statusText.classList.add("text-emerald-400");
-                statusText.textContent = phrase(appSettings, "tracking_status_ready");
+                
+                const isDelivery = currentOrder?.table_no?.includes("توصيل");
+                statusText.textContent = isDelivery 
+                    ? "تم التجهيز وبانتظار السائق" 
+                    : phrase(appSettings, "tracking_status_ready");
                 subText.textContent = phrase(appSettings, "tracking_sub_ready");
                 playReadySound();
             } else if (isPreparing) {

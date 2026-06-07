@@ -143,13 +143,13 @@
                 .replace(/"/g, "&quot;");
         }
 
-        function setStatusUi(status) {
+        function setStatusUi(status, isDelivery = false) {
             const badge = document.getElementById("statusBadge");
             const readyMsg = document.getElementById("readyMessage");
             const ratingSec = document.getElementById("ratingSection");
             const isReady = status === "completed";
             if (status === "completed") {
-                badge.textContent = "تم الاستلام";
+                badge.textContent = isDelivery ? "تم التوصيل" : "تم الاستلام";
                 badge.className =
                     "inline-block px-4 py-1.5 rounded-full text-sm font-bold border border-emerald-500/60 bg-emerald-950 text-emerald-400";
                 readyMsg.textContent = phrase(appSettings, "order_view_completed_msg");
@@ -165,7 +165,9 @@
                 badge.textContent = "جاهز للاستلام";
                 badge.className =
                     "inline-block px-4 py-1.5 rounded-full text-sm font-bold border border-emerald-500/60 bg-emerald-950 text-emerald-400";
-                readyMsg.textContent = phrase(appSettings, "order_view_ready_msg");
+                readyMsg.textContent = isDelivery 
+                    ? "تم تجهيز طلبك وهو بانتظار استلام السائق"
+                    : phrase(appSettings, "order_view_ready_msg");
                 readyMsg.classList.remove("hidden");
                 ratingSec.classList.add("hidden");
             } else if (status === "preparing") {
@@ -224,6 +226,7 @@
                           0
                       );
             document.getElementById("orderTotal").textContent = `${total} ر.س`;
+            const isDelivery = order.table_no && order.table_no.includes("توصيل");
 
             const firstWithImage = items.find((i) => i.image_url);
             const heroWrap = document.getElementById("heroWrap");
@@ -240,7 +243,7 @@
                 heroWrap.classList.remove("hidden");
             }
 
-            setStatusUi(order.status);
+            setStatusUi(order.status, isDelivery);
         }
 
         async function loadOrder() {
