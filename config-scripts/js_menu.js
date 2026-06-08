@@ -82,7 +82,9 @@ async function loadMenu() {
             .join("");
 
         updateCartCount();
-        await loadAppSettings(); // تحميل مسبق للإعدادات لضمان سرعة العبارات
+        if (typeof window.loadAppSettings === "function") {
+            await window.loadAppSettings();
+        }
     } catch (err) {
         console.error("فشل جلب الأصناف:", err);
         menuContainer.innerHTML = "<p class='text-center text-red-400 p-4'>تعذر تحميل الأصناف.</p>";
@@ -110,7 +112,11 @@ async function showCartFeedback() {
     let text = "تمت الإضافة للسلة"; // نص احتياطي في حال فشل التحميل
 
     try {
-        const settings = await loadAppSettings(); // سيجلبها من الذاكرة فوراً الآن
+        if (typeof window.loadAppSettings !== "function" || typeof window.phrase !== "function") {
+            throw new Error("Settings functions missing");
+        }
+
+        const settings = await window.loadAppSettings(); 
         const phrases = [
             phrase(settings, 'cart_feedback_1'),
             phrase(settings, 'cart_feedback_2'),
@@ -173,8 +179,17 @@ let isMenuInitialized = false;
 document.addEventListener("DOMContentLoaded", () => {
     if (isMenuInitialized) return;
     isMenuInitialized = true;
-    if (window.getSupabaseClient()) loadMenu();
-    window.addEventListener("supabaseReady", loadMenu);
+
+    const tryInitMenu = () => {
+        if (window.getSupabaseClient()) {
+            loadMenu();
+            // إزالة المستمع فور التنفيذ لضمان عدم التكرار
+            window.removeEventListener("supabaseReady", tryInitMenu);
+        }
+    };
+
+    tryInitMenu();
+    window.addEventListener("supabaseReady", tryInitMenu);
 
     document.getElementById("menu-items")?.addEventListener("click", (e) => {
         const btn = e.target.closest(".add-to-cart-btn");

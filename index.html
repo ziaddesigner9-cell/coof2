@@ -170,9 +170,11 @@
         let isHomeBooted = false;
         async function bootHome() {
             if (isHomeBooted) return;
-            isHomeBooted = true;
             const s = await loadAppSettings();
+            if (!s) return;
+            isHomeBooted = true;
             applyHomeSettings(s);
+            window.removeEventListener("supabaseReady", bootHome);
         }
         document.addEventListener("DOMContentLoaded", () => {
             if (window.getSupabaseClient()) bootHome();

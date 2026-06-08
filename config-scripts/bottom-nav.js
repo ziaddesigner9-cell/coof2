@@ -75,11 +75,13 @@
         }
     }
 
+    let isMonitoringStarted = false;
     async function monitorOrderStatus() {
-        if (!lastOrderId) return;
+        if (!lastOrderId || isMonitoringStarted) return;
         const client = typeof window.getSupabaseClient === "function" ? window.getSupabaseClient() : null;
         if (!client) return;
 
+        isMonitoringStarted = true;
         const updateDots = (status) => {
             const el = document.getElementById("order-status-indicator");
             if (!el) return;
