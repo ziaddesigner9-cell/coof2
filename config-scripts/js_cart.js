@@ -31,20 +31,34 @@ function renderCart() {
             const price = parseFloat(item.price) || 0;
             total += price * qty;
             return `
-            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center justify-between">
+            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center justify-between border-b border-zinc-100">
                 <div>
-                    <h3 class="font-bold text-gray-800">${item.name}</h3>
-                    <p class="text-orange-600 font-bold">${price} ريال</p>
+                    <h3 class="font-bold text-zinc-800 text-sm">${item.name}</h3>
+                    <p class="text-amber-600 font-medium text-xs">${price} ريال</p>
                 </div>
-                <div class="flex items-center gap-3 bg-zinc-200 rounded-full px-3 py-1 border border-zinc-300">
-                    <button type="button" onclick="updateQty(${index}, -1)" class="text-2xl font-black px-2" style="color: #000 !important;">-</button>
-                    <span class="w-8 text-center font-black" style="color: #0000FF !important; font-size: 20px !important; line-height: 1 !important; display: block !important; background: transparent !important; visibility: visible !important; opacity: 1 !important; min-width: 2rem;">${qty}</span>
-                    <button type="button" onclick="updateQty(${index}, 1)" class="text-2xl font-black px-2" style="color: #000 !important;">+</button>
+                <div class="flex items-center gap-3 bg-zinc-100 rounded-full p-1 border border-zinc-300">
+                    <button type="button" onclick="updateQty(${index}, -1)" 
+                        class="w-7 h-7 bg-white text-zinc-800 rounded-full font-bold flex items-center justify-center hover:bg-zinc-200 transition text-sm shadow-sm" style="color: #000 !important;">-</button>
+                    
+                    <span class="w-8 h-7 flex items-center justify-center text-center font-black text-base leading-none text-black selection:bg-transparent" 
+                          style="color: #000000 !important; display: inline-flex !important; line-height: 0 !important;">
+                        ${qty}
+                    </span>
+                    
+                    <button type="button" onclick="updateQty(${index}, 1)" 
+                        class="w-7 h-7 bg-amber-500 text-black rounded-full font-bold flex items-center justify-center hover:bg-amber-400 transition text-sm shadow-sm" style="color: #000 !important;">+</button>
                 </div>
             </div>`;
         })
         .join("");
     if (totalEl) totalEl.innerText = total + " ريال";
+
+    // 🪄 خدعة Force Reflow لإجبار متصفح Safari على إعادة رسم الألوان والأبعاد فوراً
+    if (container) {
+        container.style.display = 'none';
+        void container.offsetHeight; 
+        container.style.display = 'block';
+    }
 }
 
 function updateQty(index, change) {
