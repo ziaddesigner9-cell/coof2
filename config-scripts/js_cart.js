@@ -36,10 +36,10 @@ function renderCart() {
                     <h3 class="font-bold text-gray-800">${item.name}</h3>
                     <p class="text-orange-600 font-bold">${price} ريال</p>
                 </div>
-                <div class="flex items-center gap-3 bg-gray-100 rounded-full px-3 py-1">
-                    <button type="button" onclick="updateQty(${index}, -1)" class="text-xl font-bold px-2 text-gray-600">-</button>
-                    <span class="font-bold w-6 text-center text-black">${qty}</span>
-                    <button type="button" onclick="updateQty(${index}, 1)" class="text-xl font-bold px-2 text-gray-600">+</button>
+                <div class="flex items-center gap-3 bg-zinc-200 rounded-full px-3 py-1 border border-zinc-300">
+                    <button type="button" onclick="updateQty(${index}, -1)" class="text-2xl font-black px-2" style="color: #000 !important;">-</button>
+                    <span class="font-black w-8 text-center" style="color: #000 !important; font-size: 1.2rem; display: inline-block;">${qty}</span>
+                    <button type="button" onclick="updateQty(${index}, 1)" class="text-2xl font-black px-2" style="color: #000 !important;">+</button>
                 </div>
             </div>`;
         })
