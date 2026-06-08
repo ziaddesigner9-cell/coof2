@@ -60,7 +60,7 @@ async function loadMenu() {
                     const safeImage = escapeHtml(window.getSafeImageUrl(item.image_url));
                     return `
         <div class="menu-card menu-item p-4 rounded-2xl flex items-center gap-4 transition">
-              <img src="${safeImage}" alt="${safeName}" loading="lazy"
+              <img src="${safeImage}" alt="${safeName}" loading="lazy" decoding="async"
                   class="w-20 h-20 object-cover rounded-xl border border-amber-500/50 flex-shrink-0">
             <div class="flex-grow min-w-0">
                 <h3 class="font-bold gold-title text-lg leading-tight">${safeName}</h3>

@@ -21,6 +21,9 @@ a, button, .category-row, [role="button"], [onclick], input[type="button"], inpu
 body.app-theme {
     background: #080808;
     color: #fafafa;
+    /* منع التمرير الأفقي العرضي في الآيفون */
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
 }
 
 .gold-text {

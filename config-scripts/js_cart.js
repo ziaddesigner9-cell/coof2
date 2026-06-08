@@ -36,25 +36,30 @@ function renderCart() {
             const price = parseFloat(item.price) || 0;
             total += price * qty;
             return `
-            <div class="w-full flex items-center justify-between bg-zinc-900/40 border-b border-zinc-800/50 p-4 mb-1 text-right gap-4" style="direction: rtl !important; display: flex !important;">
+            <div class="w-full flex items-center justify-between bg-zinc-900/40 border border-zinc-800/50 rounded-2xl p-4 text-right gap-3" 
+                 style="direction: rtl !important; display: flex !important; flex-shrink: 0 !important;">
                 
-                <!-- معلومات الصنف -->
-                <div class="flex-1 min-w-0">
-                    <h4 class="font-bold text-white text-base leading-tight truncate" style="color: #ffffff !important; margin-bottom: 4px;">${item.name}</h4>
-                    <p class="text-amber-500 font-bold text-sm" style="color: #f5d76e !important;">${price} ريال</p>
+                <!-- الإطار 1: الاسم والسعر (يمين) -->
+                <div class="flex-1 min-w-0 pr-1">
+                    <h4 class="font-bold text-white text-sm md:text-base leading-tight truncate" style="color: #ffffff !important;">${item.name}</h4>
+                    <p class="text-amber-500 font-bold text-xs mt-1" style="color: #f5d76e !important;">${price} ر.س</p>
                 </div>
 
-                <!-- التحكم في الكمية (بدون خلفيات ملونة للأزرار) -->
-                <div class="shrink-0 flex items-center gap-4" onclick="event.stopPropagation()" style="display: flex !important;">
-                    <button type="button" onclick="updateQty(${index}, -1)" 
-                            class="w-10 h-10 text-zinc-400 hover:text-white active:scale-90 font-bold flex items-center justify-center transition text-4xl bg-transparent border-none outline-none shadow-none">
-                        -
-                    </button>
-                    <span class="font-black text-white text-lg min-w-[30px] text-center" style="color: #ffffff !important; display: inline-block !important;">
+                <!-- الإطار 2: الكمية (وسط) -->
+                <div class="shrink-0 w-10 h-10 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-center justify-center">
+                    <span class="font-black text-amber-500 text-base" style="color: #f5d76e !important; display: inline-block !important;">
                         ${qty}
                     </span>
+                </div>
+
+                <!-- الإطار 3: أزرار التحكم الشفافة (يسار) -->
+                <div class="shrink-0 flex items-center gap-2" onclick="event.stopPropagation()" style="display: flex !important;">
+                    <button type="button" onclick="updateQty(${index}, -1)" 
+                            class="w-10 h-10 text-zinc-500 hover:text-white active:scale-75 transition-all text-3xl bg-transparent border-none outline-none">
+                        -
+                    </button>
                     <button type="button" onclick="updateQty(${index}, 1)" 
-                            class="w-10 h-10 text-amber-500 hover:text-amber-400 active:scale-90 font-bold flex items-center justify-center transition text-4xl bg-transparent border-none outline-none shadow-none">
+                            class="w-10 h-10 text-amber-500 hover:text-amber-400 active:scale-75 transition-all text-3xl bg-transparent border-none outline-none">
                         +
                     </button>
                 </div>
