@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" style="margin: 0 !important; padding: 0 !important; width: 100% !important; overflow-x: hidden !important;">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>لوحة دخول الموظفين</title>
 
     <script src="../app_global_env.js"></script>
@@ -13,74 +13,94 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    
     <style>
-        body { font-family: 'Cairo', sans-serif; }
+        * {
+            box-sizing: border-box !important;
+        }
+        html, body { 
+            font-family: 'Cairo', sans-serif; 
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            overflow-x: hidden !important;
+            position: relative !important;
+            left: 0 !important;
+            right: 0 !important;
+            transform: none !important;
+            background-color: #000000 !important;
+        }
     </style>
 </head>
-<body class="bg-black text-zinc-100 p-4 relative overflow-x-hidden portal-screen-center">
+<body class="bg-black text-zinc-100 p-0 m-0 overflow-x-hidden">
 
-    <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-[120px] pointer-events-none"></div>
-    <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none"></div>
+    <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-[120px] pointer-events-none z-0"></div>
+    <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none z-0"></div>
 
-    <div class="w-full max-w-md mx-auto z-10 space-y-8">
+    <div class="fixed inset-0 w-full h-full flex flex-col justify-center items-center text-center px-4 z-10 overflow-y-auto"
+         style="direction: rtl !important; left: 0 !important; right: 0 !important; margin: 0 auto !important; transform: none !important;">
         
-        <div class="text-center space-y-2">
-            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-zinc-900 border border-zinc-800 shadow-2xl mb-2 text-3xl">
-                👨‍🍳
-            </div>
-            <h1 class="text-3xl font-black tracking-tight text-white bg-gradient-to-r from-zinc-100 to-zinc-400 bg-clip-text text-transparent">
-                بوابة الموظفين الرقمية
-            </h1>
-            <p class="text-sm text-zinc-400">مرحباً بك مجدداً، يرجى اختيار قسمك لتسجيل الدخول</p>
-        </div>
-
-        <div class="space-y-6">
+        <div class="w-full max-w-md mx-auto space-y-6 flex flex-col justify-center items-center" style="margin: 0 auto !important; float: none !important;">
             
-            <div class="group bg-zinc-900/40 backdrop-blur-md p-6 rounded-3xl border border-zinc-800/80 hover:border-amber-500/40 shadow-2xl transition-all duration-300">
-                <div class="flex flex-col items-center text-center mb-4">
-                    <span class="text-2xl p-2 bg-amber-500/10 rounded-xl text-amber-500 group-hover:scale-110 transition-transform mb-2">🔐</span>
-                    <div class="space-y-1">
-                        <h2 class="text-lg font-bold text-amber-500">لوحة المطبخ</h2>
-                        <p class="text-xs text-zinc-500">إدارة وتجهيز الطلبات الحالية</p>
-                    </div>
+            <div class="text-center space-y-2 w-full flex flex-col items-center justify-center">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-zinc-900 border border-zinc-800 shadow-2xl mb-2 text-3xl select-none">
+                    👨‍🍳
                 </div>
-                
-                <div class="space-y-3">
-                    <input type="password" id="workerPassInput" 
-                           class="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-4 text-white text-center text-xl tracking-widest placeholder:tracking-normal focus:border-amber-500/60 focus:ring-1 focus:ring-amber-500/30 outline-none transition" 
-                           onkeyup="if(event.key==='Enter') handleAuth('worker')"
-                           placeholder="••••••••">
-                    <button onclick="handleAuth('worker')" 
-                            class="w-full bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-black font-black py-3.5 rounded-xl transition-all duration-300 shadow-lg shadow-amber-950/20 active:scale-[0.98]">
-                        دخول المطبخ ←
-                    </button>
-                </div>
+                <h1 class="text-3xl font-black tracking-tight text-white bg-gradient-to-r from-zinc-100 to-zinc-400 bg-clip-text text-transparent block text-center w-full">
+                    بوابة الموظفين الرقمية
+                </h1>
+                <p class="text-sm text-zinc-400 block text-center w-full">مرحباً بك مجدداً، يرجى اختيار قسمك لتسجيل الدخول</p>
             </div>
 
-            <div class="group bg-zinc-900/40 backdrop-blur-md p-6 rounded-3xl border border-zinc-800/80 hover:border-emerald-500/40 shadow-2xl transition-all duration-300">
-                <div class="flex flex-col items-center text-center mb-4">
-                    <span class="text-2xl p-2 bg-emerald-500/10 rounded-xl text-emerald-500 group-hover:scale-110 transition-transform mb-2">🚚</span>
-                    <div class="space-y-1">
-                        <h2 class="text-lg font-bold text-emerald-500">نظام التوصيل</h2>
-                        <p class="text-xs text-zinc-500">استلام الطلبات الجاهزة وتوصيلها</p>
+            <div class="space-y-5 w-full">
+                
+                <div class="group bg-zinc-900/40 backdrop-blur-md p-6 rounded-3xl border border-zinc-800/80 hover:border-amber-500/40 shadow-2xl transition-all duration-300 flex flex-col items-center justify-center" style="margin: 0 auto !important;">
+                    <div class="flex flex-col items-center text-center mb-4 justify-center w-full">
+                        <span class="text-2xl p-2 bg-amber-500/10 rounded-xl text-amber-500 group-hover:scale-110 transition-transform mb-2 block">🔐</span>
+                        <div class="space-y-1 w-full text-center">
+                            <h2 class="text-lg font-bold text-amber-500 block text-center w-full">لوحة المطبخ</h2>
+                            <p class="text-xs text-zinc-500 block text-center w-full">إدارة وتجهيز الطلبات الحالية</p>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-3 w-full">
+                        <input type="password" id="workerPassInput" 
+                               class="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-4 text-white text-center text-xl tracking-widest placeholder:tracking-normal focus:border-amber-500/60 focus:ring-1 focus:ring-amber-500/30 outline-none transition" 
+                               onkeyup="if(event.key==='Enter') handleAuth('worker')"
+                               placeholder="••••••••" style="text-align: center !important;">
+                        <button onclick="handleAuth('worker')" 
+                                class="w-full bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-black font-black py-3.5 rounded-xl transition-all duration-300 shadow-lg shadow-amber-950/20 active:scale-[0.98] text-center flex items-center justify-center">
+                            دخول المطبخ ←
+                        </button>
                     </div>
                 </div>
-                
-                <div class="space-y-3">
-                    <input type="password" id="deliveryPassInput" 
-                           class="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-4 text-white text-center text-xl tracking-widest placeholder:tracking-normal focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/30 outline-none transition" 
-                           onkeyup="if(event.key==='Enter') handleAuth('delivery')"
-                           placeholder="••••••••">
-                    <button onclick="handleAuth('delivery')" 
-                            class="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-black py-3.5 rounded-xl transition-all duration-300 shadow-lg shadow-emerald-950/20 active:scale-[0.98]">
-                        دخول السائق ←
-                    </button>
+
+                <div class="group bg-zinc-900/40 backdrop-blur-md p-6 rounded-3xl border border-zinc-800/80 hover:border-emerald-500/40 shadow-2xl transition-all duration-300 flex flex-col items-center justify-center" style="margin: 0 auto !important;">
+                    <div class="flex flex-col items-center text-center mb-4 justify-center w-full">
+                        <span class="text-2xl p-2 bg-emerald-500/10 rounded-xl text-emerald-500 group-hover:scale-110 transition-transform mb-2 block">🚚</span>
+                        <div class="space-y-1 w-full text-center">
+                            <h2 class="text-lg font-bold text-emerald-500 block text-center w-full">نظام التوصيل</h2>
+                            <p class="text-xs text-zinc-500 block text-center w-full">استلام الطلبات الجاهزة وتوصيلها</p>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-3 w-full">
+                        <input type="password" id="deliveryPassInput" 
+                               class="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-4 text-white text-center text-xl tracking-widest placeholder:tracking-normal focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/30 outline-none transition" 
+                               onkeyup="if(event.key==='Enter') handleAuth('delivery')"
+                               placeholder="••••••••" style="text-align: center !important;">
+                        <button onclick="handleAuth('delivery')" 
+                                class="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-black py-3.5 rounded-xl transition-all duration-300 shadow-lg shadow-emerald-950/20 active:scale-[0.98] text-center flex items-center justify-center">
+                            دخول السائق ←
+                        </button>
+                    </div>
                 </div>
+
             </div>
 
+            <p class="text-center text-xs text-zinc-600 tracking-wide w-full block pt-2">جميع الحقوق محفوظة © النظام الذكي لإدارة المطاعم</p>
         </div>
-
-        <p class="text-center text-xs text-zinc-600 tracking-wide">جميع الحقوق محفوظة © النظام الذكي لإدارة المطاعم</p>
     </div>
 
     <script>
@@ -90,7 +110,6 @@
         
         console.log("محاولة تسجيل دخول للدور:", role);
 
-        // التحقق من أن الدالة verifyLogin تم تحميلها بنجاح من ملف js_auth_config.js
         if (typeof verifyLogin === "function") {
             if (verifyLogin(password, role)) {
                 console.log("تم التحقق بنجاح! جاري التوجيه...");
