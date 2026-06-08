@@ -204,6 +204,12 @@ function setupAdminRealtime() {
 
 /** تشغيل النظام */
 function initAdmin() {
+    // 🔒 فرض التنصيص الإجباري: التحقق من صلاحية المدير فقط
+    if (typeof checkAccess === "function" && !checkAccess('admin')) {
+        window.location.replace("admin-only-login.html");
+        return;
+    }
+
     hideAdminLoader();
     fetchItems();
     fetchGallery();

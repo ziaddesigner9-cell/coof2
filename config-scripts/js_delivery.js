@@ -238,6 +238,12 @@ function initDelivery() {
     if (isDeliveryInit) return;
     isDeliveryInit = true;
 
+    // 🔒 فرض التنصيص الإجباري: التحقق من الصلاحية (توصيل أو مدير)
+    if (typeof checkAccess === "function" && !checkAccess('delivery') && !checkAccess('admin')) {
+        window.location.replace("admin-login.html");
+        return;
+    }
+
     loadDeliveryOrders();
     // تحديث تلقائي كل دقيقة كاحتياط
     setInterval(loadDeliveryOrders, 60000);

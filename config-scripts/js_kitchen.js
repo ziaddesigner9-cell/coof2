@@ -475,6 +475,12 @@ function initKitchen() {
     if (isKitchenInit) return;
     isKitchenInit = true;
 
+    // 🔒 فرض التنصيص الإجباري: التحقق من الصلاحية (عامل أو مدير)
+    if (typeof checkAccess === "function" && !checkAccess('worker') && !checkAccess('admin')) {
+        window.location.replace("admin-login.html");
+        return;
+    }
+
     loadOrders();
     setInterval(loadOrders, 15000);
 
