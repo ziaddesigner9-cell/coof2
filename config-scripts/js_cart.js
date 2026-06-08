@@ -31,32 +31,31 @@ function renderCart() {
             const price = parseFloat(item.price) || 0;
             total += price * qty;
             return `
-            <div class="flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded-2xl p-4 mb-3 text-right gap-4">
+            <div class="flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded-2xl p-4 mb-3 text-right gap-4" style="direction: rtl !important;">
                 
-                <!-- الإطار الأول: الاسم والسعر (أقصى اليمين) -->
-                <div class="flex-1 pr-2 min-w-0">
-                    <h4 class="font-bold text-white text-base mb-1 truncate">${item.name}</h4>
-                    <p class="text-amber-400 font-bold text-sm">${price} ريال</p>
+                <!-- الإطار الأول (اليمين): الاسم والسعر -->
+                <div class="flex-1 pr-2 min-w-0" style="flex: 1 1 auto !important;">
+                    <h4 class="font-bold text-white text-base mb-1 truncate" style="color: #ffffff !important;">${item.name}</h4>
+                    <p class="text-amber-400 font-bold text-sm" style="color: #fbbf24 !important;">${price} ريال</p>
                 </div>
 
-                <!-- الإطار الثاني: الكمية (في المنتصف تماماً) -->
-                <div class="shrink-0 w-11 h-10 bg-gradient-to-b from-amber-400 to-yellow-500 rounded-xl flex items-center justify-center shadow-md border border-amber-600/30">
-                    <span class="font-black text-black text-base leading-none" style="color: #000000 !important; font-weight: 900 !important;">
+                <!-- الإطار الثاني (الوسط): صندوق الكمية الذهبي -->
+                <div class="shrink-0 w-11 h-10 bg-gradient-to-b from-amber-400 to-yellow-500 rounded-xl flex items-center justify-center shadow-md border border-amber-600/30" style="flex-shrink: 0 !important;">
+                    <span class="font-black text-black text-base leading-none" style="color: #000000 !important; font-weight: 900 !important; display: block !important;">
                         ${qty}
                     </span>
                 </div>
 
-                <!-- الإطار الثالث: أزرار التحكم (أقصى اليسار) -->
-                <div class="shrink-0 flex items-center gap-2" onclick="event.stopPropagation()">
+                <!-- الإطار الثالث (اليسار): أزرار الزيادة والنقصان -->
+                <div class="shrink-0 flex items-center gap-2" onclick="event.stopPropagation()" style="flex-shrink: 0 !important; display: flex !important;">
                     <button type="button" onclick="updateQty(${index}, -1)" 
-                            class="w-9 h-9 bg-zinc-800 text-white active:scale-95 font-bold rounded-lg flex items-center justify-center transition text-xl shadow-inner border border-zinc-700">
+                            class="w-9 h-9 bg-zinc-800 text-white active:scale-95 font-bold rounded-lg flex items-center justify-center transition text-xl shadow-inner border border-zinc-700" style="color: #ffffff !important;">
                         -
                     </button>
                     <button type="button" onclick="updateQty(${index}, 1)" 
-                            class="w-9 h-9 bg-amber-600 text-black active:scale-95 font-bold rounded-lg flex items-center justify-center transition text-xl shadow-sm">
+                            class="w-9 h-9 bg-amber-600 text-black active:scale-95 font-bold rounded-lg flex items-center justify-center transition text-xl shadow-sm" style="color: #000000 !important;">
                         +
                     </button>
-                </div>
             </div>`;
         })
         .join("");
