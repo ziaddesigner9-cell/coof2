@@ -64,11 +64,10 @@ function mergeSettings(raw) {
     
     // ضمان دمج العبارات الجديدة (Feedback) حتى لو لم تكن موجودة في البيانات القادمة
     if (raw.phrases && typeof raw.phrases === "object") {
-        // الحفاظ على العبارات الافتراضية إذا كانت فارغة في البيانات القادمة
-        const mergedPhrases = { ...base.phrases, ...raw.phrases };
+        const mergedPhrases = { ...DEFAULT_APP_SETTINGS.phrases, ...raw.phrases };
         for (let i = 1; i <= 6; i++) {
             const key = `cart_feedback_${i}`;
-            if (!mergedPhrases[key]) mergedPhrases[key] = DEFAULT_APP_SETTINGS.phrases[key];
+            if (!mergedPhrases[key] || mergedPhrases[key].trim() === "") mergedPhrases[key] = DEFAULT_APP_SETTINGS.phrases[key];
         }
         base.phrases = mergedPhrases;
     }

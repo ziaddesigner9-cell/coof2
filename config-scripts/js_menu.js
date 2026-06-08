@@ -137,6 +137,11 @@ async function showCartFeedback() {
     // إضافة فئات Tailwind للظهور بوضوح مع التأكد من بقاء التنسيق الذهبي
     el.className = "falling-phrase gold-title text-xl px-8 py-3 bg-black/90 backdrop-blur-lg rounded-full border-2 border-amber-500/50 shadow-[0_0_30px_rgba(232,184,74,0.3)]";
     el.textContent = text;
+    
+    // إضافة انحراف عشوائي بسيط لليمين أو اليسار لتبدو الحركة طبيعية
+    const randomOffset = Math.floor(Math.random() * 20) - 10;
+    el.style.marginLeft = `${randomOffset}px`;
+    
     document.body.appendChild(el);
     
     // تحريك أيقونة السلة في الشريط السفلي
