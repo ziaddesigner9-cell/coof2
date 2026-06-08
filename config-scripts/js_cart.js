@@ -38,7 +38,7 @@ function renderCart() {
                 </div>
                 <div class="flex items-center gap-3 bg-gray-100 rounded-full px-3 py-1">
                     <button type="button" onclick="updateQty(${index}, -1)" class="text-xl font-bold px-2 text-gray-600">-</button>
-                    <span class="font-bold w-6 text-center text-gray-900">${qty}</span>
+                    <span class="font-bold w-6 text-center text-black">${qty}</span>
                     <button type="button" onclick="updateQty(${index}, 1)" class="text-xl font-bold px-2 text-gray-600">+</button>
                 </div>
             </div>`;
