@@ -16,37 +16,35 @@
         body { font-family: 'Cairo', sans-serif; }
     </style>
 </head>
-<body class="bg-black text-zinc-100 p-4 relative overflow-x-hidden portal-screen-center">
+<body class="bg-black text-white min-h-screen p-4 overflow-x-hidden">
 
     <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-[120px] pointer-events-none"></div>
 
-    <div class="w-full max-w-md mx-auto z-10 space-y-8">
+    <div class="w-full max-w-md mx-auto flex flex-col justify-center items-center text-center px-2 min-h-screen z-10 relative" 
+         style="margin: 0 auto !important; float: none !important; direction: rtl !important;">
         
-        <div class="text-center space-y-2">
-            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-zinc-900 border border-zinc-800 shadow-2xl mb-2 text-3xl">
+        <div class="w-full flex flex-col items-center justify-center mb-6">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-zinc-900 border border-zinc-800 shadow-2xl mb-4 text-3xl">
                 ⚙️
             </div>
-            <h1 class="text-3xl font-black tracking-tight text-white bg-gradient-to-r from-blue-100 to-blue-400 bg-clip-text text-transparent">
+            <h1 class="text-2xl font-black text-white text-center w-full block">
                 لوحة التحكم الإدارية
             </h1>
-            <p class="text-sm text-zinc-400">يرجى إدخال كلمة مرور المدير للمتابعة</p>
+            <p class="text-zinc-400 text-xs text-center w-full block mt-2">يرجى إدخال كلمة مرور المدير للمتابعة</p>
         </div>
 
-        <div class="space-y-6">
-            <div class="group bg-zinc-900/40 backdrop-blur-md p-8 rounded-3xl border border-zinc-800/80 hover:border-blue-500/40 shadow-2xl transition-all duration-300">
-                <div class="space-y-4 text-center">
-                    <div>
-                        <label class="block text-xs text-zinc-500 mb-2">كلمة المرور</label>
-                        <input type="password" id="adminPassInput" 
-                               class="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-4 text-white text-center text-xl tracking-widest placeholder:tracking-normal focus:border-blue-500/60 focus:ring-1 focus:ring-blue-500/30 outline-none transition" 
-                               onkeyup="if(event.key==='Enter') handleAuth()"
-                               placeholder="••••••••">
-                    </div>
-                    <button onclick="handleAuth()" 
-                            class="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-black py-4 rounded-xl transition-all duration-300 shadow-lg shadow-blue-950/20 active:scale-[0.98]">
-                        تسجيل الدخول للمدير
-                    </button>
-                </div>
+        <div class="w-full space-y-6">
+            <div class="w-full bg-zinc-900/50 border border-zinc-800 rounded-3xl p-6 flex flex-col items-center justify-center"
+                 style="float: none !important; margin: 0 auto !important;">
+                 <label class="block text-xs text-zinc-500 mb-2">كلمة المرور</label>
+                 <input type="password" id="adminPassInput" placeholder="••••••••" 
+                        class="w-full text-center bg-black border border-zinc-700 rounded-xl p-3 text-white mb-4 outline-none focus:border-blue-500" 
+                        onkeyup="if(event.key==='Enter') handleAuth()"
+                        style="text-align: center !important;" />
+                 <button onclick="handleAuth()" 
+                         class="w-full py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-xl transition text-center shadow-lg">
+                     تسجيل الدخول للمدير
+                 </button>
             </div>
         </div>
 
