@@ -89,3 +89,14 @@ body.app-theme {
     50% { transform: scale(1.3); }
 }
 .cart-animate { animation: cart-shake 0.4s cubic-bezier(.36,.07,.19,.97); }
+
+/* فئة مخصصة لضمان تمركز محتوى البوابات الرقمية في منتصف الشاشة */
+.portal-screen-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    width: 100%;
+    text-align: center;
+}

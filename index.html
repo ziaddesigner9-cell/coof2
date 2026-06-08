@@ -111,10 +111,13 @@
     <div id="app-bg-layer" class="hidden"></div>
     <div class="app-vignette absolute inset-0 pointer-events-none z-[1]"></div>
 
-    <button type="button" onclick="location.href='admin-panel/admin-only-login.html'"
-        class="fixed top-4 left-4 z-50 text-amber-400 border border-amber-700/50 px-3 py-1.5 rounded-full text-xs">⚙️ المدير</button>
-    <a href="admin-panel/admin-login.html"
-        class="fixed top-4 right-4 z-50 text-amber-400 border border-amber-700/50 px-3 py-1.5 rounded-full text-xs">عامل</a>
+    <!-- بوابة الموظفين الرقمية - ممركزة في الأعلى لسهولة الوصول -->
+    <div class="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 whitespace-nowrap">
+        <button type="button" onclick="location.href='admin-panel/admin-only-login.html'"
+            class="text-amber-400 border border-amber-700/50 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full text-[10px]">⚙️ الإدارة</button>
+        <a href="admin-panel/admin-login.html"
+            class="text-amber-400 border border-amber-700/50 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full text-[10px]">بوابة الموظفين</a>
+    </div>
 
     <div class="relative z-10 max-w-lg mx-auto px-4 pt-2 pb-4">
 
