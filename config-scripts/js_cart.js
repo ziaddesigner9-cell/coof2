@@ -31,22 +31,31 @@ function renderCart() {
             const price = parseFloat(item.price) || 0;
             total += price * qty;
             return `
-            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center justify-between border-b border-zinc-100">
-                <div>
-                    <h3 class="font-bold text-zinc-800 text-sm">${item.name}</h3>
-                    <p class="text-amber-600 font-medium text-xs">${price} ريال</p>
+            <div class="flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded-2xl p-4 mb-3 text-right">
+                
+                <div class="flex-1 pr-2">
+                    <h4 class="font-bold text-white text-base mb-1">${item.name}</h4>
+                    <p class="text-amber-400 font-bold text-sm">${price} ريال</p>
                 </div>
-                <div class="flex items-center gap-2 bg-zinc-100 rounded-full p-1 w-28 justify-between border border-zinc-300" onclick="event.stopPropagation()">
-                    <button type="button" onclick="updateQty(${index}, -1)" 
-                        class="shrink-0 w-8 h-8 bg-white text-black rounded-full font-bold flex items-center justify-center hover:bg-zinc-200 transition text-sm shadow-sm" style="color: #000 !important;">-</button>
+
+                <div class="flex items-center gap-1.5 bg-black/60 p-1.5 rounded-xl border border-zinc-850" onclick="event.stopPropagation()">
                     
-                    <span class="flex-1 shrink-0 flex items-center justify-center text-center font-black text-base leading-none text-black selection:bg-transparent" 
-                          style="color: #000000 !important; min-width: 24px !important; max-width: 40px !important; display: inline-flex !important; line-height: 0 !important;">
-                        ${qty}
-                    </span>
+                    <button type="button" onclick="updateQty(${index}, -1)" 
+                            class="w-9 h-9 bg-zinc-800 text-white hover:bg-zinc-700 active:scale-95 font-bold rounded-lg flex items-center justify-center transition text-lg shadow-inner">
+                        -
+                    </button>
+                    
+                    <div class="w-10 h-9 bg-gradient-to-b from-amber-400 to-yellow-500 rounded-lg flex items-center justify-center shadow-md">
+                        <span class="font-black text-black text-base" style="color: #000000 !important; font-weight: 900 !important;">
+                            ${item.quantity ?? item.qty ?? item.count ?? 1}
+                        </span>
+                    </div>
                     
                     <button type="button" onclick="updateQty(${index}, 1)" 
-                        class="shrink-0 w-8 h-8 bg-amber-500 text-black rounded-full font-bold flex items-center justify-center hover:bg-amber-400 transition text-sm shadow-sm" style="color: #000 !important;">+</button>
+                            class="w-9 h-9 bg-amber-600/20 text-amber-400 border border-amber-600/40 hover:bg-amber-600 hover:text-black active:scale-95 font-bold rounded-lg flex items-center justify-center transition text-lg shadow-sm">
+                        +
+                    </button>
+                    
                 </div>
             </div>`;
         })
