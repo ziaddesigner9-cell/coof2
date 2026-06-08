@@ -31,31 +31,31 @@ function renderCart() {
             const price = parseFloat(item.price) || 0;
             total += price * qty;
             return `
-            <div class="flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded-2xl p-4 mb-3 text-right">
+            <div class="flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded-2xl p-4 mb-3 text-right gap-4">
                 
-                <div class="flex-1 pr-2">
-                    <h4 class="font-bold text-white text-base mb-1">${item.name}</h4>
+                <!-- الإطار الأول: الاسم والسعر (أقصى اليمين) -->
+                <div class="flex-1 pr-2 min-w-0">
+                    <h4 class="font-bold text-white text-base mb-1 truncate">${item.name}</h4>
                     <p class="text-amber-400 font-bold text-sm">${price} ريال</p>
                 </div>
 
-                <div class="flex items-center gap-1.5 bg-black/60 p-1.5 rounded-xl border border-zinc-850" onclick="event.stopPropagation()">
-                    
+                <!-- الإطار الثاني: الكمية (في المنتصف تماماً) -->
+                <div class="shrink-0 w-11 h-10 bg-gradient-to-b from-amber-400 to-yellow-500 rounded-xl flex items-center justify-center shadow-md border border-amber-600/30">
+                    <span class="font-black text-black text-base leading-none" style="color: #000000 !important; font-weight: 900 !important;">
+                        ${qty}
+                    </span>
+                </div>
+
+                <!-- الإطار الثالث: أزرار التحكم (أقصى اليسار) -->
+                <div class="shrink-0 flex items-center gap-2" onclick="event.stopPropagation()">
                     <button type="button" onclick="updateQty(${index}, -1)" 
-                            class="w-9 h-9 bg-zinc-800 text-white hover:bg-zinc-700 active:scale-95 font-bold rounded-lg flex items-center justify-center transition text-lg shadow-inner">
+                            class="w-9 h-9 bg-zinc-800 text-white active:scale-95 font-bold rounded-lg flex items-center justify-center transition text-xl shadow-inner border border-zinc-700">
                         -
                     </button>
-                    
-                    <div class="w-10 h-9 bg-gradient-to-b from-amber-400 to-yellow-500 rounded-lg flex items-center justify-center shadow-md">
-                        <span class="font-black text-black text-base" style="color: #000000 !important; font-weight: 900 !important;">
-                            ${item.quantity ?? item.qty ?? item.count ?? 1}
-                        </span>
-                    </div>
-                    
                     <button type="button" onclick="updateQty(${index}, 1)" 
-                            class="w-9 h-9 bg-amber-600/20 text-amber-400 border border-amber-600/40 hover:bg-amber-600 hover:text-black active:scale-95 font-bold rounded-lg flex items-center justify-center transition text-lg shadow-sm">
+                            class="w-9 h-9 bg-amber-600 text-black active:scale-95 font-bold rounded-lg flex items-center justify-center transition text-xl shadow-sm">
                         +
                     </button>
-                    
                 </div>
             </div>`;
         })
