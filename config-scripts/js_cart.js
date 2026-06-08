@@ -27,7 +27,7 @@ function renderCart() {
     let total = 0;
     container.innerHTML = cart
         .map((item, index) => {
-            const qty = parseInt(item.quantity) || 1;
+            const qty = parseInt(item.quantity ?? item.qty ?? item.count ?? 1);
             const price = parseFloat(item.price) || 0;
             total += price * qty;
             return `
@@ -36,17 +36,17 @@ function renderCart() {
                     <h3 class="font-bold text-zinc-800 text-sm">${item.name}</h3>
                     <p class="text-amber-600 font-medium text-xs">${price} ريال</p>
                 </div>
-                <div class="flex items-center gap-3 bg-zinc-100 rounded-full p-1 border border-zinc-300">
+                <div class="flex items-center gap-2 bg-zinc-100 rounded-full p-1 w-28 justify-between border border-zinc-300" onclick="event.stopPropagation()">
                     <button type="button" onclick="updateQty(${index}, -1)" 
-                        class="w-7 h-7 bg-white text-zinc-800 rounded-full font-bold flex items-center justify-center hover:bg-zinc-200 transition text-sm shadow-sm" style="color: #000 !important;">-</button>
+                        class="shrink-0 w-8 h-8 bg-white text-black rounded-full font-bold flex items-center justify-center hover:bg-zinc-200 transition text-sm shadow-sm" style="color: #000 !important;">-</button>
                     
-                    <span class="w-8 h-7 flex items-center justify-center text-center font-black text-base leading-none text-black selection:bg-transparent" 
-                          style="color: #000000 !important; display: inline-flex !important; line-height: 0 !important;">
+                    <span class="flex-1 shrink-0 flex items-center justify-center text-center font-black text-base leading-none text-black selection:bg-transparent" 
+                          style="color: #000000 !important; min-width: 24px !important; max-width: 40px !important; display: inline-flex !important; line-height: 0 !important;">
                         ${qty}
                     </span>
                     
                     <button type="button" onclick="updateQty(${index}, 1)" 
-                        class="w-7 h-7 bg-amber-500 text-black rounded-full font-bold flex items-center justify-center hover:bg-amber-400 transition text-sm shadow-sm" style="color: #000 !important;">+</button>
+                        class="shrink-0 w-8 h-8 bg-amber-500 text-black rounded-full font-bold flex items-center justify-center hover:bg-amber-400 transition text-sm shadow-sm" style="color: #000 !important;">+</button>
                 </div>
             </div>`;
         })
