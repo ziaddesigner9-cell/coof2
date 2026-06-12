@@ -1,10 +1,18 @@
 /**
- * شريط سفلي ثابت (العائم الفاخر): رئيسية | ساخن | بارد | حلى | سلة
+ * شريط سفلي ثابت (العائم الفاخر): رئيسية | ساخن | بارد | حلى | [شيشة] | سلة
  * تصميم كبسولة عائمة زجاجية (Glassmorphic Floating Capsule) مع أيقونات SVG أنيقة وتأثيرات توهج وحركة.
+ * يعتمد على إعدادات Supabase لإظهار أو إخفاء الشيشة ديناميكياً وتفادي الازدحام في الشاشات الصغيرة.
  * يُخفى تلقائياً في صفحة السلة (body.cart-page)
  */
-(function initBottomNav() {
+(async function initBottomNav() {
     if (document.body.classList.contains("cart-page")) return;
+
+    // جلب الإعدادات من المخزن المؤقت أو قاعدة البيانات لمعرفة خيار الشيشة
+    let settings = null;
+    if (typeof window.loadAppSettings === "function") {
+        settings = await window.loadAppSettings();
+    }
+    const showShisha = settings?.ui?.show_shisha_category ?? false;
 
     const pathLower = window.location.pathname.toLowerCase();
     const isInSubFolder = pathLower.includes("/front-end/") || pathLower.includes("/admin-panel/");
@@ -26,7 +34,7 @@
     const trackUrl = lastOrderId ? `${trackHref}?orderId=${encodeURIComponent(lastOrderId)}` : trackHref;
     const isTracking = pathLower.includes("tracking.html");
 
-    // إعداد الفئات الجديدة لتطبيق التنسيق عبر CSS بالكامل
+    // إعداد الفئات المخصصة للتوهج والبريق الذهبي
     const activeClass = "font-bold active-nav-item";
     const idleClass = "idle-nav-item";
     const inactiveTrackClass = "inactive-track-item";
@@ -70,6 +78,16 @@
                 <circle cx="12" cy="5.5" r="1" fill="currentColor"/>
             </svg>
         `,
+        shisha: `
+            <svg class="w-[22px] h-[22px] mb-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10 21h4v-1.5c0-.8-.7-1.5-1.5-1.5h-1c-.8 0-1.5.7-1.5 1.5V21Z"/>
+                <path d="M7 13.5c0-1.4 1.1-2.5 2.5-2.5h5c1.4 0 2.5 1.1 2.5 2.5v2.5c0 1.4-1.1 2.5-2.5 2.5h-5C8.1 21 7 19.9 7 18.5v-2.5Z"/>
+                <path d="M12 11V6"/>
+                <path d="M9 6h6v-2H9v2Z"/>
+                <path d="M14 8c2.5 0 4.5 1.5 4.5 3.5V17"/>
+                <path d="M18.5 17h2v-4h-2v4Z"/>
+            </svg>
+        `,
         track: `
             <svg class="w-[22px] h-[22px] mb-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M4 2v20l2-1 3 1 3-1 3 1 3-1 2 1V2l-2 1-3-1-3 1-3-1-3 1-2-1Z"/>
@@ -85,7 +103,8 @@
         `
     };
 
-    nav.innerHTML = `
+    // توليد عناصر القائمة ديناميكياً
+    let navContent = `
         <a href="${homeHref}" class="flex flex-col items-center justify-center text-[10px] tracking-wide transition-all duration-300 ${isHome && !currentCat ? activeClass : idleClass}" data-nav="home">
             ${icons.home}<span>الرئيسية</span>
         </a>
@@ -98,6 +117,18 @@
         <a href="${menuBase}?cat=dessert" class="flex flex-col items-center justify-center text-[10px] tracking-wide transition-all duration-300 ${currentCat === "dessert" ? activeClass : idleClass}" data-nav="dessert">
             ${icons.dessert}<span>حلى</span>
         </a>
+    `;
+
+    // إضافة زر الشيشة فقط إذا كانت مفعلة من لوحة التحكم
+    if (showShisha) {
+        navContent += `
+        <a href="${menuBase}?cat=shisha" class="flex flex-col items-center justify-center text-[10px] tracking-wide transition-all duration-300 ${currentCat === "shisha" ? activeClass : idleClass}" data-nav="shisha">
+            ${icons.shisha}<span>شيشة</span>
+        </a>
+        `;
+    }
+
+    navContent += `
         <a href="${trackUrl}" id="nav-track-link" class="relative flex flex-col items-center justify-center text-[10px] tracking-wide transition-all duration-300 ${isTracking ? activeClass : (lastOrderId ? idleClass : inactiveTrackClass)}" data-nav="track">
             <div id="order-status-indicator" class="absolute -top-3 left-0 w-full flex justify-center gap-0.5 h-1.5"></div>
             ${icons.track}<span>طلبي</span>
@@ -108,9 +139,10 @@
         </a>
     `;
 
+    nav.innerHTML = navContent;
     document.body.appendChild(nav);
     
-    // إضافة تباعد لأسفل الصفحة وتطبيق تصميم البريق الموحد لكافة الأيقونات مع نقطة إشعار أسفل الأيقونة النشطة
+    // إضافة تباعد لأسفل الصفحة وتطبيق تصميم البريق الموحد، مع إخفاء النصوص في الشاشات الصغيرة لتفادي الازدحام
     if (!document.getElementById("nav-spacing-style")) {
         const style = document.createElement("style");
         style.id = "nav-spacing-style";
@@ -136,13 +168,11 @@
                 opacity: 1 !important;
                 filter: drop-shadow(0 0 10px rgba(245, 215, 110, 0.95)) !important;
             }
-            /* أيقونة التتبع تكون باهتة فقط إذا لم يكن هناك أي طلب سابق */
             #app-bottom-nav a.inactive-track-item {
                 color: #ffffff !important;
                 opacity: 0.35 !important;
                 filter: none !important;
             }
-            /* النقطة المضيئة الأنيقة أسفل الأيقونة النشطة للتمييز */
             #app-bottom-nav a.active-nav-item::after {
                 content: '';
                 display: block;
@@ -157,6 +187,20 @@
             @keyframes activeDotPulse {
                 0% { transform: scale(0.95); opacity: 0.8; }
                 100% { transform: scale(1.25); opacity: 1; }
+            }
+            
+            /* حل مشكلة الازدحام على الشاشات الصغيرة عند تفعيل كافة الأقسام (7 أيقونات) */
+            @media (max-width: 385px) {
+                #app-bottom-nav a span:not(#cart-badge):not(.wait-el):not(.prep-el) {
+                    display: none !important; /* إخفاء النص لتبقى الأيقونات المضيئة متناسقة ومريحة للمس */
+                }
+                #app-bottom-nav {
+                    padding: 8px 10px !important;
+                    height: 58px !important;
+                }
+                #app-bottom-nav a.active-nav-item::after {
+                    margin-top: 2px !important; /* تقليل التباعد للنقطة المضيئة */
+                }
             }
         `;
         document.head.appendChild(style);
@@ -190,19 +234,45 @@
             let color = "";
             if (status === "pending") color = "#f5d76e"; 
             else if (status === "preparing" || status === "ready") color = "#10B981"; // Emerald Green
+            else if (status === "out_for_delivery") color = "#3B82F6"; // Blue for delivery
             
             if (color) {
                 el.innerHTML = `
                     <div class="w-1.5 h-1.5 rounded-full animate-ping" style="background-color:${color};box-shadow:0 0 8px ${color}"></div>
                     <div class="w-1.5 h-1.5 rounded-full" style="background-color:${color};box-shadow:0 0 5px ${color}"></div>
                 `;
+                // التأكد من أن الزر يظهر باللون الذهبي البراق لوجود طلب نشط
+                const link = document.getElementById("nav-track-link");
+                if (link && !link.classList.contains("active-nav-item")) {
+                    link.classList.remove("inactive-track-item");
+                    link.classList.add("idle-nav-item");
+                }
             } else {
                 el.innerHTML = "";
+                // إذا اكتمل الطلب أو ألغي، نقوم بمسح المعرف وتغيير مظهر الزر ليصبح باهتاً
+                if (status === "completed" || status === "cancelled" || !status) {
+                    localStorage.removeItem("lastOrderId");
+                    const link = document.getElementById("nav-track-link");
+                    if (link && !link.classList.contains("active-nav-item")) {
+                        link.classList.remove("idle-nav-item");
+                        link.classList.add("inactive-track-item");
+                    }
+                }
             }
         };
 
         const { data } = await client.from("orders").select("status").eq("id", lastOrderId).maybeSingle();
-        if (data) updateDots(data.status);
+        if (data) {
+            updateDots(data.status);
+        } else {
+            // إذا لم يتم العثور على الطلب في قاعدة البيانات (تم حذفه مثلاً)، نمسح المعرف
+            localStorage.removeItem("lastOrderId");
+            const link = document.getElementById("nav-track-link");
+            if (link && !link.classList.contains("active-nav-item")) {
+                link.classList.remove("idle-nav-item");
+                link.classList.add("inactive-track-item");
+            }
+        }
 
         client.channel(`nav_order_status`).on('postgres_changes', {
             event: 'UPDATE', schema: 'public', table: 'orders', filter: `id=eq.${lastOrderId}`
