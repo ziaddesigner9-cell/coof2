@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>دخول المدير</title>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../config-scripts/app_env.js"></script>
+    <script src="../config-scripts/dependencies.js"></script>
     <script src="../config-scripts/js_auth_config.js"></script>
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -57,17 +59,27 @@
     </div>
 
     <script>
-    function handleAuth() {
-        const password = document.getElementById('adminPassInput').value;
+    async function handleAuth() {
+        const passwordInput = document.getElementById('adminPassInput');
+        const password = passwordInput.value;
+        const btn = passwordInput.nextElementSibling;
+        const originalText = btn.innerText;
         
         console.log("محاولة تسجيل دخول للمدير...");
 
         if (typeof verifyLogin === "function") {
-            if (verifyLogin(password, 'admin')) {
+            btn.disabled = true;
+            btn.innerText = "جاري التحقق... ⏳";
+
+            const success = await verifyLogin(password, 'admin');
+
+            if (success) {
                 console.log("تم التحقق بنجاح! جاري التوجيه...");
                 window.location.href = 'admin-dashboard.html';
             } else {
-                alert("⚠️ كلمة المرور غير صحيحة.");
+                alert("⚠️ الرمز السري للمدير غير صحيح.");
+                btn.disabled = false;
+                btn.innerText = originalText;
             }
         } else {
             alert("⚠️ خطأ في تحميل ملفات الحماية.");

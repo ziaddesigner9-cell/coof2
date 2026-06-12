@@ -6,7 +6,9 @@
     <title>لوحة دخول الموظفين</title>
 
     <script src="../app_global_env.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../config-scripts/app_env.js"></script>
+    <script src="../config-scripts/dependencies.js"></script>
     <script src="../config-scripts/js_auth_config.js"></script>
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -104,14 +106,25 @@
     </div>
 
     <script>
-    function handleAuth(role) {
+    async function handleAuth(role) {
         const inputId = role === 'worker' ? 'workerPassInput' : 'deliveryPassInput';
-        const password = document.getElementById(inputId).value;
+        const passwordInput = document.getElementById(inputId);
+        const password = passwordInput.value;
         
+        // جلب زر الإرسال المخصّص لتغيير حالته
+        const btn = passwordInput.nextElementSibling;
+        const originalText = btn.innerText;
+
         console.log("محاولة تسجيل دخول للدور:", role);
 
         if (typeof verifyLogin === "function") {
-            if (verifyLogin(password, role)) {
+            // تعطيل الزر وإظهار حالة التحميل
+            btn.disabled = true;
+            btn.innerText = "جاري التحقق... ⏳";
+
+            const success = await verifyLogin(password, role);
+
+            if (success) {
                 console.log("تم التحقق بنجاح! جاري التوجيه...");
                 if (role === 'worker') {
                     window.location.href = '../Front-end/kitchen.html';
@@ -119,7 +132,9 @@
                     window.location.href = '../Front-end/delivery_dashboard.html';
                 }
             } else {
-                alert("⚠️ كلمة المرور غير صحيحة، يرجى المحاولة مرة أخرى.");
+                alert("⚠️ الرمز السري غير صحيح، يرجى المحاولة مرة أخرى.");
+                btn.disabled = false;
+                btn.innerText = originalText;
             }
         } else {
             console.error("خطأ: دالة verifyLogin غير معرفة. تأكد من مسار ملف js_auth_config.js");
