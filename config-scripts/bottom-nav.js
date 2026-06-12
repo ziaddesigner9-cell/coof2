@@ -148,7 +148,10 @@
         style.id = "nav-spacing-style";
         style.innerHTML = `
             body.has-bottom-nav {
-                padding-bottom: 96px !important;
+                padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)) !important;
+            }
+            #app-bottom-nav {
+                bottom: calc(16px + env(safe-area-inset-bottom, 0px)) !important;
             }
             #app-bottom-nav a {
                 flex: 1;
