@@ -26,12 +26,10 @@
     const trackUrl = lastOrderId ? `${trackHref}?orderId=${encodeURIComponent(lastOrderId)}` : trackHref;
     const isTracking = pathLower.includes("tracking.html");
 
-    // إعداد تنسيق الشريط العائم الجديد
-    const activeClass = "font-bold scale-110 -translate-y-0.5";
-    const activeStyle = "color:#f5d76e; filter: drop-shadow(0 0 8px rgba(245,215,110,0.85));";
-    const idleClass = "opacity-60 transition hover:opacity-100 hover:-translate-y-0.5";
-    const idleStyle = "color:#f5d76e; filter: drop-shadow(0 0 2px rgba(245,215,110,0.25));";
-    const whiteStyle = "color:#ffffff; opacity:0.4; transition hover:opacity-100";
+    // إعداد الفئات الجديدة لتطبيق التنسيق عبر CSS بالكامل
+    const activeClass = "font-bold active-nav-item";
+    const idleClass = "idle-nav-item";
+    const inactiveTrackClass = "inactive-track-item";
 
     const nav = document.createElement("nav");
     nav.id = "app-bottom-nav";
@@ -88,23 +86,23 @@
     };
 
     nav.innerHTML = `
-        <a href="${homeHref}" class="flex flex-col items-center justify-center text-[10px] tracking-wide transition-all duration-300 ${isHome && !currentCat ? activeClass : idleClass}" style="${isHome && !currentCat ? activeStyle : idleStyle}" data-nav="home">
+        <a href="${homeHref}" class="flex flex-col items-center justify-center text-[10px] tracking-wide transition-all duration-300 ${isHome && !currentCat ? activeClass : idleClass}" data-nav="home">
             ${icons.home}<span>الرئيسية</span>
         </a>
-        <a href="${menuBase}?cat=hot" class="flex flex-col items-center justify-center text-[10px] tracking-wide transition-all duration-300 ${currentCat === "hot" ? activeClass : idleClass}" style="${currentCat === "hot" ? activeStyle : idleStyle}" data-nav="hot">
+        <a href="${menuBase}?cat=hot" class="flex flex-col items-center justify-center text-[10px] tracking-wide transition-all duration-300 ${currentCat === "hot" ? activeClass : idleClass}" data-nav="hot">
             ${icons.hot}<span>ساخن</span>
         </a>
-        <a href="${menuBase}?cat=cold" class="flex flex-col items-center justify-center text-[10px] tracking-wide transition-all duration-300 ${currentCat === "cold" ? activeClass : idleClass}" style="${currentCat === "cold" ? activeStyle : idleStyle}" data-nav="cold">
+        <a href="${menuBase}?cat=cold" class="flex flex-col items-center justify-center text-[10px] tracking-wide transition-all duration-300 ${currentCat === "cold" ? activeClass : idleClass}" data-nav="cold">
             ${icons.cold}<span>بارد</span>
         </a>
-        <a href="${menuBase}?cat=dessert" class="flex flex-col items-center justify-center text-[10px] tracking-wide transition-all duration-300 ${currentCat === "dessert" ? activeClass : idleClass}" style="${currentCat === "dessert" ? activeStyle : idleStyle}" data-nav="dessert">
+        <a href="${menuBase}?cat=dessert" class="flex flex-col items-center justify-center text-[10px] tracking-wide transition-all duration-300 ${currentCat === "dessert" ? activeClass : idleClass}" data-nav="dessert">
             ${icons.dessert}<span>حلى</span>
         </a>
-        <a href="${trackUrl}" id="nav-track-link" class="relative flex flex-col items-center justify-center text-[10px] tracking-wide transition-all duration-300 ${isTracking ? activeClass : idleClass}" style="${isTracking ? activeStyle : (lastOrderId ? idleStyle : whiteStyle)}" data-nav="track">
+        <a href="${trackUrl}" id="nav-track-link" class="relative flex flex-col items-center justify-center text-[10px] tracking-wide transition-all duration-300 ${isTracking ? activeClass : (lastOrderId ? idleClass : inactiveTrackClass)}" data-nav="track">
             <div id="order-status-indicator" class="absolute -top-3 left-0 w-full flex justify-center gap-0.5 h-1.5"></div>
             ${icons.track}<span>طلبي</span>
         </a>
-        <a href="${cartHref}" class="relative flex flex-col items-center justify-center text-[10px] tracking-wide transition-all duration-300 ${pathLower.includes("cart.html") ? activeClass : idleClass}" style="${pathLower.includes("cart.html") ? activeStyle : idleStyle}" data-nav="cart">
+        <a href="${cartHref}" class="relative flex flex-col items-center justify-center text-[10px] tracking-wide transition-all duration-300 ${pathLower.includes("cart.html") ? activeClass : idleClass}" data-nav="cart">
             ${icons.cart}<span>السلة</span>
             <span id="cart-badge" class="absolute -top-1 -right-2 bg-amber-500 text-black text-[9px] font-black rounded-full min-w-[1.2rem] h-[1.2rem] flex items-center justify-center px-1 border border-black shadow-[0_0_8px_rgba(245,215,110,0.5)]">0</span>
         </a>
@@ -112,7 +110,7 @@
 
     document.body.appendChild(nav);
     
-    // إضافة تباعد لأسفل الصفحة لمنع تغطية المحتوى بالشريط العائم الجديد
+    // إضافة تباعد لأسفل الصفحة وتطبيق تصميم البريق الموحد لكافة الأيقونات مع نقطة إشعار أسفل الأيقونة النشطة
     if (!document.getElementById("nav-spacing-style")) {
         const style = document.createElement("style");
         style.id = "nav-spacing-style";
@@ -122,8 +120,43 @@
             }
             #app-bottom-nav a {
                 flex: 1;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
                 text-decoration: none;
                 -webkit-tap-highlight-color: transparent;
+                color: #f5d76e !important;
+                opacity: 0.85 !important;
+                filter: drop-shadow(0 0 6px rgba(245, 215, 110, 0.75)) !important;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            #app-bottom-nav a:hover, #app-bottom-nav a.active-nav-item {
+                transform: scale(1.08) translateY(-2px);
+                opacity: 1 !important;
+                filter: drop-shadow(0 0 10px rgba(245, 215, 110, 0.95)) !important;
+            }
+            /* أيقونة التتبع تكون باهتة فقط إذا لم يكن هناك أي طلب سابق */
+            #app-bottom-nav a.inactive-track-item {
+                color: #ffffff !important;
+                opacity: 0.35 !important;
+                filter: none !important;
+            }
+            /* النقطة المضيئة الأنيقة أسفل الأيقونة النشطة للتمييز */
+            #app-bottom-nav a.active-nav-item::after {
+                content: '';
+                display: block;
+                width: 4px;
+                height: 4px;
+                background-color: #f5d76e;
+                border-radius: 50%;
+                margin-top: 3px;
+                box-shadow: 0 0 6px #f5d76e, 0 0 12px #f5d76e;
+                animation: activeDotPulse 1.8s infinite alternate;
+            }
+            @keyframes activeDotPulse {
+                0% { transform: scale(0.95); opacity: 0.8; }
+                100% { transform: scale(1.25); opacity: 1; }
             }
         `;
         document.head.appendChild(style);
