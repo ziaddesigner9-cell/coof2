@@ -29,7 +29,7 @@ BEGIN
             new_user_id,
             '00000000-0000-0000-0000-000000000000',
             user_email,
-            crypt(user_pin, gen_salt('bf')),
+            crypt(user_pin, gen_salt('bf', 10)),
             now(),
             '{"provider":"email","providers":["email"]}',
             '{}',

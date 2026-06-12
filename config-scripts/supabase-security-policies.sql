@@ -87,7 +87,7 @@ BEGIN
 
     -- تحديث كلمة المرور في جدول auth.users
     UPDATE auth.users
-    SET encrypted_password = crypt(new_password, gen_salt('bf')),
+    SET encrypted_password = crypt(new_password, gen_salt('bf', 10)),
         updated_at = now()
     WHERE email = target_email;
 
