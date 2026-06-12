@@ -54,14 +54,14 @@ async function loadMenu() {
 
         menuContainer.innerHTML = items
             .map(
-                (item) => {
+                function(item) {
                     const safeName = escapeHtml(item.name || "غير معروف");
                     const safePrice = escapeHtml(parseFloat(item.price || 0).toFixed(2));
                     const safeImage = escapeHtml(window.getSafeImageUrl(item.image_url));
                     return `
         <div class="menu-card menu-item p-4 rounded-2xl flex items-center gap-4 transition">
               <img src="${safeImage}" alt="${safeName}" loading="lazy" decoding="async"
-                  class="w-20 h-20 object-cover rounded-xl border border-amber-500/50 flex-shrink-0">
+                   class="w-20 h-20 object-cover rounded-xl border border-amber-500/50 flex-shrink-0">
             <div class="flex-grow min-w-0">
                 <h3 class="font-bold gold-title text-lg leading-tight">${safeName}</h3>
                 <p class="gold-text font-bold mt-1 text-base">${safePrice} ريال</p>
@@ -93,10 +93,42 @@ async function loadMenu() {
     }
 }
 
+let menuAudioCtx = null;
+function initMenuAudio() {
+    try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (AudioCtx && !menuAudioCtx) {
+            menuAudioCtx = new AudioCtx();
+        }
+        if (menuAudioCtx) {
+            if (menuAudioCtx.state === 'suspended') {
+                menuAudioCtx.resume();
+            }
+            var buffer = menuAudioCtx.createBuffer(1, 1, 22050);
+            var source = menuAudioCtx.createBufferSource();
+            source.buffer = buffer;
+            source.connect(menuAudioCtx.destination);
+            if (source.start) source.start(0);
+            else if (source.noteOn) source.noteOn(0);
+        }
+    } catch (err) {
+        console.error("فشل تهيئة صوت القائمة:", err);
+    }
+}
+document.addEventListener("click", initMenuAudio, { once: true });
+document.addEventListener("touchstart", initMenuAudio, { once: true });
+
 /** تشغيل صوت خفيف عند الإضافة */
 function playCartSound() {
+    if (!menuAudioCtx) {
+        initMenuAudio();
+    }
+    if (!menuAudioCtx) return;
     try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const ctx = menuAudioCtx;
+        if (ctx.state === 'suspended') {
+            ctx.resume();
+        }
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.connect(gain); gain.connect(ctx.destination);
@@ -124,7 +156,7 @@ async function showCartFeedback() {
             phrase(settings, 'cart_feedback_4'),
             phrase(settings, 'cart_feedback_5'),
             phrase(settings, 'cart_feedback_6')
-        ].filter(p => p && p.trim() !== "");
+        ].filter(function(p) { return p && p.trim() !== ""; });
 
         if (phrases.length > 0) {
             text = phrases[Math.floor(Math.random() * phrases.length)];
@@ -152,27 +184,56 @@ async function showCartFeedback() {
         cartNav.classList.add('cart-animate'); 
     }
     
-    setTimeout(() => el.remove(), 2600);
+    setTimeout(function() { el.remove(); }, 2600);
 }
 
 function addToCart(id, name, price, imageUrl) {
-    let cart = JSON.parse(localStorage.getItem("cart") || "[]");
-    const existingItem = cart.find((item) => item.id === id);
+    var cart = [];
+    try {
+        cart = JSON.parse(localStorage.getItem("cart") || "[]");
+    } catch (err) {
+        console.error("فشل قراءة السلة من localStorage:", err);
+    }
+
+    var existingItem = null;
+    for (var i = 0; i < cart.length; i++) {
+        if (cart[i].id === id) {
+            existingItem = cart[i];
+            break;
+        }
+    }
+
     if (existingItem) {
         existingItem.quantity = (parseInt(existingItem.quantity) || 1) + 1;
     } else {
-        cart.push({ id, name, price: parseFloat(price || 0), quantity: 1, image_url: imageUrl });
+        cart.push({ id: id, name: name, price: parseFloat(price || 0), quantity: 1, image_url: imageUrl });
     }
-    localStorage.setItem("cart", JSON.stringify(cart));
+
+    try {
+        localStorage.setItem("cart", JSON.stringify(cart));
+    } catch (err) {
+        console.error("فشل حفظ السلة في localStorage:", err);
+    }
+
     playCartSound();
     showCartFeedback();
     updateCartCount();
 }
 
 function updateCartCount() {
-    const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-    const count = cart.reduce((sum, item) => sum + (parseInt(item.quantity) || 0), 0);
-    const badge = document.getElementById("cart-badge");
+    var cart = [];
+    try {
+        cart = JSON.parse(localStorage.getItem("cart") || "[]");
+    } catch (err) {
+        console.error("فشل قراءة السلة في updateCartCount:", err);
+    }
+
+    var count = 0;
+    for (var i = 0; i < cart.length; i++) {
+        count += (parseInt(cart[i].quantity) || 0);
+    }
+
+    var badge = document.getElementById("cart-badge");
     if (badge) {
         badge.innerText = count;
         badge.style.display = count > 0 ? "flex" : "none";
@@ -181,11 +242,11 @@ function updateCartCount() {
 }
 
 let isMenuInitialized = false;
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", function() {
     if (isMenuInitialized) return;
     isMenuInitialized = true;
 
-    const tryInitMenu = () => {
+    var tryInitMenu = function() {
         if (window.getSupabaseClient()) {
             loadMenu();
             // إزالة المستمع فور التنفيذ لضمان عدم التكرار
@@ -196,11 +257,29 @@ document.addEventListener("DOMContentLoaded", () => {
     tryInitMenu();
     window.addEventListener("supabaseReady", tryInitMenu);
 
-    document.getElementById("menu-items")?.addEventListener("click", (e) => {
-        const btn = e.target.closest(".add-to-cart-btn");
-        if (btn) {
-            const { id, name, price, image } = btn.dataset;
-            addToCart(id, name, price, image);
-        }
-    });
+    var menuItems = document.getElementById("menu-items");
+    if (menuItems) {
+        menuItems.addEventListener("click", function(e) {
+            var btn = null;
+            if (e.target.closest) {
+                btn = e.target.closest(".add-to-cart-btn");
+            } else {
+                var current = e.target;
+                while (current && current !== menuItems) {
+                    if (current.className && current.className.indexOf("add-to-cart-btn") !== -1) {
+                        btn = current;
+                        break;
+                    }
+                    current = current.parentNode;
+                }
+            }
+            if (btn) {
+                var id = btn.getAttribute("data-id");
+                var name = btn.getAttribute("data-name");
+                var price = btn.getAttribute("data-price");
+                var image = btn.getAttribute("data-image");
+                addToCart(id, name, price, image);
+            }
+        });
+    }
 });

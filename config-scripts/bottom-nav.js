@@ -29,8 +29,13 @@
         pathLower.indexOf("menu.html") === -1 &&
         pathLower.indexOf("cart.html") === -1;
 
-    // جلب آخر طلب محفوظ لربط زر التتبع
-    const lastOrderId = localStorage.getItem("lastOrderId");
+    // جلب آخر طلب محفوظ لربط زر التتبع في الرئيسية
+    let lastOrderId = null;
+    try {
+        lastOrderId = localStorage.getItem("lastOrderId");
+    } catch (err) {
+        console.error("فشل قراءة lastOrderId من localStorage:", err);
+    }
     const trackUrl = lastOrderId ? `${trackHref}?orderId=${encodeURIComponent(lastOrderId)}` : trackHref;
     const isTracking = pathLower.indexOf("tracking.html") !== -1;
 
@@ -215,7 +220,7 @@
         if (!badge) return;
         try {
             const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-            const count = cart.reduce((s, i) => s + (parseInt(i.quantity) || 0), 0);
+            const count = cart.reduce(function(s, i) { return s + (parseInt(i.quantity) || 0); }, 0);
             badge.textContent = count;
             badge.style.display = count > 0 ? "flex" : "none";
         } catch {
@@ -223,14 +228,37 @@
         }
     }
 
-    let isMonitoringStarted = false;
+    let navChannel = null;
     async function monitorOrderStatus() {
-        if (!lastOrderId || isMonitoringStarted) return;
+        let currentOrderId = null;
+        try {
+            currentOrderId = localStorage.getItem("lastOrderId");
+        } catch (err) {
+            console.error("فشل قراءة lastOrderId في monitorOrderStatus:", err);
+        }
+
+        if (!currentOrderId) {
+            const el = document.getElementById("order-status-indicator");
+            if (el) el.innerHTML = "";
+            const link = document.getElementById("nav-track-link");
+            if (link && !link.classList.contains("active-nav-item")) {
+                link.classList.remove("idle-nav-item");
+                link.classList.add("inactive-track-item");
+            }
+            if (navChannel) {
+                try {
+                    const client = typeof window.getSupabaseClient === "function" ? window.getSupabaseClient() : null;
+                    if (client) client.removeChannel(navChannel);
+                } catch (e) {}
+                navChannel = null;
+            }
+            return;
+        }
+
         const client = typeof window.getSupabaseClient === "function" ? window.getSupabaseClient() : null;
         if (!client) return;
 
-        isMonitoringStarted = true;
-        const updateDots = (status) => {
+        var updateDots = function(status) {
             const el = document.getElementById("order-status-indicator");
             if (!el) return;
             
@@ -244,7 +272,6 @@
                     <div class="w-1.5 h-1.5 rounded-full animate-ping" style="background-color:${color};box-shadow:0 0 8px ${color}"></div>
                     <div class="w-1.5 h-1.5 rounded-full" style="background-color:${color};box-shadow:0 0 5px ${color}"></div>
                 `;
-                // التأكد من أن الزر يظهر باللون الذهبي البراق لوجود طلب نشط
                 const link = document.getElementById("nav-track-link");
                 if (link && !link.classList.contains("active-nav-item")) {
                     link.classList.remove("inactive-track-item");
@@ -252,9 +279,10 @@
                 }
             } else {
                 el.innerHTML = "";
-                // إذا اكتمل الطلب أو ألغي، نقوم بمسح المعرف وتغيير مظهر الزر ليصبح باهتاً
                 if (status === "completed" || status === "cancelled" || !status) {
-                    localStorage.removeItem("lastOrderId");
+                    try {
+                        localStorage.removeItem("lastOrderId");
+                    } catch (e) {}
                     const link = document.getElementById("nav-track-link");
                     if (link && !link.classList.contains("active-nav-item")) {
                         link.classList.remove("idle-nav-item");
@@ -264,22 +292,37 @@
             }
         };
 
-        const { data } = await client.from("orders").select("status").eq("id", lastOrderId).maybeSingle();
-        if (data) {
-            updateDots(data.status);
-        } else {
-            // إذا لم يتم العثور على الطلب في قاعدة البيانات (تم حذفه مثلاً)، نمسح المعرف
-            localStorage.removeItem("lastOrderId");
-            const link = document.getElementById("nav-track-link");
-            if (link && !link.classList.contains("active-nav-item")) {
-                link.classList.remove("idle-nav-item");
-                link.classList.add("inactive-track-item");
+        try {
+            const { data } = await client.from("orders").select("status").eq("id", currentOrderId).maybeSingle();
+            if (data) {
+                updateDots(data.status);
+            } else {
+                try {
+                    localStorage.removeItem("lastOrderId");
+                } catch (e) {}
+                const link = document.getElementById("nav-track-link");
+                if (link && !link.classList.contains("active-nav-item")) {
+                    link.classList.remove("idle-nav-item");
+                    link.classList.add("inactive-track-item");
+                }
             }
+        } catch (err) {
+            console.error("فشل قراءة حالة الطلب في القائمة:", err);
         }
 
-        client.channel(`nav_order_status`).on('postgres_changes', {
-            event: 'UPDATE', schema: 'public', table: 'orders', filter: `id=eq.${lastOrderId}`
-        }, payload => updateDots(payload.new.status)).subscribe();
+        try {
+            if (navChannel) {
+                client.removeChannel(navChannel);
+                navChannel = null;
+            }
+        } catch (e) {}
+
+        navChannel = client.channel(`nav_order_status`).on('postgres_changes', {
+            event: 'UPDATE', schema: 'public', table: 'orders', filter: `id=eq.${currentOrderId}`
+        }, function(payload) {
+            if (payload.new) updateDots(payload.new.status);
+        });
+        navChannel.subscribe();
     }
 
     updateCartBadge();
@@ -288,4 +331,10 @@
 
     window.addEventListener("supabaseReady", monitorOrderStatus);
     if (typeof window.getSupabaseClient === "function" && window.getSupabaseClient()) monitorOrderStatus();
+
+    document.addEventListener("visibilitychange", function() {
+        if (document.visibilityState === "visible") {
+            monitorOrderStatus();
+        }
+    });
 })();

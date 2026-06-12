@@ -26,7 +26,11 @@ window.startOrder = async function(tableNumber) {
         }
 
         // حفظ رقم الطاولة والتحويل للمنيو
-        localStorage.setItem('tableNumber', tableNumber);
+        try {
+            localStorage.setItem('tableNumber', tableNumber);
+        } catch (e) {
+            console.error("فشل حفظ رقم الطاولة في localStorage:", e);
+        }
         window.location.href = 'menu.html';
 
     } catch (err) {

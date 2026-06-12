@@ -63,27 +63,35 @@ function sortNewestFirst(list) {
 function getOpenedAt(order) {
     if (order.preparing_started_at) return order.preparing_started_at;
     try {
-        const map = JSON.parse(localStorage.getItem(LOCAL_OPENED_KEY) || "{}");
+        var map = JSON.parse(localStorage.getItem(LOCAL_OPENED_KEY) || "{}");
         if (map[order.id]) return new Date(map[order.id]).toISOString();
     } catch (_) {}
-    const prep = getLocalPreparingMap()[order.id];
-    if (prep?.startedAt) return new Date(prep.startedAt).toISOString();
+    var prep = getLocalPreparingMap()[order.id];
+    if (prep && prep.startedAt) return new Date(prep.startedAt).toISOString();
     return null;
 }
 
 function rememberOpenedAt(orderId) {
-    const map = JSON.parse(localStorage.getItem(LOCAL_OPENED_KEY) || "{}");
-    if (!map[orderId]) {
-        map[orderId] = Date.now();
-        localStorage.setItem(LOCAL_OPENED_KEY, JSON.stringify(map));
+    try {
+        var map = JSON.parse(localStorage.getItem(LOCAL_OPENED_KEY) || "{}");
+        if (!map[orderId]) {
+            map[orderId] = Date.now();
+            localStorage.setItem(LOCAL_OPENED_KEY, JSON.stringify(map));
+        }
+    } catch (err) {
+        console.error("rememberOpenedAt localstorage failed:", err);
     }
 }
 
 function clearOpenedAt(orderId) {
-    const map = JSON.parse(localStorage.getItem(LOCAL_OPENED_KEY) || "{}");
-    if (map[orderId]) {
-        delete map[orderId];
-        localStorage.setItem(LOCAL_OPENED_KEY, JSON.stringify(map));
+    try {
+        var map = JSON.parse(localStorage.getItem(LOCAL_OPENED_KEY) || "{}");
+        if (map[orderId]) {
+            delete map[orderId];
+            localStorage.setItem(LOCAL_OPENED_KEY, JSON.stringify(map));
+        }
+    } catch (err) {
+        console.error("clearOpenedAt localstorage failed:", err);
     }
 }
 
@@ -117,13 +125,13 @@ function renderTimeBadges(order, mode) {
 }
 
 function tickAllKitchenTimers() {
-    document.querySelectorAll("[data-kitchen-wait]").forEach((el) => {
+    document.querySelectorAll("[data-kitchen-wait]").forEach(function(el) {
         const since = el.dataset.since;
         const target = el.querySelector(".wait-el");
         if (!since || !target) return;
         target.textContent = formatElapsed(Date.now() - new Date(since).getTime());
     });
-    document.querySelectorAll("[data-kitchen-prep]").forEach((el) => {
+    document.querySelectorAll("[data-kitchen-prep]").forEach(function(el) {
         const since = el.dataset.since;
         const target = el.querySelector(".prep-el");
         if (!since || !target) return;
@@ -138,20 +146,33 @@ function startKitchenTicks() {
 }
 
 function initAudioContext() {
-    if (audioContext) return;
     try {
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        if (!AudioCtx) return;
-        audioContext = new AudioCtx();
+        if (AudioCtx && !audioContext) {
+            audioContext = new AudioCtx();
+        }
+        if (audioContext) {
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+            var buffer = audioContext.createBuffer(1, 1, 22050);
+            var source = audioContext.createBufferSource();
+            source.buffer = buffer;
+            source.connect(audioContext.destination);
+            if (source.start) source.start(0);
+            else if (source.noteOn) source.noteOn(0);
+        }
     } catch (_) {}
 }
+document.addEventListener("click", initAudioContext, { once: true });
+document.addEventListener("touchstart", initAudioContext, { once: true });
 
 function playNewOrderSound() {
     if (!audioContext) initAudioContext();
     if (!audioContext) return;
 
     if (audioContext.state === 'suspended') {
-        audioContext.resume().then(() => _playNewOrderSoundLogic());
+        audioContext.resume().then(function() { _playNewOrderSoundLogic(); }).catch(function() { _playNewOrderSoundLogic(); });
     } else {
         _playNewOrderSoundLogic();
     }
@@ -159,7 +180,7 @@ function playNewOrderSound() {
 
 function _playNewOrderSoundLogic() {
     if (!audioContext) return;
-    [0, 0.2].forEach((delay) => {
+    [0, 0.2].forEach(function(delay) {
         const osc = audioContext.createOscillator();
         const gain = audioContext.createGain();
         osc.connect(gain);
@@ -175,15 +196,19 @@ function _playNewOrderSoundLogic() {
 function getLocalPreparingMap() {
     try {
         return JSON.parse(localStorage.getItem(LOCAL_PREP_KEY) || "{}");
-    } catch {
+    } catch (e) {
         return {};
     }
 }
 
 function clearLocalPreparing(orderId) {
-    const map = getLocalPreparingMap();
+    var map = getLocalPreparingMap();
     delete map[orderId];
-    localStorage.setItem(LOCAL_PREP_KEY, JSON.stringify(map));
+    try {
+        localStorage.setItem(LOCAL_PREP_KEY, JSON.stringify(map));
+    } catch (err) {
+        console.error("clearLocalPreparing localstorage failed:", err);
+    }
 }
 
 async function markAsReady(orderId) {
@@ -192,7 +217,9 @@ async function markAsReady(orderId) {
     if (result.ok) {
         clearLocalPreparing(orderId);
         clearOpenedAt(orderId);
-        localStorage.removeItem(`kitchen_timer_${orderId}`);
+        try {
+            localStorage.removeItem(`kitchen_timer_${orderId}`);
+        } catch (e) {}
         if (String(activeOrderId) === String(orderId)) closeActive();
         loadOrders();
     } else {
@@ -213,7 +240,9 @@ async function markAsPickedUp(orderId) {
 
 function closeActive() {
     activeOrderId = null;
-    localStorage.removeItem("kitchen_active_order");
+    try {
+        localStorage.removeItem("kitchen_active_order");
+    } catch (e) {}
     stopTimer();
 }
 
@@ -230,16 +259,23 @@ function startTimerDisplay(order) {
     const el = document.getElementById("order-timer");
     if (!el) return;
 
-    const stored = localStorage.getItem(`kitchen_timer_${order.id}`);
+    var stored = null;
+    try {
+        stored = localStorage.getItem(`kitchen_timer_${order.id}`);
+    } catch (e) {}
     const started = order.preparing_started_at
         ? new Date(order.preparing_started_at).getTime()
         : stored
           ? parseInt(stored, 10)
           : Date.now();
-    if (!stored) localStorage.setItem(`kitchen_timer_${order.id}`, String(started));
+    if (!stored) {
+        try {
+            localStorage.setItem(`kitchen_timer_${order.id}`, String(started));
+        } catch (e) {}
+    }
     timerStartedAt = started;
 
-    const tick = () => {
+    var tick = function() {
         el.textContent = formatElapsed(Date.now() - timerStartedAt);
     };
     tick();
@@ -250,11 +286,13 @@ function renderItemsList(items) {
     if (!items.length) return '<li class="text-zinc-500">لا توجد أصناف</li>';
     return items
         .map(
-            (item) => `
+            function(item) {
+                return `
         <li class="flex justify-between text-sm text-amber-100">
             <span>${escapeHtml(item.name || "صنف")} × ${item.quantity || 1}</span>
             <span class="text-amber-500">${(parseFloat(item.price) || 0) * (parseInt(item.quantity) || 1)} ر.س</span>
-        </li>`
+        </li>`;
+            }
         )
         .join("");
 }
@@ -339,7 +377,7 @@ function formatOrderHeader(tableNo) {
 function formatLocationInfo(text) {
     if (!text) return "—";
     const urlRegex = /(https?:\/\/[^\s]+)/g;
-    return text.replace(urlRegex, (url) => {
+    return text.replace(urlRegex, function(url) {
         return `<a href="${url}" target="_blank" class="inline-block px-2 py-1 bg-blue-600 text-white text-[10px] rounded-md mt-1 mb-1">فتح الخريطة 📍</a>`;
     });
 }
@@ -409,7 +447,7 @@ function renderOrderCard(order, type) {
                 <span class="text-zinc-500 text-[10px]">${formatClock(order.created_at)}</span>
             </div>
             <ul class="my-2 space-y-0.5 text-zinc-400 text-[12px] border-t border-zinc-800/30 pt-1">
-                ${items.map(i => `<li class="truncate">• ${escapeHtml(i.name)} × ${i.quantity}</li>`).join('')}
+                ${items.map(function(i) { return `<li class="truncate">• ${escapeHtml(i.name)} × ${i.quantity}</li>`; }).join('')}
             </ul>
             ${orderNotes ? `<div class="text-amber-400 text-[11px] mt-1 px-1 border-t border-zinc-850/40 pt-1">📝 ${escapeHtml(orderNotes)}</div>` : ""}
             ${showPickupButton ? `
@@ -431,7 +469,9 @@ async function loadOrders() {
     const client = getClient();
 
     if (!activeOrderId) {
-        activeOrderId = localStorage.getItem("kitchen_active_order");
+        try {
+            activeOrderId = localStorage.getItem("kitchen_active_order");
+        } catch (e) {}
     }
 
     if (!client) {
@@ -456,21 +496,38 @@ async function loadOrders() {
         ordersCache = activeOrders;
 
         if (!firstLoad) {
-            activeOrders.forEach((o) => {
+            activeOrders.forEach(function(o) {
                 if (o.status === "pending" && !knownOrderIds.has(o.id)) playNewOrderSound();
             });
         }
-        activeOrders.forEach((o) => knownOrderIds.add(o.id));
+        activeOrders.forEach(function(o) { knownOrderIds.add(o.id); });
         firstLoad = false;
 
-        let activeOrder = activeOrderId ? activeOrders.find((o) => String(o.id) === String(activeOrderId)) : null;
+        let activeOrder = null;
+        if (activeOrderId) {
+            for (var k = 0; k < activeOrders.length; k++) {
+                if (String(activeOrders[k].id) === String(activeOrderId)) {
+                    activeOrder = activeOrders[k];
+                    break;
+                }
+            }
+        }
 
         if (activeOrderId && !activeOrder) {
             activeOrderId = null;
-            localStorage.removeItem("kitchen_active_order");
+            try {
+                localStorage.removeItem("kitchen_active_order");
+            } catch (e) {}
         }
 
-        const pendingList = sortNewestFirst(activeOrders.filter((o) => o.status === "pending" || (o.status === "preparing" && String(o.id) !== String(activeOrderId))));
+        var pendingList = [];
+        for (var m = 0; m < activeOrders.length; m++) {
+            var o = activeOrders[m];
+            if (o.status === "pending" || (o.status === "preparing" && String(o.id) !== String(activeOrderId))) {
+                pendingList.push(o);
+            }
+        }
+        pendingList = sortNewestFirst(pendingList);
 
         let html = ''; 
 
@@ -495,7 +552,7 @@ async function loadOrders() {
         if (finishedList.length > 0) {
             html += `<div class="mt-8 pt-6 border-t border-zinc-800/60 space-y-3">
                         <h3 class="text-zinc-400 text-[12px] font-black uppercase tracking-widest px-1">📦 طلبات سابقة (للمراجعة والتسليم)</h3>`;
-            html += finishedList.map((o) => renderOrderCard(o, "finished")).join("");
+            html += finishedList.map(function(o) { return renderOrderCard(o, "finished"); }).join("");
             html += `</div>`;
         }
 
@@ -534,8 +591,29 @@ async function openOrder(orderId) {
     clearLocalPreparing(orderId);
     rememberOpenedAt(orderId);
     activeOrderId = orderId;
-    localStorage.setItem("kitchen_active_order", orderId);
+    try {
+        localStorage.setItem("kitchen_active_order", orderId);
+    } catch (e) {}
     loadOrders();
+}
+
+let kitchenChannel = null;
+function subscribeKitchenRealtime() {
+    const client = getClient();
+    if (client) {
+        try {
+            if (kitchenChannel) {
+                client.removeChannel(kitchenChannel);
+                kitchenChannel = null;
+            }
+        } catch (e) {}
+
+        kitchenChannel = client.channel('kitchen_orders_realtime')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, function() {
+                loadOrders();
+            });
+        kitchenChannel.subscribe();
+    }
 }
 
 let isKitchenInit = false;
@@ -552,14 +630,7 @@ function initKitchen() {
     loadOrders();
     setInterval(loadOrders, 15000);
 
-    const client = getClient();
-    if (client) {
-        client.channel('kitchen_orders_realtime')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
-                loadOrders();
-            })
-            .subscribe();
-    }
+    subscribeKitchenRealtime();
 }
 
 window.openOrder = openOrder;
@@ -567,7 +638,15 @@ window.markAsReady = markAsReady;
 window.markAsPickedUp = markAsPickedUp; // 🌟 تفعيل الدالة عالمياً للوصول إليها من أزرار الكروت السفلية
 window.closeActive = closeActive;
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", function() {
     if (getClient()) initKitchen();
     window.addEventListener("supabaseReady", initKitchen);
+});
+
+document.addEventListener("visibilitychange", function() {
+    if (document.visibilityState === "visible") {
+        console.log("العودة للمطبخ، تحديث الطلبات والاشتراك اللحظي...");
+        loadOrders();
+        subscribeKitchenRealtime();
+    }
 });

@@ -7,11 +7,15 @@ const translations = {
 function applyLanguage(lang) {
     document.documentElement.setAttribute('dir', (lang === 'ar') ? 'rtl' : 'ltr');
     document.documentElement.setAttribute('lang', lang);
-    localStorage.setItem('userLang', lang); // حفظ اللغة
+    try {
+        localStorage.setItem('userLang', lang); // حفظ اللغة
+    } catch (err) {
+        console.error("فشل حفظ اللغة في localStorage:", err);
+    }
 
-    document.querySelectorAll('[data-key]').forEach(el => {
-        const key = el.getAttribute('data-key');
-        if (translations[lang][key]) {
+    document.querySelectorAll('[data-key]').forEach(function(el) {
+        var key = el.getAttribute('data-key');
+        if (translations[lang] && translations[lang][key]) {
             el.innerText = translations[lang][key];
         }
     });
@@ -19,13 +23,23 @@ function applyLanguage(lang) {
 
 // تبديل اللغة
 function changeLanguage() {
-    const currentLang = localStorage.getItem('userLang') || 'ar';
+    let currentLang = 'ar';
+    try {
+        currentLang = localStorage.getItem('userLang') || 'ar';
+    } catch (err) {
+        console.error("فشل قراءة اللغة من localStorage:", err);
+    }
     const newLang = (currentLang === 'ar') ? 'en' : 'ar';
     applyLanguage(newLang);
 }
 
 // تنفيذ تلقائي عند تحميل الصفحة
-window.addEventListener('DOMContentLoaded', () => {
-    const savedLang = localStorage.getItem('userLang') || 'ar';
+window.addEventListener('DOMContentLoaded', function() {
+    let savedLang = 'ar';
+    try {
+        savedLang = localStorage.getItem('userLang') || 'ar';
+    } catch (err) {
+        console.error("فشل قراءة اللغة من localStorage عند البدء:", err);
+    }
     applyLanguage(savedLang);
 });

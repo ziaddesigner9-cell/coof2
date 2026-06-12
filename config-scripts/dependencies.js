@@ -20,13 +20,22 @@ const DIRECT_SUPABASE_URL = "https://jdaggrzdaxcnnfmdyvic.supabase.co";    const
 
     window.setCoof2PublicBase = function setCoof2PublicBase(url) {
         const base = normalizeBase(url);
-        if (base) localStorage.setItem(PUBLIC_BASE_STORAGE_KEY, base);
-        else localStorage.removeItem(PUBLIC_BASE_STORAGE_KEY);
+        try {
+            if (base) localStorage.setItem(PUBLIC_BASE_STORAGE_KEY, base);
+            else localStorage.removeItem(PUBLIC_BASE_STORAGE_KEY);
+        } catch (err) {
+            console.error("فشل الوصول إلى localStorage في setCoof2PublicBase:", err);
+        }
         return base;
     };
 
     window.getCoof2PublicBase = function getCoof2PublicBase() {
-        return localStorage.getItem(PUBLIC_BASE_STORAGE_KEY) || "";
+        try {
+            return localStorage.getItem(PUBLIC_BASE_STORAGE_KEY) || "";
+        } catch (err) {
+            console.error("فشل الوصول إلى localStorage في getCoof2PublicBase:", err);
+            return "";
+        }
     };
 
     /** عنوان يعمل من الجوال عند مسح QR */
@@ -134,9 +143,9 @@ const DIRECT_SUPABASE_URL = "https://jdaggrzdaxcnnfmdyvic.supabase.co";    const
     try {
         let attempts = 0;
         const maxAttempts = 20;
-        const checkInit = setInterval(() => {
+        var checkInit = setInterval(function() {
             attempts++;
-            const client = window.getSupabaseClient();
+            var client = window.getSupabaseClient();
             if (client) {
                 clearInterval(checkInit);
                 if (!window.supabaseInitialized) {

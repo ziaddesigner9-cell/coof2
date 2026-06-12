@@ -104,6 +104,7 @@
         var orderId = query.get("orderId");
         var orderCode = query.get("code");
         var appSettings = mergeSettings(null);
+        var orderViewChannel = null;
 
         function applyOrderViewBranding() {
             var en = document.getElementById("brand-en");
@@ -273,7 +274,16 @@
             renderOrder(orderData);
 
             var resolvedId = orderData.id;
-            client
+            try {
+                if (orderViewChannel) {
+                    client.removeChannel(orderViewChannel);
+                    orderViewChannel = null;
+                }
+            } catch (err) {
+                console.error("خطأ أثناء إزالة قناة عرض الطلب السابقة:", err);
+            }
+
+            orderViewChannel = client
                 .channel('order_view_' + resolvedId)
                 .on(
                     "postgres_changes",
@@ -286,8 +296,8 @@
                     function(payload) {
                         if (payload.new) renderOrder(payload.new);
                     }
-                )
-                .subscribe();
+                );
+            orderViewChannel.subscribe();
         }
 
         var isOrderViewInit = false;
@@ -305,6 +315,13 @@
         window.addEventListener("supabaseReady", init);
         if (document.readyState !== "loading") init();
         else document.addEventListener("DOMContentLoaded", init);
+
+        document.addEventListener("visibilitychange", function() {
+            if (document.visibilityState === "visible") {
+                console.log("العودة للمتصفح، إعادة شحن تفاصيل الطلب وتحديث الاشتراك...");
+                loadOrder();
+            }
+        });
     </script>
 </body>
 </html>

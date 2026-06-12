@@ -8,19 +8,33 @@ let isFirstLoad = true;
 let audioContext = null;
 
 function initAudio() {
-    if (audioContext) return;
     try {
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        if (AudioCtx) audioContext = new AudioCtx();
+        if (AudioCtx && !audioContext) {
+            audioContext = new AudioCtx();
+        }
+        if (audioContext) {
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+            var buffer = audioContext.createBuffer(1, 1, 22050);
+            var source = audioContext.createBufferSource();
+            source.buffer = buffer;
+            source.connect(audioContext.destination);
+            if (source.start) source.start(0);
+            else if (source.noteOn) source.noteOn(0);
+        }
     } catch (_) {}
 }
+document.addEventListener("click", initAudio, { once: true });
+document.addEventListener("touchstart", initAudio, { once: true });
 
 function playReadyAlert() {
     if (!audioContext) initAudio();
     if (!audioContext) return;
 
     if (audioContext.state === 'suspended') {
-        audioContext.resume().then(() => _playTone());
+        audioContext.resume().then(function() { _playTone(); }).catch(function() { _playTone(); });
     } else {
         _playTone();
     }
@@ -58,15 +72,37 @@ function parseItems(raw) {
 }
 
 function parseDeliveryDetails(text) {
-    if (!text || !text.includes("توصيل")) return null;
+    if (!text || text.indexOf("توصيل") === -1) return null;
     // الصيغة: توصيل - الاسم: زيد | الجوال: 05... | الموقع: رابط أو نص
     try {
-        const parts = text.split('|').map(p => p.trim());
-        const name = parts.find(p => p.includes("الاسم:"))?.split("الاسم:")[1]?.trim() || "غير معروف";
-        const phone = parts.find(p => p.includes("الجوال:"))?.split("الجوال:")[1]?.trim() || "غير معروف";
-        const payment = parts.find(p => p.includes("الدفع:"))?.split("الدفع:")[1]?.trim() || "غير محدد";
-        const location = parts.find(p => p.includes("الموقع:"))?.split("الموقع:")[1]?.trim() || "";
-        return { name, phone, payment, location };
+        var rawParts = text.split('|');
+        var parts = [];
+        for (var i = 0; i < rawParts.length; i++) {
+            parts.push(rawParts[i].trim());
+        }
+        
+        var name = "غير معروف";
+        var phone = "غير معروف";
+        var payment = "غير محدد";
+        var location = "";
+
+        for (var j = 0; j < parts.length; j++) {
+            var part = parts[j];
+            if (part.indexOf("الاسم:") !== -1) {
+                var splitName = part.split("الاسم:");
+                if (splitName[1]) name = splitName[1].trim();
+            } else if (part.indexOf("الجوال:") !== -1) {
+                var splitPhone = part.split("الجوال:");
+                if (splitPhone[1]) phone = splitPhone[1].trim();
+            } else if (part.indexOf("الدفع:") !== -1) {
+                var splitPayment = part.split("الدفع:");
+                if (splitPayment[1]) payment = splitPayment[1].trim();
+            } else if (part.indexOf("الموقع:") !== -1) {
+                var splitLoc = part.split("الموقع:");
+                if (splitLoc[1]) location = splitLoc[1].trim();
+            }
+        }
+        return { name: name, phone: phone, payment: payment, location: location };
     } catch (e) {
         return { name: "خطأ في البيانات", phone: text, location: "" };
     }
@@ -103,7 +139,7 @@ async function loadDeliveryOrders() {
 
         // التحقق من تغير الحالة من ذهبي (preparing/pending) إلى أخضر (ready)
         if (!isFirstLoad) {
-            currentOrders.forEach(order => {
+            currentOrders.forEach(function(order) {
                 const prevStatus = previousStatuses.get(order.id);
                 if (order.status === 'ready' && (prevStatus === 'pending' || prevStatus === 'preparing')) {
                     playReadyAlert();
@@ -112,7 +148,9 @@ async function loadDeliveryOrders() {
         }
 
         // تصفية الطلبات التي هي "توصيل" فقط
-        const deliveryOnly = currentOrders.filter(o => o.table_no && o.table_no.includes("توصيل"));
+        const deliveryOnly = currentOrders.filter(function(o) {
+            return o.table_no && o.table_no.indexOf("توصيل") !== -1;
+        });
 
         if (deliveryOnly.length === 0) {
             container.innerHTML = `
@@ -123,10 +161,10 @@ async function loadDeliveryOrders() {
             return;
         }
 
-        container.innerHTML = deliveryOnly.map(order => {
+        container.innerHTML = deliveryOnly.map(function(order) {
             const info = parseDeliveryDetails(order.table_no);
             const items = parseItems(order.items);
-            const mapLink = info.location.includes('http')
+            const mapLink = info.location.indexOf('http') !== -1
                 ? `<a href="${info.location}" target="_blank" class="block w-full bg-blue-600 text-center py-3 rounded-xl font-bold mb-2">📍 فتح الموقع في الخرائط</a>`
                 : `<div class="bg-zinc-800 p-3 rounded-xl mb-2 text-sm text-zinc-300">🏠 العنوان: ${info.location || 'غير محدد'}</div>`;
 
@@ -186,7 +224,7 @@ async function loadDeliveryOrders() {
                 <div class="space-y-2 mb-4">
                     <p class="text-xs text-zinc-500">الأصناف:</p>
                     <ul class="text-sm text-zinc-300">
-                        ${items.map(i => `<li>• ${i.name} × ${i.quantity}</li>`).join('')}
+                        ${items.map(function(i) { return `<li>• ${i.name} × ${i.quantity}</li>`; }).join('')}
                     </ul>
                 </div>
 
@@ -197,7 +235,7 @@ async function loadDeliveryOrders() {
 
         // تحديث سجل الحالات للمرة القادمة
         previousStatuses.clear();
-        currentOrders.forEach(o => previousStatuses.set(o.id, o.status));
+        currentOrders.forEach(function(o) { previousStatuses.set(o.id, o.status); });
         isFirstLoad = false;
 
     } finally {
@@ -233,6 +271,29 @@ async function finishDelivery(orderId) {
     else loadDeliveryOrders();
 }
 
+let deliveryChannel = null;
+function subscribeDeliveryRealtime() {
+    const client = typeof window.getSupabaseClient === "function" ? window.getSupabaseClient() : null;
+    if (client) {
+        try {
+            if (deliveryChannel) {
+                client.removeChannel(deliveryChannel);
+                deliveryChannel = null;
+            }
+        } catch (e) {}
+
+        deliveryChannel = client.channel('delivery_orders_realtime')
+            .on('postgres_changes', { 
+                event: '*', 
+                schema: 'public', 
+                table: 'orders' 
+            }, function() {
+                loadDeliveryOrders();
+            });
+        deliveryChannel.subscribe();
+    }
+}
+
 let isDeliveryInit = false;
 function initDelivery() {
     if (isDeliveryInit) return;
@@ -248,24 +309,21 @@ function initDelivery() {
     // تحديث تلقائي كل دقيقة كاحتياط
     setInterval(loadDeliveryOrders, 60000);
 
-    const client = typeof window.getSupabaseClient === "function" ? window.getSupabaseClient() : null;
-    if (client) {
-        client.channel('delivery_orders_realtime')
-            .on('postgres_changes', { 
-                event: '*', 
-                schema: 'public', 
-                table: 'orders' 
-            }, () => {
-                loadDeliveryOrders();
-            })
-            .subscribe();
-    }
+    subscribeDeliveryRealtime();
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", function() {
     const client = typeof window.getSupabaseClient === "function" ? window.getSupabaseClient() : null;
     if (client) initDelivery();
     window.addEventListener("supabaseReady", initDelivery);
+});
+
+document.addEventListener("visibilitychange", function() {
+    if (document.visibilityState === "visible") {
+        console.log("العودة للتوصيل، تحديث طلبات التوصيل والاشتراك اللحظي...");
+        loadDeliveryOrders();
+        subscribeDeliveryRealtime();
+    }
 });
 
 window.finishDelivery = finishDelivery;

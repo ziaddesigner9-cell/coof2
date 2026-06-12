@@ -63,7 +63,9 @@
     <div class="w-full max-w-md bg-zinc-900 border border-yellow-600/40 rounded-3xl p-6 shadow-2xl fade-in-up">
         <!-- QR فعلي يُولَّد محلياً ويُمسح بالكاميرا -->
         <div id="qrBox" class="mx-auto rounded-2xl p-2 flex items-center justify-center">
-            <div id="qrHost" aria-label="رمز QR للطلب"></div>
+            <div id="qrHost" aria-label="رمز QR للطلب">
+                <canvas id="qrCanvas" style="display:none;"></canvas>
+            </div>
         </div>
         <p id="qrCodeLabel" class="text-center text-xl text-yellow-400 font-bold mt-3 tracking-wide"></p>
         <p id="tracking-scan-hint" class="hidden text-center text-xs text-amber-600/80 mt-1">امسح الرمز لفتح صفحة الطلب</p>
@@ -290,41 +292,35 @@
         }
 
         function renderOrderDetails(order) {
-            const items = parseItems(order.items);
+            var items = parseItems(order.items);
             if (items.length === 0) {
                 orderItemsList.innerHTML =
                     '<li class="py-4 text-zinc-500 text-center">لا توجد أصناف مسجّلة</li>';
             } else {
                 orderItemsList.innerHTML = items
-                    .map((item) => {
-                        const qty = parseInt(item.quantity) || 1;
-                        const price = parseFloat(item.price) || 0;
-                        const lineTotal = price * qty;
-                        return `
-                        <li class="order-item-row py-3 flex justify-between gap-3 border-b border-zinc-800">
-                             <div class="text-right flex-1">
-                                 <p class="font-bold text-zinc-100">${escapeHtml(item.name || "صنف")}</p>
-                                 <p class="text-zinc-500 text-xs mt-0.5">${price} ر.س × ${qty}</p>
-                             </div>
-                             <span class="text-yellow-400 font-bold whitespace-nowrap">${lineTotal} ر.س</span>
-                        </li>`;
+                    .map(function(item) {
+                        var qty = parseInt(item.quantity) || 1;
+                        var price = parseFloat(item.price) || 0;
+                        var lineTotal = price * qty;
+                        return '\n                        <li class="order-item-row py-3 flex justify-between gap-3 border-b border-zinc-800">\n                             <div class="text-right flex-1">\n                                  <p class="font-bold text-zinc-100">' + escapeHtml(item.name || "صنف") + '</p>\n                                  <p class="text-zinc-500 text-xs mt-0.5">' + price + ' ر.س × ' + qty + '</p>\n                             </div>\n                             <span class="text-yellow-400 font-bold whitespace-nowrap">' + lineTotal + ' ر.س</span>\n                        </li>';
                     })
                     .join("");
             }
 
-            const total =
+            var total =
                 order.total_price != null
                     ? parseFloat(order.total_price)
                     : items.reduce(
-                          (s, i) =>
-                              s + (parseFloat(i.price) || 0) * (parseInt(i.quantity) || 1),
+                          function(s, i) {
+                              return s + (parseFloat(i.price) || 0) * (parseInt(i.quantity) || 1);
+                          },
                           0
                       );
-            orderTotal.textContent = `${total} ر.س`;
+            orderTotal.textContent = total + " ر.س";
 
-            const tableRaw = order.table_no != null ? order.table_no : "—";
-            const priceText = `${parseFloat(order.total_price || 0)} ريال`;
-            orderMeta.textContent = `${formatTableNoForUser(tableRaw)} · ${priceText}`;
+            var tableRaw = order.table_no != null ? order.table_no : "—";
+            var priceText = parseFloat(order.total_price || 0) + " ريال";
+            orderMeta.textContent = formatTableNoForUser(tableRaw) + " · " + priceText;
         }
 
         function escapeHtml(str) {
@@ -345,9 +341,18 @@
             applyQrLabelStyle(order.status);
 
             const hex = fillColor.replace("#", "").toLowerCase();
-            const drawFallbackImg = () => {
-                qrHost.innerHTML = `<img src="https://quickchart.io/qr?text=${encodeURIComponent(url)}&dark=${hex}&light=ffffff&size=200" width="200" height="200" alt="QR" style="display:block; margin:auto;" />`;
+            const qrHost = document.getElementById("qrHost");
+            if (!qrHost) return;
+
+            var drawFallbackImg = function() {
+                qrHost.innerHTML = '<canvas id="qrCanvas" style="display:none;"></canvas><img src="https://quickchart.io/qr?text=' + encodeURIComponent(url) + '&dark=' + hex + '&light=ffffff&size=200" width="200" height="200" alt="QR" style="display:block; margin:auto;" />';
             };
+
+            let canvas = document.getElementById("qrCanvas");
+            if (!canvas) {
+                qrHost.innerHTML = '<canvas id="qrCanvas" style="display:none;"></canvas>';
+                canvas = document.getElementById("qrCanvas");
+            }
 
             if (typeof QRCode === "undefined" || typeof QRCode.toCanvas !== "function") {
                 drawFallbackImg();
@@ -355,7 +360,7 @@
             }
 
             try {
-                QRCode.toCanvas(url, {
+                QRCode.toCanvas(canvas, url, {
                     width: 280,
                     margin: 1,
                     errorCorrectionLevel: "H",
@@ -363,13 +368,16 @@
                         dark: fillColor || "#000000", 
                         light: "#FFFFFF" 
                     }
-                }, function (err, canvas) {
+                }, function (err) {
                     if (err) {
                         console.error("فشل توليد QR بالدالة:", err);
                         drawFallbackImg();
                     } else {
-                        qrHost.innerHTML = "";
-                        qrHost.appendChild(canvas);
+                        canvas.style.display = "block";
+                        const imgs = qrHost.querySelectorAll("img");
+                        for (let i = 0; i < imgs.length; i++) {
+                            imgs[i].remove();
+                        }
                     }
                 });
             } catch (err) {
@@ -382,13 +390,25 @@
         let deliverySoundPlayed = false;
 
         function initCustomerAudio() {
-            if (customerAudioCtx) return;
             try {
                 const AudioCtx = window.AudioContext || window.webkitAudioContext;
-                if (AudioCtx) {
+                if (AudioCtx && !customerAudioCtx) {
                     customerAudioCtx = new AudioCtx();
                 }
-            } catch (_) {}
+                if (customerAudioCtx) {
+                    if (customerAudioCtx.state === 'suspended') {
+                        customerAudioCtx.resume();
+                    }
+                    var buffer = customerAudioCtx.createBuffer(1, 1, 22050);
+                    var source = customerAudioCtx.createBufferSource();
+                    source.buffer = buffer;
+                    source.connect(customerAudioCtx.destination);
+                    if (source.start) source.start(0);
+                    else if (source.noteOn) source.noteOn(0);
+                }
+            } catch (err) {
+                console.error("فشل تهيئة الصوت:", err);
+            }
         }
         // فك حظر الصوت فور لمس الزبون للشاشة
         document.addEventListener("click", initCustomerAudio, { once: true });
@@ -409,7 +429,7 @@
             const ctx = customerAudioCtx || new (window.AudioContext || window.webkitAudioContext)();
             if (!ctx) return;
 
-            const playTone = () => {
+            var playTone = function() {
                 try {
                     const gain = ctx.createGain();
                     gain.connect(ctx.destination);
@@ -542,13 +562,22 @@
             updateQrNetworkUi();
         }
 
+        var orderChannel = null;
         function subscribeToOrder() {
             const client = window.getSupabaseClient ? window.getSupabaseClient() : null;
             if (!orderId || !client) return;
 
-            client
-                .channel('order_track_' + orderId)
-                .on(
+            try {
+                if (orderChannel) {
+                    client.removeChannel(orderChannel);
+                    orderChannel = null;
+                }
+            } catch (err) {
+                console.error("خطأ أثناء إزالة القناة السابقة:", err);
+            }
+
+            orderChannel = client.channel('order_track_' + orderId);
+            orderChannel.on(
                     "postgres_changes",
                     {
                         event: "UPDATE",
@@ -599,6 +628,14 @@
         window.addEventListener("supabaseReady", init);
         if (document.readyState !== "loading") init();
         else document.addEventListener("DOMContentLoaded", init);
+
+        document.addEventListener("visibilitychange", function() {
+            if (document.visibilityState === "visible") {
+                console.log("العودة للمتصفح، إعادة جلب تفاصيل الطلب وتحديث الاشتراك...");
+                loadOrder();
+                subscribeToOrder();
+            }
+        });
     </script>
 </body>
 </html>

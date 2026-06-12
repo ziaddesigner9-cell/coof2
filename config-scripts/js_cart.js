@@ -85,7 +85,11 @@ function updateQty(index, change) {
     if (!cart[index]) return;
     cart[index].quantity = (parseInt(cart[index].quantity) || 1) + change;
     if (cart[index].quantity <= 0) cart.splice(index, 1);
-    localStorage.setItem("cart", JSON.stringify(cart));
+    try {
+        localStorage.setItem("cart", JSON.stringify(cart));
+    } catch (err) {
+        console.error("فشل حفظ السلة في localStorage:", err);
+    }
     renderCart();
 }
 
@@ -265,7 +269,11 @@ async function confirmOrder() {
             return;
         }
 
-        localStorage.removeItem("cart");
+        try {
+            localStorage.removeItem("cart");
+        } catch (err) {
+            console.error("فشل إزالة السلة من localStorage:", err);
+        }
         
         // تحديث كافة العدادات في الصفحة الحالية
         if (typeof window.updateCartBadge === "function") {
@@ -277,7 +285,13 @@ async function confirmOrder() {
 
         var orderId = data ? data.id : null;
         // حفظ آخر طلب في الذاكرة المحلية لربط زر التتبع في الرئيسية
-        if (orderId) localStorage.setItem("lastOrderId", orderId);
+        if (orderId) {
+            try {
+                localStorage.setItem("lastOrderId", orderId);
+            } catch (err) {
+                console.error("فشل حفظ آخر طلب في localStorage:", err);
+            }
+        }
 
         var redirectUrl = orderId
             ? "tracking.html?orderId=" + encodeURIComponent(orderId)

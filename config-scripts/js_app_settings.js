@@ -123,7 +123,11 @@ async function loadAppSettings(forceRemote = false) {
 
         if (!error && data && data.value) {
             globalSettingsCache = mergeSettings(data.value);
-            localStorage.setItem(APP_SETTINGS_CACHE, JSON.stringify(globalSettingsCache));
+            try {
+                localStorage.setItem(APP_SETTINGS_CACHE, JSON.stringify(globalSettingsCache));
+            } catch (err) {
+                console.error("فشل حفظ إعدادات التطبيق في localStorage:", err);
+            }
             return globalSettingsCache;
         }
     } catch (e) {
@@ -152,7 +156,11 @@ async function saveAppSettings(settings) {
     globalSettingsCache = payload;
 
     if (error) throw error;
-    localStorage.setItem(APP_SETTINGS_CACHE, JSON.stringify(payload));
+    try {
+        localStorage.setItem(APP_SETTINGS_CACHE, JSON.stringify(payload));
+    } catch (err) {
+        console.error("فشل حفظ إعدادات التطبيق في localStorage:", err);
+    }
     return payload;
 }
 
@@ -253,16 +261,17 @@ function applyHomeSettings(settings) {
         categoriesList.push(["shisha", s.category_shisha_image, "category_shisha_label"]);
     }
 
-    categoriesList.forEach(
-        ([cat, img, labelKey]) => {
-            const row = document.querySelector(`[data-category-cover="${cat}"]`);
-            if (row && img) setCategoryRowImage(row, img);
-            const labelEl = document.querySelector(`[data-category-label="${cat}"]`);
-            if (labelEl) labelEl.textContent = phrase(s, labelKey);
-            const hintEl = document.querySelector(`[data-category-hint="${cat}"]`);
-            if (hintEl) hintEl.textContent = hint;
-        }
-    );
+    categoriesList.forEach(function(item) {
+        var cat = item[0];
+        var img = item[1];
+        var labelKey = item[2];
+        var row = document.querySelector('[data-category-cover="' + cat + '"]');
+        if (row && img) setCategoryRowImage(row, img);
+        var labelEl = document.querySelector('[data-category-label="' + cat + '"]');
+        if (labelEl) labelEl.textContent = phrase(s, labelKey);
+        var hintEl = document.querySelector('[data-category-hint="' + cat + '"]');
+        if (hintEl) hintEl.textContent = hint;
+    });
 }
 
 window.DEFAULT_APP_SETTINGS = DEFAULT_APP_SETTINGS;
