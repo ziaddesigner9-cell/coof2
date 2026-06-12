@@ -1,18 +1,20 @@
 /**
  * تصنيفات القائمة الموحّدة: hot | cold | dessert
  */
-const MENU_CATEGORY_KEYS = ["hot", "cold", "dessert"];
+const MENU_CATEGORY_KEYS = ["hot", "cold", "dessert", "shisha"];
 
 const MENU_CATEGORY_LABELS = {
     hot: "مشروبات ساخنة",
     cold: "مشروبات باردة",
     dessert: "الحلى",
+    shisha: "شيشة",
 };
 
 const CATEGORY_ALIASES_MAP = {
     hot: ["hot", "ساخن", "مشروبات ساخنة", "قهوة", "قهـوة", "ساخنة"],
     cold: ["cold", "بارد", "مشروبات باردة", "عصير", "عصائر", "باردة"],
     dessert: ["dessert", "حلى", "حلويات", "حلوى", "تحلية"],
+    shisha: ["shisha", "شيشة", "معسل", "شيشه"],
 };
 
 function normalizeMenuCategory(value) {

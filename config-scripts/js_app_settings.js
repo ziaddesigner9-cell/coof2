@@ -11,6 +11,7 @@ const DEFAULT_APP_SETTINGS = {
     category_hot_image: "",
     category_cold_image: "",
     category_dessert_image: "",
+    category_shisha_image: "",
     phrases: {
         brand_tagline: "COOF2",
         home_slogan: "استمتع بمشروبك المفضل",
@@ -19,6 +20,7 @@ const DEFAULT_APP_SETTINGS = {
         category_hot_label: "المشروبات الساخنة",
         category_cold_label: "المشروبات الباردة",
         category_dessert_label: "الحلى",
+        category_shisha_label: "شيشة",
         category_row_hint: "تصفح",
         tracking_title: "شكراً لطلبك",
         tracking_scan_hint: "امسح الرمز لفتح صفحة الطلب",
@@ -49,7 +51,8 @@ const DEFAULT_APP_SETTINGS = {
         gold_color: "#D4AF37",
         silver_color: "#C0C0C0",
         gold_on_top: false,
-        show_code_text: false
+        show_code_text: false,
+        show_shisha_category: false
     }
 };
 
@@ -61,6 +64,7 @@ function mergeSettings(raw) {
     if (raw.category_hot_image) base.category_hot_image = raw.category_hot_image;
     if (raw.category_cold_image) base.category_cold_image = raw.category_cold_image;
     if (raw.category_dessert_image) base.category_dessert_image = raw.category_dessert_image;
+    if (raw.category_shisha_image) base.category_shisha_image = raw.category_shisha_image;
     
     // ضمان دمج العبارات الجديدة (Feedback) حتى لو لم تكن موجودة في البيانات القادمة
     if (raw.phrases && typeof raw.phrases === "object") {
@@ -206,7 +210,27 @@ function applyHomeSettings(settings) {
     if (sub) sub.textContent = phrase(s, "home_welcome_sub");
 
     const hint = phrase(s, "category_row_hint");
-    [["hot", s.category_hot_image, "category_hot_label"], ["cold", s.category_cold_image, "category_cold_label"], ["dessert", s.category_dessert_image, "category_dessert_label"]].forEach(
+    
+    // إظهار أو إخفاء صف الشيشة بناءً على إعدادات لوحة التحكم
+    const shishaRow = document.querySelector(`[data-category-cover="shisha"]`);
+    if (shishaRow) {
+        if (s.ui.show_shisha_category) {
+            shishaRow.classList.remove("hidden");
+        } else {
+            shishaRow.classList.add("hidden");
+        }
+    }
+
+    const categoriesList = [
+        ["hot", s.category_hot_image, "category_hot_label"], 
+        ["cold", s.category_cold_image, "category_cold_label"], 
+        ["dessert", s.category_dessert_image, "category_dessert_label"]
+    ];
+    if (s.ui.show_shisha_category) {
+        categoriesList.push(["shisha", s.category_shisha_image, "category_shisha_label"]);
+    }
+
+    categoriesList.forEach(
         ([cat, img, labelKey]) => {
             const row = document.querySelector(`[data-category-cover="${cat}"]`);
             if (row && img) setCategoryRowImage(row, img);

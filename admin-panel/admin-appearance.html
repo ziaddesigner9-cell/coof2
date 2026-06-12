@@ -39,6 +39,20 @@
                     <p class="text-amber-400 font-bold mb-2">صورة صف — الحلى</p>
                     <div id="pick-dessert" class="grid grid-cols-4 gap-2 max-h-28 overflow-y-auto"></div>
                 </div>
+                <div class="p-4 rounded-xl border border-amber-800/30 bg-zinc-950">
+                    <p class="text-amber-400 font-bold mb-2">صورة صف — الشيشة</p>
+                    <div id="pick-shisha" class="grid grid-cols-4 gap-2 max-h-28 overflow-y-auto"></div>
+                </div>
+                <div class="p-4 rounded-xl border border-amber-800/30 bg-zinc-950 flex justify-between items-center">
+                    <div>
+                        <p class="text-amber-400 font-bold">تفعيل وإظهار قسم الشيشة</p>
+                        <p class="text-zinc-500 text-xs mt-1">تحديد إظهار/إخفاء قسم الشيشة في المنيو والشريط السفلي للزبائن</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer select-none">
+                        <input type="checkbox" id="showShishaToggle" class="sr-only peer">
+                        <div class="w-14 h-7 bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-black after:border-zinc-600 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-amber-500"></div>
+                    </label>
+                </div>
                 <button type="button" id="saveBtn"
                     class="w-full py-4 rounded-xl bg-amber-600 hover:bg-amber-500 text-black font-bold text-lg">
                     حفظ المظهر
@@ -59,6 +73,7 @@
                         <div id="preview-hot" class="h-16 rounded-xl border border-amber-700/40 bg-zinc-900" style="background-size:contain;background-repeat:no-repeat;background-position:center"></div>
                         <div id="preview-cold" class="h-16 rounded-xl border border-amber-700/40 bg-zinc-900" style="background-size:contain;background-repeat:no-repeat;background-position:center"></div>
                         <div id="preview-dessert" class="h-16 rounded-xl border border-amber-700/40 bg-zinc-900" style="background-size:contain;background-repeat:no-repeat;background-position:center"></div>
+                        <div id="preview-shisha" class="h-16 rounded-xl border border-amber-700/40 bg-zinc-900 hidden" style="background-size:contain;background-repeat:no-repeat;background-position:center"></div>
                     </div>
                 </div>
             </div>
@@ -75,6 +90,7 @@
             category_hot_image: { grid: "pick-hot", preview: "preview-hot", prop: "category_hot_image" },
             category_cold_image: { grid: "pick-cold", preview: "preview-cold", prop: "category_cold_image" },
             category_dessert_image: { grid: "pick-dessert", preview: "preview-dessert", prop: "category_dessert_image" },
+            category_shisha_image: { grid: "pick-shisha", preview: "preview-shisha", prop: "category_shisha_image" },
         };
 
         function updatePreview() {
@@ -91,7 +107,16 @@
                 logo.classList.remove("hidden");
                 document.getElementById("preview-logo-ph").classList.add("hidden");
             }
-            ["hot", "cold", "dessert"].forEach((c) => {
+            
+            // تحديث إظهار أو إخفاء صف الشيشة في المعاينة بناءً على المفتاح
+            const showShisha = document.getElementById("showShishaToggle").checked;
+            const shishaPreview = document.getElementById("preview-shisha");
+            if (shishaPreview) {
+                if (showShisha) shishaPreview.classList.remove("hidden");
+                else shishaPreview.classList.add("hidden");
+            }
+
+            ["hot", "cold", "dessert", "shisha"].forEach((c) => {
                 const el = document.getElementById(`preview-${c}`);
                 const url = settings[`category_${c}_image`];
                 if (el && url) {
@@ -128,6 +153,14 @@
 
         async function init() {
             settings = await loadAppSettings(true);
+            
+            // قراءة حالة الشيشة من الإعدادات وتهيئة المفتاح
+            const showShishaToggle = document.getElementById("showShishaToggle");
+            if (showShishaToggle) {
+                showShishaToggle.checked = settings.ui?.show_shisha_category ?? false;
+                showShishaToggle.addEventListener("change", updatePreview);
+            }
+            
             updatePreview();
             const client = window.getSupabaseClient();
             const { data } = await client.from("gallery").select("image_url, name").order("created_at", { ascending: false });
@@ -143,7 +176,10 @@
             try {
                 // التأكد من عدم مسح إعدادات UI السابقة بما أن الحقول غير موجودة في هذه الصفحة
                 const currentSettings = await loadAppSettings(true);
-                settings.ui = currentSettings.ui || settings.ui;
+                settings.ui = currentSettings.ui || settings.ui || {};
+                
+                // حفظ حالة إظهار قسم الشيشة
+                settings.ui.show_shisha_category = document.getElementById("showShishaToggle").checked;
                 
                 await saveAppSettings(settings);
                 alert("تم حفظ الصور وتحديث المظهر بنجاح! ✓");
