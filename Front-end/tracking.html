@@ -354,21 +354,83 @@
             }
         }
 
-        function playReadySound() {
-            if (readySoundPlayed) return;
-            readySoundPlayed = true;
+        let customerAudioCtx = null;
+        let readySoundPlayed = false;
+        let deliverySoundPlayed = false;
+
+        function initCustomerAudio() {
+            if (customerAudioCtx) return;
             try {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.frequency.value = 880;
-                gain.gain.setValueAtTime(0.15, ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
-                osc.start(ctx.currentTime);
-                osc.stop(ctx.currentTime + 0.35);
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (AudioCtx) {
+                    customerAudioCtx = new AudioCtx();
+                }
             } catch (_) {}
+        }
+        // فك حظر الصوت فور لمس الزبون للشاشة
+        document.addEventListener("click", initCustomerAudio, { once: true });
+        document.addEventListener("touchstart", initCustomerAudio, { once: true });
+
+        function playNotificationSound(type) {
+            if (type === "ready") {
+                if (readySoundPlayed) return;
+                readySoundPlayed = true;
+            } else if (type === "delivery") {
+                if (deliverySoundPlayed) return;
+                deliverySoundPlayed = true;
+            } else {
+                return;
+            }
+
+            initCustomerAudio();
+            const ctx = customerAudioCtx || new (window.AudioContext || window.webkitAudioContext)();
+            if (!ctx) return;
+
+            const playTone = () => {
+                try {
+                    const gain = ctx.createGain();
+                    gain.connect(ctx.destination);
+
+                    if (type === "ready") {
+                        // نغمة رنين جرس مرتفعة فخمة (A5 -> C6)
+                        const now = ctx.currentTime;
+                        const osc = ctx.createOscillator();
+                        osc.connect(gain);
+                        osc.frequency.value = 880; // A5
+                        gain.gain.setValueAtTime(0.2, now);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                        osc.start(now);
+                        osc.stop(now + 0.4);
+                    } else if (type === "delivery") {
+                        // نغمة رنين ثنائية لطيفة للتوصيل (Ding-Dong)
+                        const now = ctx.currentTime;
+                        
+                        const osc1 = ctx.createOscillator();
+                        osc1.connect(gain);
+                        osc1.frequency.value = 660; // E5
+                        gain.gain.setValueAtTime(0.15, now);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                        osc1.start(now);
+                        osc1.stop(now + 0.25);
+
+                        const osc2 = ctx.createOscillator();
+                        osc2.connect(gain);
+                        osc2.frequency.value = 880; // A5
+                        gain.gain.setValueAtTime(0.15, now + 0.2);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.45);
+                        osc2.start(now + 0.2);
+                        osc2.stop(now + 0.45);
+                    }
+                } catch (err) {
+                    console.error("خطأ نغمة الإشعارات:", err);
+                }
+            };
+
+            if (ctx.state === 'suspended') {
+                ctx.resume().then(playTone).catch(playTone);
+            } else {
+                playTone();
+            }
         }
 
         function updateUiForStatus(status) {
@@ -392,6 +454,7 @@
                 statusText.classList.add("text-emerald-400");
                 statusText.textContent = "الطلب في الطريق";
                 subText.textContent = "طلبك مع سائق التوصيل الآن، استمتع بوقتك!";
+                playNotificationSound("delivery");
             } else if (status === "ready") {
                 applyQrLabelStyle(status);
                 statusText.classList.remove("text-yellow-400");
@@ -402,7 +465,7 @@
                     ? "تم التجهيز وبانتظار السائق" 
                     : phrase(appSettings, "tracking_status_ready");
                 subText.textContent = phrase(appSettings, "tracking_sub_ready");
-                playReadySound();
+                playNotificationSound("ready");
             } else if (isPreparing) {
                 applyQrLabelStyle(status);
                 statusText.classList.remove("text-emerald-400");
