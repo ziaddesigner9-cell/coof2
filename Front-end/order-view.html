@@ -193,19 +193,26 @@
         }
 
         function formatTableNoForUser(text) {
-            if (!text) return "—";
-            const isDelivery = text.includes("توصيل");
-            const parts = text.split('|').map(p => p.trim());
+            const strText = String(text ?? "—");
+            if (!strText || strText === "—") return "—";
+            
+            const isDelivery = strText.includes("توصيل");
+            const parts = strText.split('|').map(p => p.trim());
             
             // استخراج الملاحظة
             const notesPart = parts.find(p => p.includes("ملاحظات:") || p.includes("الملاحظات:") || p.includes("ملاحظة:"));
-            const notes = notesPart ? notesPart.substring(notesPart.indexOf(":") + 1).trim() : "";
+            let notes = "";
+            if (notesPart) {
+                const colonIndex = notesPart.indexOf(":");
+                notes = colonIndex !== -1 ? notesPart.substring(colonIndex + 1).trim() : notesPart.trim();
+            }
             
             if (isDelivery) {
-                const name = parts.find(p => p.includes("الاسم:"))?.split("الاسم:")[1]?.trim() || "توصيل";
+                const namePart = parts.find(p => p.includes("الاسم:"));
+                const name = namePart ? namePart.replace("الاسم:", "").trim() : "توصيل";
                 return `توصيل باسم ${name}${notes ? ` (${notes})` : ""}`;
             } else {
-                let cleanTable = text;
+                let cleanTable = strText;
                 if (cleanTable.startsWith("محلي:")) {
                     cleanTable = cleanTable.replace("محلي:", "").trim();
                 }

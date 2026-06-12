@@ -258,24 +258,31 @@ function renderItemsList(items) {
 }
 
 function parseDeliveryString(text) {
-    if (!text || !text.includes("توصيل")) return null;
+    const strText = String(text ?? "");
+    if (!strText || !strText.includes("توصيل")) return null;
     try {
-        const parts = text.split('|').map(p => p.trim());
-        const name = parts.find(p => p.includes("الاسم:"))?.split("الاسم:")[1]?.trim() || "غير معروف";
-        const phone = parts.find(p => p.includes("الجوال:"))?.split("الجوال:")[1]?.trim() || "";
-        const payment = parts.find(p => p.includes("الدفع:"))?.split("الدفع:")[1]?.trim() || "";
-        const location = parts.find(p => p.includes("الموقع:"))?.split("الموقع:")[1]?.trim() || "";
+        const parts = strText.split('|').map(p => p.trim());
+        const namePart = parts.find(p => p.includes("الاسم:"));
+        const name = namePart ? namePart.replace("الاسم:", "").trim() : "غير معروف";
+        const phonePart = parts.find(p => p.includes("الجوال:"));
+        const phone = phonePart ? phonePart.replace("الجوال:", "").trim() : "";
+        const paymentPart = parts.find(p => p.includes("الدفع:"));
+        const payment = paymentPart ? paymentPart.replace("الدفع:", "").trim() : "";
+        const locationPart = parts.find(p => p.includes("الموقع:"));
+        const location = locationPart ? locationPart.replace("الموقع:", "").trim() : "";
         return { name, phone, payment, location };
     } catch (e) { return null; }
 }
 
 function parseNotes(text) {
-    if (!text) return "";
+    const strText = String(text ?? "");
+    if (!strText) return "";
     try {
-        const parts = text.split('|').map(p => p.trim());
+        const parts = strText.split('|').map(p => p.trim());
         const notesPart = parts.find(p => p.includes("ملاحظات:") || p.includes("الملاحظات:") || p.includes("ملاحظة:"));
         if (notesPart) {
-            return notesPart.substring(notesPart.indexOf(":") + 1).trim();
+            const colonIndex = notesPart.indexOf(":");
+            return colonIndex !== -1 ? notesPart.substring(colonIndex + 1).trim() : notesPart.trim();
         }
     } catch (e) {
         console.error("خطأ في تحليل الملاحظة:", e);
@@ -284,15 +291,16 @@ function parseNotes(text) {
 }
 
 function formatOrderHeader(tableNo) {
-    if (!tableNo) return "—";
-    if (tableNo.includes("توصيل")) {
-        const info = parseDeliveryString(tableNo);
+    const strTableNo = String(tableNo ?? "—");
+    if (!strTableNo || strTableNo === "—") return "—";
+    if (strTableNo.includes("توصيل")) {
+        const info = parseDeliveryString(strTableNo);
         if (!info) return "🚗 توصيل";
         return `🚗 ${escapeHtml(info.name)} ${info.payment ? `<span class="text-[10px] bg-amber-500/20 px-2 py-0.5 rounded text-amber-500 mr-2">${escapeHtml(info.payment)}</span>` : ""}`;
     }
     
     // محلي: تنظيف رقم الطاولة من أي ملاحظات إضافية
-    let cleanTable = tableNo;
+    let cleanTable = strTableNo;
     if (cleanTable.startsWith("محلي:")) {
         cleanTable = cleanTable.replace("محلي:", "").trim();
     }
