@@ -187,9 +187,16 @@ async function confirmOrder() {
     }
 
     // تحديد نوع الطلب والموقع (محلي أو توصيل)
-    const orderLocation = isLocal 
+    const notesEl = document.getElementById("order-notes");
+    const notesVal = notesEl ? notesEl.value.trim() : "";
+
+    let orderLocation = isLocal 
         ? `محلي: ${localVal}` 
         : `توصيل - الاسم: ${nameVal} | الجوال: ${phoneVal} | الدفع: ${paymentVal} | الموقع: ${addressVal}`;
+
+    if (notesVal) {
+        orderLocation += ` | ملاحظات: ${notesVal}`;
+    }
 
     if (btn) {
         btn.disabled = true;

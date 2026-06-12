@@ -269,6 +269,20 @@ function parseDeliveryString(text) {
     } catch (e) { return null; }
 }
 
+function parseNotes(text) {
+    if (!text) return "";
+    try {
+        const parts = text.split('|').map(p => p.trim());
+        const notesPart = parts.find(p => p.includes("ملاحظات:") || p.includes("الملاحظات:") || p.includes("ملاحظة:"));
+        if (notesPart) {
+            return notesPart.substring(notesPart.indexOf(":") + 1).trim();
+        }
+    } catch (e) {
+        console.error("خطأ في تحليل الملاحظة:", e);
+    }
+    return "";
+}
+
 function formatOrderHeader(tableNo) {
     if (!tableNo) return "—";
     if (tableNo.includes("توصيل")) {
@@ -276,7 +290,15 @@ function formatOrderHeader(tableNo) {
         if (!info) return "🚗 توصيل";
         return `🚗 ${escapeHtml(info.name)} ${info.payment ? `<span class="text-[10px] bg-amber-500/20 px-2 py-0.5 rounded text-amber-500 mr-2">${escapeHtml(info.payment)}</span>` : ""}`;
     }
-    return `طاولة ${escapeHtml(tableNo)}`;
+    
+    // محلي: تنظيف رقم الطاولة من أي ملاحظات إضافية
+    let cleanTable = tableNo;
+    if (cleanTable.startsWith("محلي:")) {
+        cleanTable = cleanTable.replace("محلي:", "").trim();
+    }
+    const parts = cleanTable.split('|').map(p => p.trim());
+    const tableNum = parts[0] || "—";
+    return `طاولة ${escapeHtml(tableNum)}`;
 }
 
 function formatLocationInfo(text) {
@@ -300,6 +322,13 @@ function renderOrderCard(order, type) {
             <div class="mt-1">${formatLocationInfo(escapeHtml(deliveryInfo.location))}</div>
         </div>` : "";
 
+    const orderNotes = parseNotes(tableRaw);
+    const notesHtml = orderNotes ? `
+        <div class="mt-3 p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-400 text-sm text-right">
+            <span class="font-bold text-amber-300">📝 ملاحظة الزبون:</span>
+            <p class="mt-1 font-semibold text-white break-words">${escapeHtml(orderNotes)}</p>
+        </div>` : "";
+
     const priceText = `${parseFloat(order.total_price || 0).toFixed(2)} ريال`;
 
     if (type === "active") {
@@ -311,6 +340,7 @@ function renderOrderCard(order, type) {
                     <h2 class="text-xl font-bold text-amber-400">${titleHtml}</h2>
                     <p class="text-amber-200/70 text-xl font-bold mt-1">المجموع: ${priceText}</p>
                     ${detailsHtml}
+                    ${notesHtml}
                 </div>
                 <div class="text-center shrink-0">
                     <p class="text-xs text-zinc-500 mb-1">مؤقت التجهيز</p>
@@ -346,6 +376,7 @@ function renderOrderCard(order, type) {
             <ul class="my-2 space-y-0.5 text-zinc-400 text-[12px] border-t border-zinc-800/30 pt-1">
                 ${items.map(i => `<li class="truncate">• ${escapeHtml(i.name)} × ${i.quantity}</li>`).join('')}
             </ul>
+            ${orderNotes ? `<div class="text-amber-400 text-[11px] mt-1 px-1 border-t border-zinc-850/40 pt-1">📝 ${escapeHtml(orderNotes)}</div>` : ""}
             ${showPickupButton ? `
             <button type="button" onclick="markAsPickedUp('${order.id}')"
                 class="w-full mt-2 bg-blue-600 hover:bg-blue-500 text-white py-1.5 px-3 rounded-lg font-bold text-xs transition">

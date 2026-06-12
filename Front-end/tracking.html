@@ -271,6 +271,28 @@
             }
         }
 
+        function formatTableNoForUser(text) {
+            if (!text) return "—";
+            const isDelivery = text.includes("توصيل");
+            const parts = text.split('|').map(p => p.trim());
+            
+            // استخراج الملاحظة
+            const notesPart = parts.find(p => p.includes("ملاحظات:") || p.includes("الملاحظات:") || p.includes("ملاحظة:"));
+            const notes = notesPart ? notesPart.substring(notesPart.indexOf(":") + 1).trim() : "";
+            
+            if (isDelivery) {
+                const name = parts.find(p => p.includes("الاسم:"))?.split("الاسم:")[1]?.trim() || "توصيل";
+                return `توصيل باسم ${name}${notes ? ` (${notes})` : ""}`;
+            } else {
+                let cleanTable = text;
+                if (cleanTable.startsWith("محلي:")) {
+                    cleanTable = cleanTable.replace("محلي:", "").trim();
+                }
+                const firstPart = cleanTable.split('|')[0]?.trim() || "—";
+                return `طاولة ${firstPart}${notes ? ` (${notes})` : ""}`;
+            }
+        }
+
         function renderOrderDetails(order) {
             const items = parseItems(order.items);
             if (items.length === 0) {
@@ -305,9 +327,8 @@
             orderTotal.textContent = `${total} ر.س`;
 
             const tableRaw = order.table_no ?? "—";
-            const prefix = tableRaw.includes("توصيل") ? "طلب" : "طاولة";
             const priceText = `${parseFloat(order.total_price || 0)} ريال`;
-            orderMeta.textContent = `${prefix} ${tableRaw} · ${priceText}`;
+            orderMeta.textContent = `${formatTableNoForUser(tableRaw)} · ${priceText}`;
         }
 
         function escapeHtml(str) {
