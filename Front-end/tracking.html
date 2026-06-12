@@ -323,11 +323,10 @@
             const priceText = `${parseFloat(order.total_price || 0)} ريال`;
             document.getElementById("qrCodeLabel").textContent = priceText;
             applyQrLabelStyle(order.status);
-            qrHost.innerHTML = "";
 
-            const hex = fillColor.replace("#", "");
+            const hex = fillColor.replace("#", "").toLowerCase();
             const drawFallbackImg = () => {
-                qrHost.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&ecc=H&margin=8&color=${hex}&bgcolor=FFFFFF&data=${encodeURIComponent(url)}" width="200" height="200" alt="QR" style="display:block" />`;
+                qrHost.innerHTML = `<img src="https://quickchart.io/qr?text=${encodeURIComponent(url)}&dark=${hex}&light=ffffff&size=200" width="200" height="200" alt="QR" style="display:block; margin:auto;" />`;
             };
 
             if (typeof QRCode === "undefined" || typeof QRCode.toCanvas !== "function") {
@@ -336,16 +335,22 @@
             }
 
             try {
-                const canvas = document.createElement("canvas");
-                qrHost.appendChild(canvas);
-                await QRCode.toCanvas(canvas, url, {
+                QRCode.toCanvas(url, {
                     width: 280,
                     margin: 1,
                     errorCorrectionLevel: "H",
                     color: { 
-                        dark: fillColor, // التلوين المباشر لمنع مشاكل الشاشة البيضاء
+                        dark: fillColor || "#000000", 
                         light: "#FFFFFF" 
-                    },
+                    }
+                }, function (err, canvas) {
+                    if (err) {
+                        console.error("فشل توليد QR بالدالة:", err);
+                        drawFallbackImg();
+                    } else {
+                        qrHost.innerHTML = "";
+                        qrHost.appendChild(canvas);
+                    }
                 });
             } catch (err) {
                 console.error("فشل توليد QR:", err);
