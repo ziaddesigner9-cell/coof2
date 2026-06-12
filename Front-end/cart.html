@@ -67,11 +67,13 @@
                     </div>
                 </div>
                 <div>
-                    <div class="flex justify-between items-center mb-1">
-                        <label class="block text-amber-200/90 text-sm">الموقع</label>
-                        <button type="button" onclick="shareLocation()" class="text-[10px] text-blue-400 underline">📌 مشاركة موقعي</button>
-                    </div>
-                    <textarea id="deliveryAddress" class="w-full bg-black border border-amber-800/40 rounded-xl p-3 text-white outline-none focus:border-amber-500 h-20" placeholder="الحي، الشارع..."></textarea>
+                    <label class="block text-amber-200/90 text-sm mb-2 font-bold">الموقع</label>
+                    <button type="button" onclick="shareLocation(this)" id="btn-share-location"
+                        class="w-full mb-3 flex items-center justify-center gap-2 bg-gradient-to-r from-amber-700/20 to-amber-900/35 border border-amber-800/60 hover:border-amber-500 text-amber-300 hover:text-amber-200 py-3 px-4 rounded-xl font-bold text-sm transition-all duration-200 active:scale-[0.98] shadow-md shadow-black/25">
+                        <span>📍</span>
+                        <span id="share-location-text">تحديد موقعي التلقائي عبر GPS</span>
+                    </button>
+                    <textarea id="deliveryAddress" class="w-full bg-black border border-amber-800/40 rounded-xl p-3 text-white outline-none focus:border-amber-500 h-20 text-sm placeholder-zinc-500" placeholder="الحي، الشارع..."></textarea>
                 </div>
             </div>
 

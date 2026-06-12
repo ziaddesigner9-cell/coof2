@@ -120,21 +120,40 @@ function setOrderType(type) {
 /**
  * جلب موقع الزبون الجغرافي وتحويله لرابط خرائط جوجل
  */
-async function shareLocation() {
+async function shareLocation(btn) {
     const addressEl = document.getElementById("deliveryAddress");
+    const textEl = document.getElementById("share-location-text");
     if (!navigator.geolocation) {
         alert("متصفحك لا يدعم مشاركة الموقع.");
         return;
     }
     
-    addressEl.placeholder = "جاري جلب الموقع...";
+    if (btn) {
+        btn.disabled = true;
+        btn.classList.add("opacity-70");
+    }
+    if (textEl) textEl.innerText = "جاري تحديد موقعك الجغرافي...";
+    if (addressEl) addressEl.placeholder = "جاري جلب الإحداثيات...";
+    
     navigator.geolocation.getCurrentPosition((position) => {
         const { latitude, longitude } = position.coords;
         const mapUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
-        addressEl.value = mapUrl;
+        if (addressEl) addressEl.value = mapUrl;
+        if (textEl) textEl.innerText = "تم تحديد الموقع بنجاح ✓";
+        if (btn) {
+            btn.disabled = false;
+            btn.classList.remove("opacity-70");
+            btn.classList.remove("border-amber-800/60", "text-amber-300");
+            btn.classList.add("border-emerald-600", "text-emerald-400");
+        }
     }, (error) => {
-        alert("تعذر جلب الموقع، يرجى كتابة العنوان يدوياً.");
-        addressEl.placeholder = "الحي، الشارع، المعالم القريبة...";
+        alert("تعذر جلب الموقع تلقائياً، يرجى كتابة العنوان يدوياً.");
+        if (textEl) textEl.innerText = "فشل التحديد تلقائياً - يرجى الكتابة بالأسفل";
+        if (addressEl) addressEl.placeholder = "الحي، الشارع، المعالم القريبة...";
+        if (btn) {
+            btn.disabled = false;
+            btn.classList.remove("opacity-70");
+        }
     });
 }
 
