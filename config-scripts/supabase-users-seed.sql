@@ -51,12 +51,12 @@ BEGIN
         -- ربط الهوية ديناميكياً لتجنب مشاكل بنية الجدول في الإصدارات المختلفة
         IF has_provider_id THEN
             EXECUTE 'INSERT INTO auth.identities (id, user_id, provider_id, identity_data, provider, last_sign_in_at, created_at, updated_at) 
-                     VALUES ($1, $1, $1, $2, ''email'', now(), now(), now())'
-            USING new_user_id, json_build_object('sub', new_user_id, 'email', user_email, 'email_verified', true);
+                     VALUES ($1, $2, $1, $3, ''email'', now(), now(), now())'
+            USING new_user_id::text, new_user_id, json_build_object('sub', new_user_id::text, 'email', user_email, 'email_verified', true);
         ELSE
             EXECUTE 'INSERT INTO auth.identities (id, user_id, identity_data, provider, last_sign_in_at, created_at, updated_at) 
-                     VALUES ($1, $1, $2, ''email'', now(), now(), now())'
-            USING new_user_id, json_build_object('sub', new_user_id, 'email', user_email, 'email_verified', true);
+                     VALUES ($1, $2, $3, ''email'', now(), now(), now())'
+            USING new_user_id::text, new_user_id, json_build_object('sub', new_user_id::text, 'email', user_email, 'email_verified', true);
         END IF;
     END IF;
 END;
