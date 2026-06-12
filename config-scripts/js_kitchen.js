@@ -321,7 +321,7 @@ function renderOrderCard(order, type) {
             <ul class="my-4 space-y-2 border-y border-amber-800/30 py-3">${renderItemsList(items)}</ul>
             <button type="button" onclick="markAsReady('${order.id}')"
                 class="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-4 rounded-xl font-bold text-lg">
-                تم التجهيز ✓ (إرسال للسائق)
+                ${isDelivery ? "تم التجهيز ✓ (إرسال للسائق)" : "تم التجهيز ✓"}
             </button>
         </div>`;
     }
