@@ -548,19 +548,24 @@
             if (!orderId || !client) return;
 
             client
-                .channel(`order_track_${orderId}`)
+                .channel('order_track_' + orderId)
                 .on(
                     "postgres_changes",
                     {
                         event: "UPDATE",
                         schema: "public",
                         table: "orders",
-                        filter: `id=eq.${orderId}`,
+                        filter: "id=eq." + orderId,
                     },
-                    (payload) => {
-                        const next = payload.new;
+                    function(payload) {
+                        var next = payload.new;
                         if (next) {
-                            currentOrder = { ...currentOrder, ...next };
+                            if (!currentOrder) currentOrder = {};
+                            for (var key in next) {
+                                if (next.hasOwnProperty(key)) {
+                                    currentOrder[key] = next[key];
+                                }
+                            }
                             renderOrderDetails(currentOrder);
                             updateUiForStatus(next.status);
                         }

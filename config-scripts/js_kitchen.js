@@ -55,7 +55,9 @@ function formatClock(iso) {
 }
 
 function sortNewestFirst(list) {
-    return [...list].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+    return list.slice().sort(function(a, b) {
+        return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+    });
 }
 
 function getOpenedAt(order) {
