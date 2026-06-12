@@ -14,7 +14,7 @@ const DIRECT_SUPABASE_URL = "https://jdaggrzdaxcnnfmdyvic.supabase.co";    const
         let base = String(url).trim();
         if (!base) return "";
         if (!/^https?:\/\//i.test(base)) base = "https://" + base;
-        if (!base.endsWith("/")) base += "/";
+        if (base.slice(-1) !== "/") base += "/";
         return base;
     }
 
@@ -96,7 +96,7 @@ const DIRECT_SUPABASE_URL = "https://jdaggrzdaxcnnfmdyvic.supabase.co";    const
 
     /**
      * دالة ذكية لجلب رابط الصورة العام.
-     * تحل مشكلة الروابط المحلية وتضمن استخدام getPublicUrl الصافي دائماً.
+     * تحل مشكلة الروابط المحلية وتضمن استخدام getPublicUrl الصافي دائماً أونلاين
      */
     window.getSafeImageUrl = function(urlOrPath, bucket = 'menu-images') {
         if (!urlOrPath) return "https://via.placeholder.com/300?text=No+Image";
@@ -104,7 +104,8 @@ const DIRECT_SUPABASE_URL = "https://jdaggrzdaxcnnfmdyvic.supabase.co";    const
         // تنظيف المسار لضمان الحصول على الرابط العام الصافي دائماً أونلاين
         let path = urlOrPath;
         const markers = ["/menu-images/", "/object/public/menu-images/"];
-        for (const marker of markers) {
+        for (var i = 0; i < markers.length; i++) {
+            var marker = markers[i];
             const idx = urlOrPath.indexOf(marker);
             if (idx !== -1) {
                 path = urlOrPath.slice(idx + marker.length);
@@ -113,7 +114,7 @@ const DIRECT_SUPABASE_URL = "https://jdaggrzdaxcnnfmdyvic.supabase.co";    const
         }
         
         // إذا كان الرابط لا يزال يحتوي على نطاق كامل (مثال جلب قديم من لوكال هوست)، نأخذ اسم الملف الأخير فقط
-        if (path.startsWith('http')) {
+        if (path.indexOf('http') === 0) {
             try {
                 const segments = path.split('/');
                 path = segments[segments.length - 1];

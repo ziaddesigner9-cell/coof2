@@ -100,34 +100,33 @@
     </div>
 
     <script>
-        const query = new URLSearchParams(window.location.search);
-        const orderId = query.get("orderId");
-        const orderCode = query.get("code");
-        let appSettings = mergeSettings(null);
+        var query = new URLSearchParams(window.location.search);
+        var orderId = query.get("orderId");
+        var orderCode = query.get("code");
+        var appSettings = mergeSettings(null);
 
         function applyOrderViewBranding() {
-            const en = document.getElementById("brand-en");
-            const ar = document.getElementById("brand-ar");
+            var en = document.getElementById("brand-en");
+            var ar = document.getElementById("brand-ar");
             if (en) en.textContent = phrase(appSettings, "order_view_brand_en");
             if (ar) ar.textContent = phrase(appSettings, "order_view_brand_ar");
         }
 
         function applyLayoutSettings() {
-            const ui = appSettings?.ui || {};
-            // set gold color and font size
-            const goldColor = ui.gold_color || '#D4AF37';
-            document.querySelectorAll('.gold-text').forEach(el => el.style.color = goldColor);
-            // set CSS var for app font size
+            var ui = (appSettings && appSettings.ui) || {};
+            var goldColor = ui.gold_color || '#D4AF37';
+            var goldElements = document.querySelectorAll('.gold-text');
+            for(var i=0; i<goldElements.length; i++) goldElements[i].style.color = goldColor;
+            
             if (ui.text_font_size) document.documentElement.style.setProperty('--app-font-size', ui.text_font_size + 'px');
 
-            // تطبيق الإطار واللون للأقسام الرئيسية
-            const heroWrap = document.getElementById('heroWrap');
+            var heroWrap = document.getElementById('heroWrap');
             if (heroWrap) {
                 if (ui.border_width !== undefined) heroWrap.style.borderWidth = ui.border_width + 'px';
                 heroWrap.style.borderColor = goldColor;
             }
 
-            const orderMeta = document.getElementById('orderMeta');
+            var orderMeta = document.getElementById('orderMeta');
             if (orderMeta) orderMeta.style.display = ui.show_code_text === false ? 'none' : '';
         }
 
@@ -135,192 +134,157 @@
             if (!raw) return [];
             if (Array.isArray(raw)) return raw;
             try {
-                const p = JSON.parse(raw);
+                var p = JSON.parse(raw);
                 return Array.isArray(p) ? p : [];
-            } catch {
-                return [];
-            }
+            } catch(e) { return []; }
         }
 
         function escapeHtml(s) {
-            return String(s)
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;");
+            return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
         }
 
-        function setStatusUi(status, isDelivery = false) {
-            const badge = document.getElementById("statusBadge");
-            const readyMsg = document.getElementById("readyMessage");
-            const ratingSec = document.getElementById("ratingSection");
-            const isReady = status === "completed";
+        function setStatusUi(status, isDelivery) {
+            var badge = document.getElementById("statusBadge");
+            var readyMsg = document.getElementById("readyMessage");
+            var ratingSec = document.getElementById("ratingSection");
+            
             if (status === "completed") {
                 badge.textContent = isDelivery ? "تم التوصيل" : "تم الاستلام";
-                badge.className =
-                    "inline-block px-4 py-1.5 rounded-full text-sm font-bold border border-emerald-500/60 bg-emerald-950 text-emerald-400";
+                badge.className = "inline-block px-4 py-1.5 rounded-full text-sm font-bold border border-emerald-500/60 bg-emerald-950 text-emerald-400";
                 readyMsg.textContent = phrase(appSettings, "order_view_completed_msg");
                 readyMsg.classList.remove("hidden");
-                
-                // تفعيل قسم التقييم بالرابط المختار من المدير
                 if (ratingSec) {
                     ratingSec.classList.remove("hidden");
-                    const link = document.getElementById("googleMapsLink");
+                    var link = document.getElementById("googleMapsLink");
                     if (link) link.href = phrase(appSettings, "google_maps_review_url");
                 }
             } else if (status === "ready") {
                 badge.textContent = "جاهز للاستلام";
-                badge.className =
-                    "inline-block px-4 py-1.5 rounded-full text-sm font-bold border border-emerald-500/60 bg-emerald-950 text-emerald-400";
-                readyMsg.textContent = isDelivery 
-                    ? "تم تجهيز طلبك وهو بانتظار استلام السائق"
-                    : phrase(appSettings, "order_view_ready_msg");
+                badge.className = "inline-block px-4 py-1.5 rounded-full text-sm font-bold border border-emerald-500/60 bg-emerald-950 text-emerald-400";
+                readyMsg.textContent = isDelivery ? "تم تجهيز طلبك وهو بانتظار استلام السائق" : phrase(appSettings, "order_view_ready_msg");
                 readyMsg.classList.remove("hidden");
-                ratingSec.classList.add("hidden");
+                if (ratingSec) ratingSec.classList.add("hidden");
             } else if (status === "preparing") {
                 badge.textContent = "قيد التجهيز";
-                badge.className =
-                    "inline-block px-4 py-1.5 rounded-full text-sm font-bold border border-amber-500/60 bg-amber-950 gold-text";
+                badge.className = "inline-block px-4 py-1.5 rounded-full text-sm font-bold border border-amber-500/60 bg-amber-950 gold-text";
                 readyMsg.classList.add("hidden");
-                ratingSec.classList.add("hidden");
+                if (ratingSec) ratingSec.classList.add("hidden");
             } else {
                 badge.textContent = "بانتظار العامل";
-                badge.className =
-                    "inline-block px-4 py-1.5 rounded-full text-sm font-bold border gold-border bg-zinc-900 gold-text";
+                badge.className = "inline-block px-4 py-1.5 rounded-full text-sm font-bold border gold-border bg-zinc-900 gold-text";
                 readyMsg.classList.add("hidden");
-                ratingSec.classList.add("hidden");
+                if (ratingSec) ratingSec.classList.add("hidden");
             }
         }
 
         function formatTableNoForUser(text) {
-            const strText = String(text ?? "—");
+            var strText = String(text != null ? text : "—");
             if (!strText || strText === "—") return "—";
+            var isDelivery = strText.indexOf("توصيل") !== -1;
+            var parts = strText.split('|');
+            for (var i = 0; i < parts.length; i++) parts[i] = parts[i].trim();
             
-            const isDelivery = strText.includes("توصيل");
-            const parts = strText.split('|').map(p => p.trim());
-            
-            // استخراج الملاحظة
-            const notesPart = parts.find(p => p.includes("ملاحظات:") || p.includes("الملاحظات:") || p.includes("ملاحظة:"));
-            let notes = "";
+            var notesPart = "";
+            for (var i = 0; i < parts.length; i++) {
+                if (parts[i].indexOf("ملاحظات:") !== -1 || parts[i].indexOf("الملاحظات:") !== -1 || parts[i].indexOf("ملاحظة:") !== -1) {
+                    notesPart = parts[i];
+                    break;
+                }
+            }
+            var notes = "";
             if (notesPart) {
-                const colonIndex = notesPart.indexOf(":");
+                var colonIndex = notesPart.indexOf(":");
                 notes = colonIndex !== -1 ? notesPart.substring(colonIndex + 1).trim() : notesPart.trim();
             }
             
             if (isDelivery) {
-                const namePart = parts.find(p => p.includes("الاسم:"));
-                const name = namePart ? namePart.replace("الاسم:", "").trim() : "توصيل";
-                return `توصيل باسم ${name}${notes ? ` (${notes})` : ""}`;
-            } else {
-                let cleanTable = strText;
-                if (cleanTable.startsWith("محلي:")) {
-                    cleanTable = cleanTable.replace("محلي:", "").trim();
+                var namePart = "";
+                for (var i = 0; i < parts.length; i++) {
+                    if (parts[i].indexOf("الاسم:") !== -1) { namePart = parts[i]; break; }
                 }
-                const firstPart = cleanTable.split('|')[0]?.trim() || "—";
-                return `طاولة ${firstPart}${notes ? ` (${notes})` : ""}`;
+                var name = namePart ? namePart.replace("الاسم:", "").trim() : "توصيل";
+                return "توصيل باسم " + name + (notes ? " (" + notes + ")" : "");
+            } else {
+                var cleanTable = strText;
+                if (cleanTable.indexOf("محلي:") === 0) cleanTable = cleanTable.replace("محلي:", "").trim();
+                var firstPart = cleanTable.split('|')[0] ? cleanTable.split('|')[0].trim() : "—";
+                return "طاولة " + firstPart + (notes ? " (" + notes + ")" : "");
             }
         }
 
         function renderOrder(order) {
-            const items = parseItems(order.items);
-            const list = document.getElementById("orderItemsList");
-            const priceDisplay = `${parseFloat(order.total_price || 0).toFixed(2)} ريال`;
-            const tableRaw = order.table_no ?? "—";
-            document.getElementById("orderMeta").textContent =
-                `${formatTableNoForUser(tableRaw)} · ${priceDisplay}`;
+            var items = parseItems(order.items);
+            var list = document.getElementById("orderItemsList");
+            var priceDisplay = parseFloat(order.total_price || 0).toFixed(2) + " ريال";
+            var tableRaw = order.table_no != null ? order.table_no : "—";
+            document.getElementById("orderMeta").textContent = formatTableNoForUser(tableRaw) + " · " + priceDisplay;
 
             if (items.length === 0) {
-                list.innerHTML =
-                    '<li class="py-6 text-zinc-500 text-center">لا توجد أصناف</li>';
+                list.innerHTML = '<li class="py-6 text-zinc-500 text-center">لا توجد أصناف</li>';
             } else {
-                list.innerHTML = items
-                    .map((item) => {
-                        const qty = parseInt(item.quantity) || 1;
-                        const price = parseFloat(item.price) || 0;
-                        const img = window.getSafeImageUrl(item.image_url) ||
-                            "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=200&h=200&fit=crop";
-                        return `
-                        <li class="flex gap-3 items-center py-3 border-b border-zinc-800/80 last:border-0">
-                            <img src="${escapeHtml(img)}" alt="صورة الصنف" loading="lazy" class="w-14 h-14 rounded-xl object-cover border gold-border flex-shrink-0" />
-                            <div class="flex-1 min-w-0">
-                                <p class="font-bold gold-text truncate">${escapeHtml(item.name || "صنف")}</p>
-                                <p class="text-zinc-500 text-xs">${price} ر.س × ${qty}</p>
-                            </div>
-                            <span class="gold-text font-bold">${price * qty} ر.س</span>
-                        </li>`;
-                    })
-                    .join("");
+                list.innerHTML = items.map(function(item) {
+                    var qty = parseInt(item.quantity) || 1;
+                    var price = parseFloat(item.price) || 0;
+                    var img = window.getSafeImageUrl ? window.getSafeImageUrl(item.image_url) : (item.image_url || "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=200&h=200&fit=crop");
+                    return '<li class="flex gap-3 items-center py-3 border-b border-zinc-800/80 last:border-0">' +
+                           '<img src="' + escapeHtml(img) + '" alt="صنف" loading="lazy" class="w-14 h-14 rounded-xl object-cover border gold-border flex-shrink-0" />' +
+                           '<div class="flex-1 min-w-0"><p class="font-bold gold-text truncate">' + escapeHtml(item.name || "صنف") + '</p>' +
+                           '<p class="text-zinc-500 text-xs">' + price + ' ر.س × ' + qty + '</p></div>' +
+                           '<span class="gold-text font-bold">' + (price * qty) + ' ر.س</span></li>';
+                }).join("");
             }
 
-            const total =
-                order.total_price != null
-                    ? parseFloat(order.total_price)
-                    : items.reduce(
-                          (s, i) =>
-                              s + (parseFloat(i.price) || 0) * (parseInt(i.quantity) || 1),
-                          0
-                      );
-            document.getElementById("orderTotal").textContent = `${total} ر.س`;
-            const isDelivery = order.table_no && order.table_no.includes("توصيل");
-
-            const firstWithImage = items.find((i) => i.image_url);
-            const heroWrap = document.getElementById("heroWrap");
-            const heroImg = document.getElementById("heroImage");
-            const heroCaption = document.getElementById("heroCaption");
-            if (firstWithImage?.image_url) {
-                heroImg.src = window.getSafeImageUrl(firstWithImage.image_url);
+            var total = order.total_price != null ? parseFloat(order.total_price) : items.reduce(function(s, i) { return s + (parseFloat(i.price) || 0) * (parseInt(i.quantity) || 1); }, 0);
+            document.getElementById("orderTotal").textContent = total + " ر.س";
+            var isDelivery = order.table_no && (order.table_no.indexOf("توصيل") !== -1);
+            
+            var heroWrap = document.getElementById("heroWrap");
+            var heroImg = document.getElementById("heroImage");
+            var heroCaption = document.getElementById("heroCaption");
+            var firstWithImage = items.filter(function(i) { return i.image_url; })[0];
+            
+            if (firstWithImage) {
+                heroImg.src = window.getSafeImageUrl ? window.getSafeImageUrl(firstWithImage.image_url) : firstWithImage.image_url;
                 heroCaption.textContent = firstWithImage.name || "طلبك من مقهى السعادة";
                 heroWrap.classList.remove("hidden");
             } else if (items.length > 0) {
-                heroImg.src =
-                    "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800&h=600&fit=crop";
+                heroImg.src = "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800&h=600&fit=crop";
                 heroCaption.textContent = items[0].name || "طلبك";
                 heroWrap.classList.remove("hidden");
             }
-
             setStatusUi(order.status, isDelivery);
         }
 
+
         async function loadOrder() {
-            const client = window.getSupabaseClient?.();
-            if (!orderId && !orderCode) {
-                document.getElementById("statusBadge").textContent = "رابط غير صالح";
-                return;
-            }
+            var client = window.getSupabaseClient ? window.getSupabaseClient() : null;
+            if (!orderId && !orderCode) return;
             if (!client) return;
-
-            let request = client
-                .from("orders")
-                .select("id, status, order_code, table_no, items, total_price, created_at");
-
-            request = orderCode
-                ? request.eq("order_code", orderCode)
-                : request.eq("id", orderId);
-
-            const { data, error } = await request.single();
-
-            if (error || !data) {
+            var req = client.from("orders").select("id, status, order_code, table_no, items, total_price, created_at");
+            var res = await (orderCode ? req.eq("order_code", orderCode) : req.eq("id", orderId)).single();
+            if (res.error || !res.data) {
                 document.getElementById("statusBadge").textContent = "الطلب غير موجود";
                 document.getElementById("orderItemsList").innerHTML =
-                    '<li class="py-6 text-red-400 text-center">تعذر تحميل الطلب. تأكد أن الرابط صحيح وأن الموقع يعمل عبر http وليس ملف محلي.</li>';
+                    '<li class="py-6 text-red-400 text-center">تعذر تحميل الطلب.</li>';
                 return;
             }
 
-            renderOrder(data);
+            var orderData = res.data;
+            renderOrder(orderData);
 
-            const resolvedId = data.id;
+            var resolvedId = orderData.id;
             client
-                .channel(`order_view_${resolvedId}`)
+                .channel('order_view_' + resolvedId)
                 .on(
                     "postgres_changes",
                     {
                         event: "UPDATE",
                         schema: "public",
                         table: "orders",
-                        filter: `id=eq.${resolvedId}`,
+                        filter: "id=eq." + resolvedId,
                     },
-                    (payload) => {
-                        if (payload.new) renderOrder({ ...data, ...payload.new });
+                    function(payload) {
+                        if (payload.new) renderOrder(payload.new);
                     }
                 )
                 .subscribe();
@@ -330,7 +294,7 @@
             appSettings = await loadAppSettings();
             applyOrderViewBranding();
             applyLayoutSettings();
-            if (window.getSupabaseClient?.()) loadOrder();
+            if (window.getSupabaseClient ? window.getSupabaseClient() : null) loadOrder();
         }
         window.addEventListener("supabaseReady", init);
         if (document.readyState !== "loading") init();

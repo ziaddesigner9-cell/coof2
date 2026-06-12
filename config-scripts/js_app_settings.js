@@ -57,7 +57,7 @@ const DEFAULT_APP_SETTINGS = {
 };
 
 function mergeSettings(raw) {
-    const base = JSON.parse(JSON.stringify(DEFAULT_APP_SETTINGS));
+    var base = JSON.parse(JSON.stringify(DEFAULT_APP_SETTINGS));
     if (!raw || typeof raw !== "object") return base;
     if (raw.background_image) base.background_image = raw.background_image;
     if (raw.logo_image) base.logo_image = raw.logo_image;
@@ -68,15 +68,32 @@ function mergeSettings(raw) {
     
     // ضمان دمج العبارات الجديدة (Feedback) حتى لو لم تكن موجودة في البيانات القادمة
     if (raw.phrases && typeof raw.phrases === "object") {
-        const mergedPhrases = { ...DEFAULT_APP_SETTINGS.phrases, ...raw.phrases };
-        for (let i = 1; i <= 6; i++) {
-            const key = `cart_feedback_${i}`;
-            if (!mergedPhrases[key] || mergedPhrases[key].trim() === "") mergedPhrases[key] = DEFAULT_APP_SETTINGS.phrases[key];
+        var mergedPhrases = {};
+        for (var k in DEFAULT_APP_SETTINGS.phrases) {
+            mergedPhrases[k] = DEFAULT_APP_SETTINGS.phrases[k];
+        }
+        for (var k in raw.phrases) {
+            mergedPhrases[k] = raw.phrases[k];
+        }
+        for (var i = 1; i <= 6; i++) {
+            var key = "cart_feedback_" + i;
+            if (!mergedPhrases[key] || mergedPhrases[key].trim() === "") {
+                mergedPhrases[key] = DEFAULT_APP_SETTINGS.phrases[key];
+            }
         }
         base.phrases = mergedPhrases;
     }
     // merge ui settings
-    if (raw.ui && typeof raw.ui === "object") base.ui = { ...base.ui, ...raw.ui };
+    if (raw.ui && typeof raw.ui === "object") {
+        var mergedUi = {};
+        for (var k in base.ui) {
+            mergedUi[k] = base.ui[k];
+        }
+        for (var k in raw.ui) {
+            mergedUi[k] = raw.ui[k];
+        }
+        base.ui = mergedUi;
+    }
     return base;
 }
 
@@ -104,7 +121,7 @@ async function loadAppSettings(forceRemote = false) {
             .eq("key", APP_SETTINGS_KEY)
             .maybeSingle();
 
-        if (!error && data?.value) {
+        if (!error && data && data.value) {
             globalSettingsCache = mergeSettings(data.value);
             localStorage.setItem(APP_SETTINGS_CACHE, JSON.stringify(globalSettingsCache));
             return globalSettingsCache;
@@ -140,7 +157,13 @@ async function saveAppSettings(settings) {
 }
 
 function phrase(settings, key, fallback = "") {
-    return settings?.phrases?.[key] ?? DEFAULT_APP_SETTINGS.phrases[key] ?? fallback;
+    if (settings && settings.phrases && settings.phrases[key] !== undefined) {
+        return settings.phrases[key];
+    }
+    if (DEFAULT_APP_SETTINGS.phrases[key] !== undefined) {
+        return DEFAULT_APP_SETTINGS.phrases[key];
+    }
+    return fallback;
 }
 
 /** عرض الصورة كاملة داخل الإطار دون قص (object-fit: contain) */
@@ -177,8 +200,8 @@ function setCategoryRowImage(row, url) {
 }
 
 function categoryRowHasImage(row) {
-    const img = row?.querySelector(".category-cover-img");
-    return Boolean(img?.src);
+    const img = row ? row.querySelector(".category-cover-img") : null;
+    return Boolean(img && img.src);
 }
 
 function applyHomeSettings(settings) {

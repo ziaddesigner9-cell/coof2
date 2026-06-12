@@ -160,7 +160,7 @@
             const label = document.getElementById("qrCodeLabel");
             if (!label) return;
             // use colors from app settings if available
-            const ui = appSettings?.ui || {};
+            const ui = (appSettings && appSettings.ui) || {};
             const gold = ui.gold_color || '#D4AF37';
             const silver = ui.silver_color || '#C0C0C0';
             // التأكد من استخدام اللون الأخضر عند الجاهزية والذهبي عند التحضير
@@ -177,15 +177,15 @@
         }
 
         function applyLayoutSettings() {
-            const ui = appSettings?.ui || {};
+            const ui = (appSettings && appSettings.ui) || {};
             // always keep QR box at the top (moved in HTML)
             // hide the small explanation text under the code by default
             const scanHint = document.getElementById('tracking-scan-hint');
-            if (scanHint) scanHint.style.display = ui.show_code_text === false ? 'none' : 'none';
+            if (scanHint) scanHint.style.display = 'none';
             // apply font size if provided
             if (ui.text_font_size) document.documentElement.style.setProperty('--app-font-size', ui.text_font_size + 'px');
             // apply QR label color immediately
-            applyQrLabelStyle(currentOrder?.status);
+            applyQrLabelStyle(currentOrder ? currentOrder.status : null);
         }
 
         /** رابط صفحة الطلب — يجب أن يكون عاماً (ليس localhost) */
@@ -195,9 +195,9 @@
                 ? `code=${encodeURIComponent(code)}`
                 : `orderId=${encodeURIComponent(order.id)}`;
             
-            let base = window.resolveSiteBase?.() || "";
+            let base = (window.resolveSiteBase ? window.resolveSiteBase() : "") || "";
             // إذا كان المسار الأساسي لا ينتهي بـ Front-end ونحن بداخل المجلد، نحتاج لإضافته
-            if (base && !base.toLowerCase().endsWith("/front-end/")) {
+            if (base && base.toLowerCase().slice(-11) !== "/front-end/") {
                 base += "Front-end/";
             }
             if (base) return new URL(`order-view.html?${qs}`, base).href;
@@ -208,7 +208,8 @@
             const banner = document.getElementById("qrNetworkBanner");
             const preview = document.getElementById("qrLinkPreview");
             const needsSetup =
-                window.isLocalOnlyEnvironment?.() && !window.resolveSiteBase?.();
+                (window.isLocalOnlyEnvironment ? window.isLocalOnlyEnvironment() : false) && 
+                !(window.resolveSiteBase ? window.resolveSiteBase() : false);
             banner.classList.toggle("hidden", !needsSetup);
             if (currentOrder) {
                 const url = buildOrderPageUrl(currentOrder);
@@ -224,7 +225,9 @@
 
         function savePublicBaseAndRefreshQr() {
             const input = document.getElementById("publicBaseInput");
-            window.setCoof2PublicBase?.(input.value);
+            if (window.setCoof2PublicBase) {
+                window.setCoof2PublicBase(input.value);
+            }
             updateQrNetworkUi();
             if (currentOrder) renderQr(currentOrder).catch(console.error);
         }
@@ -241,31 +244,48 @@
         }
 
         function formatTableNoForUser(text) {
-            const strText = String(text ?? "—");
+            var strText = String(text != null ? text : "—");
             if (!strText || strText === "—") return "—";
             
-            const isDelivery = strText.includes("توصيل");
-            const parts = strText.split('|').map(p => p.trim());
+            var isDelivery = strText.indexOf("توصيل") !== -1;
+            var parts = strText.split('|');
+            for (var i = 0; i < parts.length; i++) {
+                parts[i] = parts[i].trim();
+            }
             
-            // استخراج الملاحظة
-            const notesPart = parts.find(p => p.includes("ملاحظات:") || p.includes("الملاحظات:") || p.includes("ملاحظة:"));
-            let notes = "";
+            // استخراج الملاحظة باستخدام حلقة فور التقليدية
+            var notesPart = "";
+            for (var i = 0; i < parts.length; i++) {
+                var p = parts[i];
+                if (p.indexOf("ملاحظات:") !== -1 || p.indexOf("الملاحظات:") !== -1 || p.indexOf("ملاحظة:") !== -1) {
+                    notesPart = p;
+                    break;
+                }
+            }
+            
+            var notes = "";
             if (notesPart) {
-                const colonIndex = notesPart.indexOf(":");
+                var colonIndex = notesPart.indexOf(":");
                 notes = colonIndex !== -1 ? notesPart.substring(colonIndex + 1).trim() : notesPart.trim();
             }
             
             if (isDelivery) {
-                const namePart = parts.find(p => p.includes("الاسم:"));
-                const name = namePart ? namePart.replace("الاسم:", "").trim() : "توصيل";
-                return `توصيل باسم ${name}${notes ? ` (${notes})` : ""}`;
+                var namePart = "";
+                for (var i = 0; i < parts.length; i++) {
+                    if (parts[i].indexOf("الاسم:") !== -1) {
+                        namePart = parts[i];
+                        break;
+                    }
+                }
+                var name = namePart ? namePart.replace("الاسم:", "").trim() : "توصيل";
+                return "توصيل باسم " + name + (notes ? " (" + notes + ")" : "");
             } else {
-                let cleanTable = strText;
-                if (cleanTable.startsWith("محلي:")) {
+                var cleanTable = strText;
+                if (cleanTable.indexOf("محلي:") === 0) {
                     cleanTable = cleanTable.replace("محلي:", "").trim();
                 }
-                const firstPart = cleanTable.split('|')[0]?.trim() || "—";
-                return `طاولة ${firstPart}${notes ? ` (${notes})` : ""}`;
+                var firstPart = cleanTable.split('|')[0] ? cleanTable.split('|')[0].trim() : "—";
+                return "طاولة " + firstPart + (notes ? " (" + notes + ")" : "");
             }
         }
 
@@ -282,11 +302,11 @@
                         const lineTotal = price * qty;
                         return `
                         <li class="order-item-row py-3 flex justify-between gap-3 border-b border-zinc-800">
-                            <div class="text-right flex-1">
-                                <p class="font-bold text-zinc-100">${escapeHtml(item.name || "صنف")}</p>
-                                <p class="text-zinc-500 text-xs mt-0.5">${price} ر.س × ${qty}</p>
-                            </div>
-                            <span class="text-yellow-400 font-bold whitespace-nowrap">${lineTotal} ر.س</span>
+                             <div class="text-right flex-1">
+                                 <p class="font-bold text-zinc-100">${escapeHtml(item.name || "صنف")}</p>
+                                 <p class="text-zinc-500 text-xs mt-0.5">${price} ر.س × ${qty}</p>
+                             </div>
+                             <span class="text-yellow-400 font-bold whitespace-nowrap">${lineTotal} ر.س</span>
                         </li>`;
                     })
                     .join("");
@@ -302,7 +322,7 @@
                       );
             orderTotal.textContent = `${total} ر.س`;
 
-            const tableRaw = order.table_no ?? "—";
+            const tableRaw = order.table_no != null ? order.table_no : "—";
             const priceText = `${parseFloat(order.total_price || 0)} ريال`;
             orderMeta.textContent = `${formatTableNoForUser(tableRaw)} · ${priceText}`;
         }
@@ -446,7 +466,10 @@
                 statusText.classList.add("text-emerald-400");
                 statusText.textContent = phrase(appSettings, "tracking_status_completed");
                 subText.textContent = phrase(appSettings, "tracking_sub_completed");
-                document.getElementById("ratingSection")?.classList.remove("hidden");
+                var ratingSec = document.getElementById("ratingSection");
+                if (ratingSec) {
+                    ratingSec.classList.remove("hidden");
+                }
                 
                 const ratingLink = document.querySelector("#ratingSection a");
                 if (ratingLink) {
@@ -464,7 +487,7 @@
                 statusText.classList.remove("text-yellow-400");
                 statusText.classList.add("text-emerald-400");
                 
-                const isDelivery = currentOrder?.table_no?.includes("توصيل");
+                var isDelivery = (currentOrder && currentOrder.table_no) ? (currentOrder.table_no.indexOf("توصيل") !== -1) : false;
                 statusText.textContent = isDelivery 
                     ? "تم التجهيز وبانتظار السائق" 
                     : phrase(appSettings, "tracking_status_ready");
@@ -487,7 +510,7 @@
         }
 
         async function loadOrder() {
-            const client = window.getSupabaseClient?.();
+            const client = window.getSupabaseClient ? window.getSupabaseClient() : null;
             if (!orderId) {
                 statusText.textContent = "لم يُعثر على رقم الطلب";
                 statusText.classList.add("text-red-400");
@@ -521,7 +544,7 @@
         }
 
         function subscribeToOrder() {
-            const client = window.getSupabaseClient?.();
+            const client = window.getSupabaseClient ? window.getSupabaseClient() : null;
             if (!orderId || !client) return;
 
             client
@@ -550,12 +573,15 @@
             appSettings = await loadAppSettings();
             applyTrackingPhrases();
             applyLayoutSettings();
-            const saved = window.getCoof2PublicBase?.();
+            const saved = window.getCoof2PublicBase ? window.getCoof2PublicBase() : "";
             if (saved) {
                 document.getElementById("publicBaseInput").value = saved;
             }
-            document.getElementById("savePublicBaseBtn")?.addEventListener("click", savePublicBaseAndRefreshQr);
-            if (window.getSupabaseClient?.()) {
+            var saveBtn = document.getElementById("savePublicBaseBtn");
+            if (saveBtn) {
+                saveBtn.addEventListener("click", savePublicBaseAndRefreshQr);
+            }
+            if (window.getSupabaseClient ? window.getSupabaseClient() : null) {
                 loadOrder();
                 subscribeToOrder();
             }

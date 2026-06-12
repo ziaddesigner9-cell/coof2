@@ -8,31 +8,48 @@ const CATEGORY_FALLBACK = {
 };
 
 async function fillMissingCategoryImages() {
-    const settings = await loadAppSettings();
-    const needs = ["hot", "cold", "dessert"].filter((c) => !settings[`category_${c}_image`]);
+    var settings = await loadAppSettings();
+    var categories = ["hot", "cold", "dessert"];
+    var needs = [];
+    for (var i = 0; i < categories.length; i++) {
+        var c = categories[i];
+        if (!settings["category_" + c + "_image"]) {
+            needs.push(c);
+        }
+    }
     if (needs.length === 0) return;
 
-    const setFallback = (cat, url) => {
-        const row = document.querySelector(`[data-category-cover="${cat}"]`);
+    var setFallback = function(cat, url) {
+        var row = document.querySelector('[data-category-cover="' + cat + '"]');
         if (row && !categoryRowHasImage(row)) setCategoryRowImage(row, url);
     };
 
-    const client =
-        typeof window.getSupabaseClient === "function" ? window.getSupabaseClient() : null;
+    var client = typeof window.getSupabaseClient === "function" ? window.getSupabaseClient() : null;
     if (!client) {
-        needs.forEach((c) => setFallback(c, CATEGORY_FALLBACK[c]));
+        for (var i = 0; i < needs.length; i++) {
+            setFallback(needs[i], CATEGORY_FALLBACK[needs[i]]);
+        }
         return;
     }
 
-    const { data } = await client.from("items").select("category, image_url").eq("is_available", true);
-    const items = Array.isArray(data) ? data : [];
+    var res = await client.from("items").select("category, image_url").eq("is_available", true);
+    var items = Array.isArray(res.data) ? res.data : [];
 
-    needs.forEach((cat) => {
-        const row = document.querySelector(`[data-category-cover="${cat}"]`);
-        if (!row || categoryRowHasImage(row)) return;
-        const found = items.find((i) => itemMatchesCategory(i, cat) && i.image_url);
-        setCategoryRowImage(row, found?.image_url || CATEGORY_FALLBACK[cat]);
-    });
+    for (var j = 0; j < needs.length; j++) {
+        var cat = needs[j];
+        var row = document.querySelector('[data-category-cover="' + cat + '"]');
+        if (!row || categoryRowHasImage(row)) continue;
+        
+        var found = null;
+        for (var k = 0; k < items.length; k++) {
+            var item = items[k];
+            if (itemMatchesCategory(item, cat) && item.image_url) {
+                found = item;
+                break;
+            }
+        }
+        setCategoryRowImage(row, found ? found.image_url : CATEGORY_FALLBACK[cat]);
+    }
 }
 
 window.addEventListener("supabaseReady", fillMissingCategoryImages);

@@ -258,30 +258,55 @@ function renderItemsList(items) {
 }
 
 function parseDeliveryString(text) {
-    const strText = String(text ?? "");
-    if (!strText || !strText.includes("توصيل")) return null;
+    var strText = String(text != null ? text : "");
+    if (!strText || strText.indexOf("توصيل") === -1) return null;
     try {
-        const parts = strText.split('|').map(p => p.trim());
-        const namePart = parts.find(p => p.includes("الاسم:"));
-        const name = namePart ? namePart.replace("الاسم:", "").trim() : "غير معروف";
-        const phonePart = parts.find(p => p.includes("الجوال:"));
-        const phone = phonePart ? phonePart.replace("الجوال:", "").trim() : "";
-        const paymentPart = parts.find(p => p.includes("الدفع:"));
-        const payment = paymentPart ? paymentPart.replace("الدفع:", "").trim() : "";
-        const locationPart = parts.find(p => p.includes("الموقع:"));
-        const location = locationPart ? locationPart.replace("الموقع:", "").trim() : "";
-        return { name, phone, payment, location };
+        var parts = strText.split('|');
+        for (var i = 0; i < parts.length; i++) {
+            parts[i] = parts[i].trim();
+        }
+        
+        var namePart = "";
+        var phonePart = "";
+        var paymentPart = "";
+        var locationPart = "";
+        
+        for (var i = 0; i < parts.length; i++) {
+            var p = parts[i];
+            if (p.indexOf("الاسم:") !== -1) namePart = p;
+            if (p.indexOf("الجوال:") !== -1) phonePart = p;
+            if (p.indexOf("الدفع:") !== -1) paymentPart = p;
+            if (p.indexOf("الموقع:") !== -1) locationPart = p;
+        }
+        
+        var name = namePart ? namePart.replace("الاسم:", "").trim() : "غير معروف";
+        var phone = phonePart ? phonePart.replace("الجوال:", "").trim() : "";
+        var payment = paymentPart ? paymentPart.replace("الدفع:", "").trim() : "";
+        var location = locationPart ? locationPart.replace("الموقع:", "").trim() : "";
+        return { name: name, phone: phone, payment: payment, location: location };
     } catch (e) { return null; }
 }
 
 function parseNotes(text) {
-    const strText = String(text ?? "");
+    var strText = String(text != null ? text : "");
     if (!strText) return "";
     try {
-        const parts = strText.split('|').map(p => p.trim());
-        const notesPart = parts.find(p => p.includes("ملاحظات:") || p.includes("الملاحظات:") || p.includes("ملاحظة:"));
+        var parts = strText.split('|');
+        for (var i = 0; i < parts.length; i++) {
+            parts[i] = parts[i].trim();
+        }
+        
+        var notesPart = "";
+        for (var i = 0; i < parts.length; i++) {
+            var p = parts[i];
+            if (p.indexOf("ملاحظات:") !== -1 || p.indexOf("الملاحظات:") !== -1 || p.indexOf("ملاحظة:") !== -1) {
+                notesPart = p;
+                break;
+            }
+        }
+        
         if (notesPart) {
-            const colonIndex = notesPart.indexOf(":");
+            var colonIndex = notesPart.indexOf(":");
             return colonIndex !== -1 ? notesPart.substring(colonIndex + 1).trim() : notesPart.trim();
         }
     } catch (e) {
@@ -291,22 +316,22 @@ function parseNotes(text) {
 }
 
 function formatOrderHeader(tableNo) {
-    const strTableNo = String(tableNo ?? "—");
+    var strTableNo = String(tableNo != null ? tableNo : "—");
     if (!strTableNo || strTableNo === "—") return "—";
-    if (strTableNo.includes("توصيل")) {
-        const info = parseDeliveryString(strTableNo);
+    if (strTableNo.indexOf("توصيل") !== -1) {
+        var info = parseDeliveryString(strTableNo);
         if (!info) return "🚗 توصيل";
-        return `🚗 ${escapeHtml(info.name)} ${info.payment ? `<span class="text-[10px] bg-amber-500/20 px-2 py-0.5 rounded text-amber-500 mr-2">${escapeHtml(info.payment)}</span>` : ""}`;
+        return "🚗 " + escapeHtml(info.name) + (info.payment ? ' <span class="text-[10px] bg-amber-500/20 px-2 py-0.5 rounded text-amber-500 mr-2">' + escapeHtml(info.payment) + '</span>' : "");
     }
     
     // محلي: تنظيف رقم الطاولة من أي ملاحظات إضافية
-    let cleanTable = strTableNo;
-    if (cleanTable.startsWith("محلي:")) {
+    var cleanTable = strTableNo;
+    if (cleanTable.indexOf("محلي:") === 0) {
         cleanTable = cleanTable.replace("محلي:", "").trim();
     }
-    const parts = cleanTable.split('|').map(p => p.trim());
-    const tableNum = parts[0] || "—";
-    return `طاولة ${escapeHtml(tableNum)}`;
+    var parts = cleanTable.split('|');
+    var tableNum = parts[0] ? parts[0].trim() : "—";
+    return "طاولة " + escapeHtml(tableNum);
 }
 
 function formatLocationInfo(text) {
@@ -319,8 +344,8 @@ function formatLocationInfo(text) {
 
 function renderOrderCard(order, type) {
     const items = parseItems(order.items);
-    const tableRaw = order.table_no ?? "—";
-    const isDelivery = tableRaw.includes("توصيل");
+    const tableRaw = order.table_no != null ? order.table_no : "—";
+    const isDelivery = tableRaw.indexOf("توصيل") !== -1;
     const deliveryInfo = isDelivery ? parseDeliveryString(tableRaw) : null;
     const titleHtml = formatOrderHeader(tableRaw);
     
@@ -451,15 +476,17 @@ async function loadOrders() {
 
         if (pendingList.length > 0) {
             html += `<div class="mt-4 space-y-2"><h3 class="text-amber-500/80 text-sm font-bold">طلبات جديدة</h3>`;
-            html += pendingList.map((o) => `
+            html += pendingList.map(function(o) {
+                return `
                 <button type="button" onclick="openOrder('${o.id}')"
                     class="w-full text-right p-4 rounded-xl border border-amber-700/40 bg-zinc-950 hover:border-amber-500 transition ${activeOrderId ? "" : "animate-pulse"}">
                     <div class="flex justify-between items-start gap-2">
                         <span class="text-amber-400 font-bold">🆕 طلب جديد</span>
-                        <span class="text-zinc-400 text-sm">${formatOrderHeader(o.table_no ?? "—")}</span>
+                        <span class="text-zinc-400 text-sm">${formatOrderHeader(o.table_no != null ? o.table_no : "—")}</span>
                     </div>
                     ${renderTimeBadges(o, "pending")}
-                </button>`).join("");
+                </button>`;
+            }).join("");
             html += `</div>`;
         }
 

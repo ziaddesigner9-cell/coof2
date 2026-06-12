@@ -12,11 +12,11 @@
     if (typeof window.loadAppSettings === "function") {
         settings = await window.loadAppSettings();
     }
-    const showShisha = settings?.ui?.show_shisha_category ?? false;
+    const showShisha = (settings && settings.ui && settings.ui.show_shisha_category !== undefined) ? settings.ui.show_shisha_category : false;
 
     const pathLower = window.location.pathname.toLowerCase();
-    const isInSubFolder = pathLower.includes("/front-end/") || pathLower.includes("/admin-panel/");
-    const isInFrontend = pathLower.includes("/front-end/");
+    const isInSubFolder = pathLower.indexOf("/front-end/") !== -1 || pathLower.indexOf("/admin-panel/") !== -1;
+    const isInFrontend = pathLower.indexOf("/front-end/") !== -1;
 
     const homeHref = isInSubFolder ? "../index.html" : "./index.html";
     const menuBase = isInFrontend ? "./menu.html" : (isInSubFolder ? "../Front-end/menu.html" : "./Front-end/menu.html");
@@ -26,13 +26,13 @@
     const params = new URLSearchParams(window.location.search);
     const currentCat = params.get("cat");
     const isHome =
-        !pathLower.includes("menu.html") &&
-        !pathLower.includes("cart.html");
+        pathLower.indexOf("menu.html") === -1 &&
+        pathLower.indexOf("cart.html") === -1;
 
     // جلب آخر طلب محفوظ لربط زر التتبع
     const lastOrderId = localStorage.getItem("lastOrderId");
     const trackUrl = lastOrderId ? `${trackHref}?orderId=${encodeURIComponent(lastOrderId)}` : trackHref;
-    const isTracking = pathLower.includes("tracking.html");
+    const isTracking = pathLower.indexOf("tracking.html") !== -1;
 
     // إعداد الفئات المخصصة للتوهج والبريق الذهبي
     const activeClass = "font-bold active-nav-item";
@@ -133,7 +133,7 @@
             <div id="order-status-indicator" class="absolute -top-3 left-0 w-full flex justify-center gap-0.5 h-1.5"></div>
             ${icons.track}<span>طلبي</span>
         </a>
-        <a href="${cartHref}" class="relative flex flex-col items-center justify-center text-[10px] tracking-wide transition-all duration-300 ${pathLower.includes("cart.html") ? activeClass : idleClass}" data-nav="cart">
+        <a href="${cartHref}" class="relative flex flex-col items-center justify-center text-[10px] tracking-wide transition-all duration-300 ${pathLower.indexOf("cart.html") !== -1 ? activeClass : idleClass}" data-nav="cart">
             ${icons.cart}<span>السلة</span>
             <span id="cart-badge" class="absolute -top-1 -right-2 bg-amber-500 text-black text-[9px] font-black rounded-full min-w-[1.2rem] h-[1.2rem] flex items-center justify-center px-1 border border-black shadow-[0_0_8px_rgba(245,215,110,0.5)]">0</span>
         </a>

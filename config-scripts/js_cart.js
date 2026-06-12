@@ -29,11 +29,15 @@ function renderCart() {
         return;
     }
 
-    let total = 0;
+    var total = 0;
     container.innerHTML = cart
-        .map((item, index) => {
-            const qty = parseInt(item.quantity ?? item.qty ?? item.count ?? 1);
-            const price = parseFloat(item.price) || 0;
+        .map(function(item, index) {
+            var qtyVal = item.quantity;
+            if (qtyVal === undefined || qtyVal === null) qtyVal = item.qty;
+            if (qtyVal === undefined || qtyVal === null) qtyVal = item.count;
+            if (qtyVal === undefined || qtyVal === null) qtyVal = 1;
+            var qty = parseInt(qtyVal);
+            var price = parseFloat(item.price) || 0;
             total += price * qty;
             return `
             <div class="w-full flex items-center justify-between bg-zinc-900/40 border border-zinc-800/50 rounded-2xl p-4 text-right gap-3" 
@@ -99,21 +103,21 @@ function enableConfirmButton() {
  * التبديل بين نوع الطلب (محلي/توصيل) في الواجهة
  */
 function setOrderType(type) {
-    const localSection = document.getElementById("local-section");
-    const deliverySection = document.getElementById("delivery-section");
-    const localBtn = document.getElementById("tab-local");
-    const deliveryBtn = document.getElementById("tab-delivery");
+    var localSection = document.getElementById("local-section");
+    var deliverySection = document.getElementById("delivery-section");
+    var localBtn = document.getElementById("tab-local");
+    var deliveryBtn = document.getElementById("tab-delivery");
 
     if (type === 'local') {
-        localSection?.classList.remove("hidden");
-        deliverySection?.classList.add("hidden");
-        localBtn?.classList.add("border-orange-500", "bg-orange-50");
-        deliveryBtn?.classList.remove("border-orange-500", "bg-orange-50");
+        if (localSection) localSection.classList.remove("hidden");
+        if (deliverySection) deliverySection.classList.add("hidden");
+        if (localBtn) localBtn.classList.add("border-orange-500", "bg-orange-50");
+        if (deliveryBtn) deliveryBtn.classList.remove("border-orange-500", "bg-orange-50");
     } else {
-        deliverySection?.classList.remove("hidden");
-        localSection?.classList.add("hidden");
-        deliveryBtn?.classList.add("border-orange-500", "bg-orange-50");
-        localBtn?.classList.remove("border-orange-500", "bg-orange-50");
+        if (deliverySection) deliverySection.classList.remove("hidden");
+        if (localSection) localSection.classList.add("hidden");
+        if (deliveryBtn) deliveryBtn.classList.add("border-orange-500", "bg-orange-50");
+        if (localBtn) localBtn.classList.remove("border-orange-500", "bg-orange-50");
     }
 }
 
@@ -135,9 +139,10 @@ async function shareLocation(btn) {
     if (textEl) textEl.innerText = "جاري تحديد موقعك الجغرافي...";
     if (addressEl) addressEl.placeholder = "جاري جلب الإحداثيات...";
     
-    navigator.geolocation.getCurrentPosition((position) => {
-        const { latitude, longitude } = position.coords;
-        const mapUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
+    navigator.geolocation.getCurrentPosition(function(position) {
+        var latitude = position.coords.latitude;
+        var longitude = position.coords.longitude;
+        var mapUrl = "https://www.google.com/maps?q=" + latitude + "," + longitude;
         if (addressEl) addressEl.value = mapUrl;
         if (textEl) textEl.innerText = "تم تحديد الموقع بنجاح ✓";
         if (btn) {
@@ -146,7 +151,7 @@ async function shareLocation(btn) {
             btn.classList.remove("border-amber-800/60", "text-amber-300");
             btn.classList.add("border-emerald-600", "text-emerald-400");
         }
-    }, (error) => {
+    }, function(error) {
         alert("تعذر جلب الموقع تلقائياً، يرجى كتابة العنوان يدوياً.");
         if (textEl) textEl.innerText = "فشل التحديد تلقائياً - يرجى الكتابة بالأسفل";
         if (addressEl) addressEl.placeholder = "الحي، الشارع، المعالم القريبة...";
@@ -158,8 +163,8 @@ async function shareLocation(btn) {
 }
 
 async function confirmOrder() {
-    const btn = document.getElementById("confirm-btn");
-    const supabaseClient =
+    var btn = document.getElementById("confirm-btn");
+    var supabaseClient =
         typeof window.getSupabaseClient === "function" ? window.getSupabaseClient() : null;
 
     if (!supabaseClient) {
@@ -167,22 +172,23 @@ async function confirmOrder() {
         return;
     }
 
-    const localEl = document.getElementById("localInput");
-    const deliveryNameEl = document.getElementById("deliveryName");
-    const deliveryPhoneEl = document.getElementById("deliveryPhone");
-    const deliveryAddressEl = document.getElementById("deliveryAddress");
-    const paymentEl = document.querySelector('input[name="paymentMethod"]:checked');
+    var localEl = document.getElementById("localInput");
+    var deliveryNameEl = document.getElementById("deliveryName");
+    var deliveryPhoneEl = document.getElementById("deliveryPhone");
+    var deliveryAddressEl = document.getElementById("deliveryAddress");
+    var paymentEl = document.querySelector('input[name="paymentMethod"]:checked');
     
     // التحقق من القسم الظاهر حالياً
-    const isLocal = !document.getElementById("local-section")?.classList.contains("hidden");
-    const localVal = (isLocal && localEl) ? localEl.value.trim() : "";
+    var localSection = document.getElementById("local-section");
+    var isLocal = localSection ? !localSection.classList.contains("hidden") : true;
+    var localVal = (isLocal && localEl) ? localEl.value.trim() : "";
 
-    const nameVal = (!isLocal && deliveryNameEl) ? deliveryNameEl.value.trim() : "";
-    const phoneVal = (!isLocal && deliveryPhoneEl) ? deliveryPhoneEl.value.trim() : "";
-    const paymentVal = (!isLocal && paymentEl) ? paymentEl.value : "";
-    const addressVal = (!isLocal && deliveryAddressEl) ? deliveryAddressEl.value.trim() : "";
+    var nameVal = (!isLocal && deliveryNameEl) ? deliveryNameEl.value.trim() : "";
+    var phoneVal = (!isLocal && deliveryPhoneEl) ? deliveryPhoneEl.value.trim() : "";
+    var paymentVal = (!isLocal && paymentEl) ? paymentEl.value : "";
+    var addressVal = (!isLocal && deliveryAddressEl) ? deliveryAddressEl.value.trim() : "";
 
-    const cart = getCart();
+    var cart = getCart();
 
     if (isLocal && !localVal) {
         alert("يرجى إدخال رقم الطاولة");
@@ -194,7 +200,7 @@ async function confirmOrder() {
             return;
         }
         // التحقق من صحة رقم الجوال السعودي (10 أرقام يبدأ بـ 05)
-        const phoneRegex = /^05\d{8}$/;
+        var phoneRegex = /^05\d{8}$/;
         if (!phoneRegex.test(phoneVal)) {
             alert("يرجى إدخال رقم جوال صحيح مكون من 10 أرقام ويبدأ بـ 05");
             return;
@@ -206,15 +212,15 @@ async function confirmOrder() {
     }
 
     // تحديد نوع الطلب والموقع (محلي أو توصيل)
-    const notesEl = document.getElementById("order-notes");
-    const notesVal = notesEl ? notesEl.value.trim() : "";
+    var notesEl = document.getElementById("order-notes");
+    var notesVal = notesEl ? notesEl.value.trim() : "";
 
-    let orderLocation = isLocal 
-        ? `محلي: ${localVal}` 
-        : `توصيل - الاسم: ${nameVal} | الجوال: ${phoneVal} | الدفع: ${paymentVal} | الموقع: ${addressVal}`;
+    var orderLocation = isLocal 
+        ? "محلي: " + localVal 
+        : "توصيل - الاسم: " + nameVal + " | الجوال: " + phoneVal + " | الدفع: " + paymentVal + " | الموقع: " + addressVal;
 
     if (notesVal) {
-        orderLocation += ` | ملاحظات: ${notesVal}`;
+        orderLocation += " | ملاحظات: " + notesVal;
     }
 
     if (btn) {
@@ -222,16 +228,17 @@ async function confirmOrder() {
         btn.innerText = "جاري الإرسال...";
     }
 
-    const total = cart.reduce((sum, item) => {
-        const qty = parseInt(item.quantity) || 0;
-        const price = parseFloat(item.price) || 0;
-        return sum + qty * price;
-    }, 0);
+    var total = 0;
+    for (var i = 0; i < cart.length; i++) {
+        var qty = parseInt(cart[i].quantity) || 0;
+        var price = parseFloat(cart[i].price) || 0;
+        total += qty * price;
+    }
 
-    const orderCode = `ORD-${Math.floor(1000 + Math.random() * 9000)}`;
+    var orderCode = "ORD-" + Math.floor(1000 + Math.random() * 9000);
 
     try {
-        const { data, error } = await supabaseClient
+        var res = await supabaseClient
             .from("orders")
             .insert([
                 {
@@ -244,6 +251,9 @@ async function confirmOrder() {
             ])
             .select("id, order_code")
             .single();
+
+        var error = res.error;
+        var data = res.data;
 
         if (error) {
             console.error("خطأ Supabase:", error);
@@ -265,12 +275,12 @@ async function confirmOrder() {
             updateCartCount();
         }
 
-        const orderId = data?.id;
+        var orderId = data ? data.id : null;
         // حفظ آخر طلب في الذاكرة المحلية لربط زر التتبع في الرئيسية
         if (orderId) localStorage.setItem("lastOrderId", orderId);
 
-        const redirectUrl = orderId
-            ? `tracking.html?orderId=${encodeURIComponent(orderId)}`
+        var redirectUrl = orderId
+            ? "tracking.html?orderId=" + encodeURIComponent(orderId)
             : "tracking.html";
         window.location.href = redirectUrl;
     } catch (err) {
@@ -283,22 +293,28 @@ async function confirmOrder() {
     }
 }
 
-window.addEventListener("DOMContentLoaded", () => {
-    const btn = document.getElementById("confirm-btn");
+window.addEventListener("DOMContentLoaded", function() {
+    var btn = document.getElementById("confirm-btn");
     if (btn) {
         btn.disabled = true;
         btn.innerText = "جاري الاتصال...";
     }
     renderCart();
     enableConfirmButton();
-    document.getElementById("confirm-btn")?.addEventListener("click", confirmOrder);
-    document.getElementById("tab-local")?.addEventListener("click", () => setOrderType('local'));
-    document.getElementById("tab-delivery")?.addEventListener("click", () => setOrderType('delivery'));
+    
+    var confirmBtn = document.getElementById("confirm-btn");
+    if (confirmBtn) confirmBtn.addEventListener("click", confirmOrder);
+    
+    var tabLocal = document.getElementById("tab-local");
+    if (tabLocal) tabLocal.addEventListener("click", function() { setOrderType('local'); });
+    
+    var tabDelivery = document.getElementById("tab-delivery");
+    if (tabDelivery) tabDelivery.addEventListener("click", function() { setOrderType('delivery'); });
     
     // منع كتابة الأحرف في حقل الجوال
-    const phoneInput = document.getElementById("deliveryPhone");
+    var phoneInput = document.getElementById("deliveryPhone");
     if (phoneInput) {
-        phoneInput.addEventListener("input", (e) => {
+        phoneInput.addEventListener("input", function(e) {
             e.target.value = e.target.value.replace(/\D/g, "");
         });
     }
