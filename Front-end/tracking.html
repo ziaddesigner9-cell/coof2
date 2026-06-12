@@ -573,7 +573,14 @@
                 .subscribe();
         }
 
+        var isTrackingInit = false;
         async function init() {
+            if (isTrackingInit) return;
+            // التحقق من أن سوبابيس مهيأ بالفعل قبل تعيين العلم كـ true
+            var client = window.getSupabaseClient ? window.getSupabaseClient() : null;
+            if (!client) return;
+            isTrackingInit = true;
+
             appSettings = await loadAppSettings();
             applyTrackingPhrases();
             applyLayoutSettings();
@@ -585,10 +592,8 @@
             if (saveBtn) {
                 saveBtn.addEventListener("click", savePublicBaseAndRefreshQr);
             }
-            if (window.getSupabaseClient ? window.getSupabaseClient() : null) {
-                loadOrder();
-                subscribeToOrder();
-            }
+            loadOrder();
+            subscribeToOrder();
         }
 
         window.addEventListener("supabaseReady", init);

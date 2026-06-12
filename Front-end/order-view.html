@@ -290,11 +290,17 @@
                 .subscribe();
         }
 
+        var isOrderViewInit = false;
         async function init() {
+            if (isOrderViewInit) return;
+            var client = window.getSupabaseClient ? window.getSupabaseClient() : null;
+            if (!client) return;
+            isOrderViewInit = true;
+
             appSettings = await loadAppSettings();
             applyOrderViewBranding();
             applyLayoutSettings();
-            if (window.getSupabaseClient ? window.getSupabaseClient() : null) loadOrder();
+            loadOrder();
         }
         window.addEventListener("supabaseReady", init);
         if (document.readyState !== "loading") init();
