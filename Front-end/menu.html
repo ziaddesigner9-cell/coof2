@@ -33,20 +33,17 @@
         </div>
     </div>
 
+    <script src="../config-scripts/js_categories.js"></script>
     <script>
         const cat = new URLSearchParams(window.location.search).get("cat");
-        const titles = {
-            hot: "المشروبات الساخنة",
-            cold: "المشروبات الباردة",
-            dessert: "الحلى",
-        };
-        if (!cat || !titles[cat]) {
+        if (!cat || !window.MENU_CATEGORY_KEYS || !window.MENU_CATEGORY_KEYS.includes(cat)) {
             window.location.replace("../index.html");
         } else {
-            document.getElementById("page-title").textContent = titles[cat];
+            const label = window.MENU_CATEGORY_LABELS[cat] || "القائمة";
+            document.getElementById("page-title").textContent = label;
+            document.title = "قائمة " + label;
         }
     </script>
-    <script src="../config-scripts/js_categories.js"></script>
     <script src="../config-scripts/js_menu.js"></script>
     <script src="../config-scripts/bottom-nav.js"></script>
 </body>
