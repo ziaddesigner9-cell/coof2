@@ -53,4 +53,8 @@ async function fillMissingCategoryImages() {
 }
 
 window.addEventListener("supabaseReady", fillMissingCategoryImages);
-window.addEventListener("storage", fillMissingCategoryImages); // تحديث الصور عند تغيير الإعدادات
+window.addEventListener("storage", function(e) {
+    if (e.key === "coof2_app_settings_cache") {
+        fillMissingCategoryImages();
+    }
+}); // تحديث الصور عند تغيير الإعدادات

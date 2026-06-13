@@ -265,8 +265,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 btn = e.target.closest(".add-to-cart-btn");
             } else {
                 var current = e.target;
-                while (current && current !== menuItems) {
-                    if (current.className && current.className.indexOf("add-to-cart-btn") !== -1) {
+                while (current && current !== menuItems && current !== document) {
+                    if (current.nodeType === 1 && current.classList && current.classList.contains("add-to-cart-btn")) {
                         btn = current;
                         break;
                     }

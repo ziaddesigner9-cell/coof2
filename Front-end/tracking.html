@@ -576,7 +576,7 @@
                 console.error("خطأ أثناء إزالة القناة السابقة:", err);
             }
 
-            orderChannel = client.channel('order_track_' + orderId);
+            orderChannel = client.channel('order_track_' + orderId + '_' + Date.now());
             orderChannel.on(
                     "postgres_changes",
                     {

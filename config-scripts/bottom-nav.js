@@ -326,7 +326,11 @@
     }
 
     updateCartBadge();
-    window.addEventListener("storage", updateCartBadge);
+    window.addEventListener("storage", function(e) {
+        if (e.key === "cart") {
+            updateCartBadge();
+        }
+    });
     window.updateCartBadge = updateCartBadge;
 
     window.addEventListener("supabaseReady", monitorOrderStatus);

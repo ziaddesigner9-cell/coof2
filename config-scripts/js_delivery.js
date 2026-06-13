@@ -282,7 +282,7 @@ function subscribeDeliveryRealtime() {
             }
         } catch (e) {}
 
-        deliveryChannel = client.channel('delivery_orders_realtime')
+        deliveryChannel = client.channel('delivery_orders_realtime_' + Date.now())
             .on('postgres_changes', { 
                 event: '*', 
                 schema: 'public', 

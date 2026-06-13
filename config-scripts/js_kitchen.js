@@ -608,7 +608,7 @@ function subscribeKitchenRealtime() {
             }
         } catch (e) {}
 
-        kitchenChannel = client.channel('kitchen_orders_realtime')
+        kitchenChannel = client.channel('kitchen_orders_realtime_' + Date.now())
             .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, function() {
                 loadOrders();
             });
