@@ -576,9 +576,24 @@ async function loadOrders() {
 async function updateOrder(orderId, payload, expectedStatus) {
     const client = getClient();
     if (!client) return { ok: false, error: "غير متصل" };
-    const { data, error } = await client.from("orders").update(payload).eq("id", orderId).select();
-    if (!error && data && data.length > 0) return { ok: true, data };
-    return { ok: true, forced: true }; 
+    
+    let query = client.from("orders").update(payload).eq("id", orderId);
+    if (expectedStatus) {
+        query = query.eq("status", expectedStatus);
+    }
+    
+    const { data, error } = await query.select();
+    
+    if (error) {
+        console.error("خطأ في تحديث الطلب:", error);
+        return { ok: false, error: error.message };
+    }
+    
+    if (!data || data.length === 0) {
+        return { ok: false, error: "لم يتم التحديث (قد تكون الحالة تغيرت أو الجلسة انتهت)" };
+    }
+    
+    return { ok: true, data };
 }
 
 async function openOrder(orderId) {

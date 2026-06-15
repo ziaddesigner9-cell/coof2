@@ -254,21 +254,35 @@ async function startDeliveryManually(orderId) {
 
 async function markAsOutForDelivery(orderId) {
     const client = window.getSupabaseClient();
-    const { error } = await client
+    const { data, error } = await client
         .from("orders")
         .update({ status: "out_for_delivery" })
         .eq("id", orderId)
-        .eq("status", "ready");
+        .eq("status", "ready")
+        .select();
 
-    if (error) return { ok: false, error: error.message };
-    return { ok: true };
+    if (error) {
+        console.error("خطأ في تحديث طلب التوصيل:", error);
+        return { ok: false, error: error.message };
+    }
+    
+    if (!data || data.length === 0) {
+        return { ok: false, error: "الطلب غير موجود أو الجلسة انتهت (يرجى تسجيل الدخول مجدداً)" };
+    }
+
+    return { ok: true, data };
 }
 
 async function finishDelivery(orderId) {
     const client = window.getSupabaseClient();
-    const { error } = await client.from("orders").update({ status: "completed" }).eq("id", orderId);
-    if (error) alert("خطأ: " + error.message);
-    else loadDeliveryOrders();
+    const { data, error } = await client.from("orders").update({ status: "completed" }).eq("id", orderId).select();
+    if (error) {
+        alert("خطأ: " + error.message);
+    } else if (!data || data.length === 0) {
+        alert("تعذر إنهاء الطلب (قد تكون الجلسة انتهت، يرجى تسجيل الدخول مجدداً)");
+    } else {
+        loadDeliveryOrders();
+    }
 }
 
 let deliveryChannel = null;
