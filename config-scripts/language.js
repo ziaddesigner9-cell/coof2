@@ -8,7 +8,7 @@ function applyLanguage(lang) {
     document.documentElement.setAttribute('dir', (lang === 'ar') ? 'rtl' : 'ltr');
     document.documentElement.setAttribute('lang', lang);
     try {
-        localStorage.setItem('userLang', lang); // حفظ اللغة
+        localStorage.setItem('coof2_userLang', lang); // حفظ اللغة
     } catch (err) {
         console.error("فشل حفظ اللغة في localStorage:", err);
     }
@@ -25,7 +25,7 @@ function applyLanguage(lang) {
 function changeLanguage() {
     let currentLang = 'ar';
     try {
-        currentLang = localStorage.getItem('userLang') || 'ar';
+        currentLang = localStorage.getItem('coof2_userLang') || 'ar';
     } catch (err) {
         console.error("فشل قراءة اللغة من localStorage:", err);
     }
@@ -37,7 +37,7 @@ function changeLanguage() {
 window.addEventListener('DOMContentLoaded', function() {
     let savedLang = 'ar';
     try {
-        savedLang = localStorage.getItem('userLang') || 'ar';
+        savedLang = localStorage.getItem('coof2_userLang') || 'ar';
     } catch (err) {
         console.error("فشل قراءة اللغة من localStorage عند البدء:", err);
     }

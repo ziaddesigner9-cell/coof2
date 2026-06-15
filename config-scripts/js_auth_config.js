@@ -69,7 +69,7 @@ async function verifyLogin(password, type) {
         }
 
         // 5. حفظ الدور محلياً للتوافق مع بقية كود المشروع
-        localStorage.setItem('role', type);
+        localStorage.setItem('coof2_role', type);
         return true;
     } catch (e) {
         console.error("خطأ غير متوقع أثناء الدخول:", e);
@@ -83,7 +83,7 @@ async function verifyLogin(password, type) {
  * @returns {Promise<void>}
  */
 async function logout(existingClient) {
-    localStorage.removeItem('role');
+    localStorage.removeItem('coof2_role');
     const client = existingClient ||
         (typeof window.getSupabaseClient === "function" ? window.getSupabaseClient() : null);
     if (client && typeof client.auth.signOut === "function") {
@@ -97,6 +97,6 @@ async function logout(existingClient) {
  * @returns {boolean}
  */
 function checkAccess(requiredRole) {
-    const currentRole = localStorage.getItem('role');
+    const currentRole = localStorage.getItem('coof2_role');
     return currentRole === requiredRole;
 }

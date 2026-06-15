@@ -9,7 +9,7 @@
     <script src="../config-scripts/js_auth_config.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const role = localStorage.getItem('role');
+            const role = localStorage.getItem('coof2_role');
             // تأكد أن العامل فقط هو من يرى هذه الصفحة
             if (role !== 'worker' && role !== 'admin') {
                 window.location.href = "../admin-panel/admin-login.html";

@@ -29,7 +29,7 @@
     <script src="../config-scripts/js_delivery.js"></script>
     <script>
         // حماية الصفحة - تسمح بالدخول عبر صفحة الدخول الموحدة أو صفحة دخول السائق الخاصة
-        const role = localStorage.getItem("role");
+        const role = localStorage.getItem("coof2_role");
         const isDeliveryAuth = sessionStorage.getItem('delivery_auth') === 'true';
         
         if (role !== "admin" && role !== "delivery" && !isDeliveryAuth) {

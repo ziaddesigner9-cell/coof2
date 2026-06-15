@@ -4,7 +4,7 @@
 
 function getCart() {
     try {
-        const data = localStorage.getItem("cart");
+        const data = localStorage.getItem("coof2_cart");
         return data ? JSON.parse(data) : [];
     } catch (e) {
         console.error("خطأ في قراءة بيانات السلة:", e);
@@ -86,7 +86,7 @@ function updateQty(index, change) {
     cart[index].quantity = (parseInt(cart[index].quantity) || 1) + change;
     if (cart[index].quantity <= 0) cart.splice(index, 1);
     try {
-        localStorage.setItem("cart", JSON.stringify(cart));
+        localStorage.setItem("coof2_cart", JSON.stringify(cart));
     } catch (err) {
         console.error("فشل حفظ السلة في localStorage:", err);
     }
@@ -270,7 +270,7 @@ async function confirmOrder() {
         }
 
         try {
-            localStorage.removeItem("cart");
+            localStorage.removeItem("coof2_cart");
         } catch (err) {
             console.error("فشل إزالة السلة من localStorage:", err);
         }
@@ -287,7 +287,7 @@ async function confirmOrder() {
         // حفظ آخر طلب في الذاكرة المحلية لربط زر التتبع في الرئيسية
         if (orderId) {
             try {
-                localStorage.setItem("lastOrderId", orderId);
+                localStorage.setItem("coof2_lastOrderId", orderId);
             } catch (err) {
                 console.error("فشل حفظ آخر طلب في localStorage:", err);
             }

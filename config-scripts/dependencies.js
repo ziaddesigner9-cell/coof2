@@ -83,7 +83,8 @@ const DIRECT_SUPABASE_URL = "https://jdaggrzdaxcnnfmdyvic.supabase.co";    const
                 }
                 const client = lib.createClient(url, key, {
                     auth: {
-                        persistSession: false // Prevents browser storage block warnings since we use custom auth
+                        persistSession: true,
+                        storageKey: "coof2_sb_auth_token"
                     }
                 });
                 window.supabaseClient = client;

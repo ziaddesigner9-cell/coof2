@@ -13,7 +13,7 @@ let isFetching = false;
 let ordersCache = []; 
 
 const LOCAL_PREP_KEY = "kitchen_local_preparing";
-const LOCAL_OPENED_KEY = "kitchen_opened_at";
+const LOCAL_OPENED_KEY = "coof2_kitchen_opened_at";
 
 function getClient() {
     return typeof window.getSupabaseClient === "function" ? window.getSupabaseClient() : null;
@@ -218,7 +218,7 @@ async function markAsReady(orderId) {
         clearLocalPreparing(orderId);
         clearOpenedAt(orderId);
         try {
-            localStorage.removeItem(`kitchen_timer_${orderId}`);
+            localStorage.removeItem(`coof2_kitchen_timer_${orderId}`);
         } catch (e) {}
         if (String(activeOrderId) === String(orderId)) closeActive();
         loadOrders();
@@ -241,7 +241,7 @@ async function markAsPickedUp(orderId) {
 function closeActive() {
     activeOrderId = null;
     try {
-        localStorage.removeItem("kitchen_active_order");
+        localStorage.removeItem("coof2_kitchen_active_order");
     } catch (e) {}
     stopTimer();
 }
@@ -261,7 +261,7 @@ function startTimerDisplay(order) {
 
     var stored = null;
     try {
-        stored = localStorage.getItem(`kitchen_timer_${order.id}`);
+        stored = localStorage.getItem(`coof2_kitchen_timer_${order.id}`);
     } catch (e) {}
     const started = order.preparing_started_at
         ? new Date(order.preparing_started_at).getTime()
@@ -270,7 +270,7 @@ function startTimerDisplay(order) {
           : Date.now();
     if (!stored) {
         try {
-            localStorage.setItem(`kitchen_timer_${order.id}`, String(started));
+            localStorage.setItem(`coof2_kitchen_timer_${order.id}`, String(started));
         } catch (e) {}
     }
     timerStartedAt = started;
@@ -470,7 +470,7 @@ async function loadOrders() {
 
     if (!activeOrderId) {
         try {
-            activeOrderId = localStorage.getItem("kitchen_active_order");
+            activeOrderId = localStorage.getItem("coof2_kitchen_active_order");
         } catch (e) {}
     }
 
@@ -516,7 +516,7 @@ async function loadOrders() {
         if (activeOrderId && !activeOrder) {
             activeOrderId = null;
             try {
-                localStorage.removeItem("kitchen_active_order");
+                localStorage.removeItem("coof2_kitchen_active_order");
             } catch (e) {}
         }
 
@@ -616,7 +616,7 @@ async function openOrder(orderId) {
     rememberOpenedAt(orderId);
     activeOrderId = orderId;
     try {
-        localStorage.setItem("kitchen_active_order", orderId);
+        localStorage.setItem("coof2_kitchen_active_order", orderId);
     } catch (e) {}
     loadOrders();
 }

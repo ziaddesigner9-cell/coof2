@@ -177,7 +177,7 @@ async function showCartFeedback() {
     document.body.appendChild(el);
     
     // تحريك أيقونة السلة في الشريط السفلي
-    const cartNav = document.querySelector('[data-nav="cart"]');
+    const cartNav = document.querySelector('[data-nav="coof2_cart"]');
     if (cartNav) { 
         cartNav.classList.remove('cart-animate'); // إعادة ضبط الحركة
         void cartNav.offsetWidth; // Force reflow
@@ -190,7 +190,7 @@ async function showCartFeedback() {
 function addToCart(id, name, price, imageUrl) {
     var cart = [];
     try {
-        cart = JSON.parse(localStorage.getItem("cart") || "[]");
+        cart = JSON.parse(localStorage.getItem("coof2_cart") || "[]");
     } catch (err) {
         console.error("فشل قراءة السلة من localStorage:", err);
     }
@@ -210,7 +210,7 @@ function addToCart(id, name, price, imageUrl) {
     }
 
     try {
-        localStorage.setItem("cart", JSON.stringify(cart));
+        localStorage.setItem("coof2_cart", JSON.stringify(cart));
     } catch (err) {
         console.error("فشل حفظ السلة في localStorage:", err);
     }
@@ -223,7 +223,7 @@ function addToCart(id, name, price, imageUrl) {
 function updateCartCount() {
     var cart = [];
     try {
-        cart = JSON.parse(localStorage.getItem("cart") || "[]");
+        cart = JSON.parse(localStorage.getItem("coof2_cart") || "[]");
     } catch (err) {
         console.error("فشل قراءة السلة في updateCartCount:", err);
     }

@@ -9,7 +9,7 @@
     <script src="../config-scripts/dependencies.js?v=16"></script>
     <script src="../config-scripts/js_auth_config.js?v=16"></script>
     <script>
-        const role = localStorage.getItem("role");
+        const role = localStorage.getItem("coof2_role");
         if (role !== "admin" && role !== "worker") {
             window.location.href = "../admin-panel/admin-login.html";
         }

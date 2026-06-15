@@ -27,7 +27,7 @@ window.startOrder = async function(tableNumber) {
 
         // حفظ رقم الطاولة والتحويل للمنيو
         try {
-            localStorage.setItem('tableNumber', tableNumber);
+            localStorage.setItem('coof2_tableNumber', tableNumber);
         } catch (e) {
             console.error("فشل حفظ رقم الطاولة في localStorage:", e);
         }

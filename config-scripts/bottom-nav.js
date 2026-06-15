@@ -32,7 +32,7 @@
     // جلب آخر طلب محفوظ لربط زر التتبع في الرئيسية
     let lastOrderId = null;
     try {
-        lastOrderId = localStorage.getItem("lastOrderId");
+        lastOrderId = localStorage.getItem("coof2_lastOrderId");
     } catch (err) {
         console.error("فشل قراءة lastOrderId من localStorage:", err);
     }
@@ -138,7 +138,7 @@
             <div id="order-status-indicator" class="absolute -top-3 left-0 w-full flex justify-center gap-0.5 h-1.5"></div>
             ${icons.track}<span>طلبي</span>
         </a>
-        <a href="${cartHref}" class="relative flex flex-col items-center justify-center text-[10px] tracking-wide transition-all duration-300 ${pathLower.indexOf("cart.html") !== -1 ? activeClass : idleClass}" data-nav="cart">
+        <a href="${cartHref}" class="relative flex flex-col items-center justify-center text-[10px] tracking-wide transition-all duration-300 ${pathLower.indexOf("cart.html") !== -1 ? activeClass : idleClass}" data-nav="coof2_cart">
             ${icons.cart}<span>السلة</span>
             <span id="cart-badge" class="absolute -top-1 -right-2 bg-amber-500 text-black text-[9px] font-black rounded-full min-w-[1.2rem] h-[1.2rem] flex items-center justify-center px-1 border border-black shadow-[0_0_8px_rgba(245,215,110,0.5)]">0</span>
         </a>
@@ -219,7 +219,7 @@
         const badge = document.getElementById("cart-badge");
         if (!badge) return;
         try {
-            const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+            const cart = JSON.parse(localStorage.getItem("coof2_cart") || "[]");
             const count = cart.reduce(function(s, i) { return s + (parseInt(i.quantity) || 0); }, 0);
             badge.textContent = count;
             badge.style.display = count > 0 ? "flex" : "none";
@@ -232,7 +232,7 @@
     async function monitorOrderStatus() {
         let currentOrderId = null;
         try {
-            currentOrderId = localStorage.getItem("lastOrderId");
+            currentOrderId = localStorage.getItem("coof2_lastOrderId");
         } catch (err) {
             console.error("فشل قراءة lastOrderId في monitorOrderStatus:", err);
         }
@@ -281,7 +281,7 @@
                 el.innerHTML = "";
                 if (status === "completed" || status === "cancelled" || !status) {
                     try {
-                        localStorage.removeItem("lastOrderId");
+                        localStorage.removeItem("coof2_lastOrderId");
                     } catch (e) {}
                     const link = document.getElementById("nav-track-link");
                     if (link && !link.classList.contains("active-nav-item")) {
@@ -298,7 +298,7 @@
                 updateDots(data.status);
             } else {
                 try {
-                    localStorage.removeItem("lastOrderId");
+                    localStorage.removeItem("coof2_lastOrderId");
                 } catch (e) {}
                 const link = document.getElementById("nav-track-link");
                 if (link && !link.classList.contains("active-nav-item")) {
@@ -327,7 +327,7 @@
 
     updateCartBadge();
     window.addEventListener("storage", function(e) {
-        if (e.key === "cart") {
+        if (e.key === "coof2_cart") {
             updateCartBadge();
         }
     });
