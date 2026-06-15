@@ -213,7 +213,7 @@ function clearLocalPreparing(orderId) {
 
 async function markAsReady(orderId) {
     const payload = { status: "ready" };
-    const result = await updateOrder(orderId, payload, "preparing");
+    const result = await updateOrder(orderId, payload, ["pending", "preparing"]);
     if (result.ok) {
         clearLocalPreparing(orderId);
         clearOpenedAt(orderId);
@@ -579,7 +579,11 @@ async function updateOrder(orderId, payload, expectedStatus) {
     
     let query = client.from("orders").update(payload).eq("id", orderId);
     if (expectedStatus) {
-        query = query.eq("status", expectedStatus);
+        if (Array.isArray(expectedStatus)) {
+            query = query.in("status", expectedStatus);
+        } else {
+            query = query.eq("status", expectedStatus);
+        }
     }
     
     const { data, error } = await query.select();
@@ -601,7 +605,12 @@ async function openOrder(orderId) {
     if (!client) return alert("النظام غير متصل");
 
     const payload = { status: "preparing", preparing_started_at: new Date().toISOString() };
-    await updateOrder(orderId, payload, "pending");
+    const result = await updateOrder(orderId, payload, "pending");
+    
+    if (!result.ok) {
+        alert("فشل فتح الطلب لتجهيزه: " + result.error);
+        return; // توقف هنا ولا تجبر الواجهة على الانتقال
+    }
 
     clearLocalPreparing(orderId);
     rememberOpenedAt(orderId);
