@@ -14,6 +14,21 @@
     <!-- الكلمات المفتاحية التي يبحث بها الزبائن -->
     <meta name="keywords" content="Ritzy Roast, كوفي شوب, قهوة مختصة, منيو كافيه, طلب قهوة اونلاين, ريتزي روست">
 
+    <!-- الكود المهيكل لمساعدة جوجل في فهم طبيعة البزنس -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "CafeOrCoffeeShop",
+      "name": "Ritzy Roast Coffee Co.",
+      "image": "https://coof2.vercel.app/logo.png",
+      "description": "استمتع بأشهى أنواع القهوة المختصة والمخبوزات الطازجة. اطلب الآن أونلاين وتصفح المنيو الرقمي الفاخر.",
+      "url": "https://coof2.vercel.app",
+      "servesCuisine": "Coffee, Bakery, Desserts",
+      "acceptsReservations": "False",
+      "menu": "https://coof2.vercel.app/"
+    }
+    </script>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="app_global_env.js"></script>
@@ -109,6 +124,32 @@
     </style>
 </head>
 <body class="app-theme min-h-screen">
+    
+    <!-- محتوى دلالي مخفي مخصص لعناكب محركات البحث (SEO Fallback) -->
+    <noscript>
+        <div class="p-4 bg-black text-white">
+            <h1>Ritzy Roast Coffee Co. - ريتزي روست كوفي شوب</h1>
+            <p>مرحباً بك في ريتزي روست، وجهتك الأولى للقهوة المختصة، المخبوزات الطازجة، والحلويات الفاخرة.</p>
+            <ul>
+                <li>قهوة مختصة (اسبريسو، كابتشينو، فلات وايت، دريب كوفي)</li>
+                <li>مخبوزات كرواسون وحلويات عالمية</li>
+                <li>جلسات راقية وخدمة توصيل سريعة</li>
+            </ul>
+        </div>
+    </noscript>
+    <article class="sr-only">
+        <h1>منيو كافيه Ritzy Roast للقهوة المختصة</h1>
+        <p>استكشف منيو مقهى ريتزي روست. نحن نقدم أفضل أنواع حبوب البن المحمصة بعناية، لتحضير ألذ أكواب القهوة الحارة والباردة. إلى جانب تشكيلة منوعة من الحلويات، الكيك، والكرواسون الطازج يومياً.</p>
+        <p>قم بالطلب أونلاين عبر المنيو الرقمي الخاص بنا. تتوفر خدمة التوصيل والاستلام من الفرع.</p>
+        <h2>التصنيفات</h2>
+        <ul>
+            <li>القهوة الساخنة (Hot Coffee)</li>
+            <li>القهوة الباردة (Iced Coffee)</li>
+            <li>الحلويات (Desserts & Sweets)</li>
+            <li>المخبوزات (Bakery & Pastries)</li>
+        </ul>
+    </article>
+
     <div id="app-bg-layer" class="hidden"></div>
     <div class="app-vignette absolute inset-0 pointer-events-none z-[1]"></div>
 
