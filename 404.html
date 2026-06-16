@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الصفحة غير موجودة - Ritzy Roast</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-black text-white min-h-screen flex items-center justify-center p-4">
+    <div class="text-center fade-in-up max-w-md w-full bg-zinc-900 border border-yellow-600/30 rounded-3xl p-8 shadow-2xl">
+        <h1 class="text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#FDF0A6] via-[#D4AF37] to-[#AA7C11] mb-4" style="-webkit-text-stroke: 1px black; filter: drop-shadow(0 0 5px rgba(212,175,55,0.3));">404</h1>
+        <h2 class="text-2xl font-bold text-zinc-100 mb-2">عذراً، الصفحة غير موجودة!</h2>
+        <p class="text-zinc-400 mb-8 text-sm">يبدو أنك سلكت طريقاً خاطئاً، أو أن هذه الصفحة لم تعد متوفرة.</p>
+        
+        <a href="/Front-end/menu.html" class="inline-block w-full py-4 rounded-xl bg-gradient-to-r from-yellow-600 to-amber-600 text-black font-bold text-lg hover:from-yellow-500 hover:to-amber-500 transition-all shadow-lg hover:shadow-yellow-600/40 transform hover:-translate-y-1">
+            العودة إلى المنيو
+        </a>
+    </div>
+
+    <!-- Vercel Analytics -->
+    <script defer src="/_vercel/insights/script.js"></script>
+    <script defer src="/_vercel/speed-insights/script.js"></script>
+</body>
+</html>
