@@ -113,18 +113,20 @@ function parseDeliveryDetails(text) {
         for (var j = 0; j < parts.length; j++) {
             var part = parts[j];
             var lowerPart = part.toLowerCase();
-            if (part.indexOf("الاسم:") !== -1 || lowerPart.indexOf("name:") !== -1) {
-                var splitName = part.split(/:/);
-                if (splitName[1]) name = splitName[1].trim();
-            } else if (part.indexOf("الجوال:") !== -1 || lowerPart.indexOf("phone:") !== -1 || lowerPart.indexOf("mobile:") !== -1) {
-                var splitPhone = part.split(/:/);
-                if (splitPhone[1]) phone = splitPhone[1].trim();
-            } else if (part.indexOf("الدفع:") !== -1 || lowerPart.indexOf("payment:") !== -1) {
-                var splitPayment = part.split(/:/);
-                if (splitPayment[1]) payment = splitPayment[1].trim();
-            } else if (part.indexOf("الموقع:") !== -1 || lowerPart.indexOf("location:") !== -1 || lowerPart.indexOf("address:") !== -1) {
-                var splitLoc = part.split(/:/);
-                if (splitLoc[1]) location = splitLoc[1].trim();
+            var colonIdx = part.indexOf(":");
+            if (colonIdx !== -1) {
+                var key = lowerPart.substring(0, colonIdx).trim();
+                var val = part.substring(colonIdx + 1).trim();
+                
+                if (key.indexOf("اسم") !== -1 || key.indexOf("name") !== -1 || key.indexOf("nom") !== -1) {
+                    name = val;
+                } else if (key.indexOf("جوال") !== -1 || key.indexOf("phone") !== -1 || key.indexOf("mobile") !== -1 || key.indexOf("mobilnummer") !== -1 || key.indexOf("portable") !== -1) {
+                    phone = val;
+                } else if (key.indexOf("دفع") !== -1 || key.indexOf("payment") !== -1 || key.indexOf("zahlungsmethode") !== -1 || key.indexOf("paiement") !== -1) {
+                    payment = val;
+                } else if (key.indexOf("موقع") !== -1 || key.indexOf("location") !== -1 || key.indexOf("address") !== -1 || key.indexOf("standort") !== -1 || key.indexOf("localisation") !== -1) {
+                    location = val;
+                }
             }
         }
         return { name: name, phone: phone, payment: payment, location: location };

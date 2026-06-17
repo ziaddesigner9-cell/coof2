@@ -339,24 +339,25 @@ function parseDeliveryString(text) {
             parts[i] = parts[i].trim();
         }
         
-        var namePart = "";
-        var phonePart = "";
-        var paymentPart = "";
-        var locationPart = "";
+        var name = "غير معروف";
+        var phone = "";
+        var payment = "";
+        var location = "";
         
         for (var i = 0; i < parts.length; i++) {
             var p = parts[i];
             var lowerP = p.toLowerCase();
-            if (p.indexOf("الاسم:") !== -1 || lowerP.indexOf("name:") !== -1) namePart = p;
-            if (p.indexOf("الجوال:") !== -1 || lowerP.indexOf("phone:") !== -1 || lowerP.indexOf("mobile:") !== -1) phonePart = p;
-            if (p.indexOf("الدفع:") !== -1 || lowerP.indexOf("payment:") !== -1) paymentPart = p;
-            if (p.indexOf("الموقع:") !== -1 || lowerP.indexOf("location:") !== -1 || lowerP.indexOf("address:") !== -1) locationPart = p;
+            var colonIdx = p.indexOf(":");
+            if (colonIdx !== -1) {
+                var key = lowerP.substring(0, colonIdx).trim();
+                var val = p.substring(colonIdx + 1).trim();
+                if (key.indexOf("اسم") !== -1 || key.indexOf("name") !== -1 || key.indexOf("nom") !== -1) name = val;
+                else if (key.indexOf("جوال") !== -1 || key.indexOf("phone") !== -1 || key.indexOf("mobile") !== -1 || key.indexOf("mobilnummer") !== -1 || key.indexOf("portable") !== -1) phone = val;
+                else if (key.indexOf("دفع") !== -1 || key.indexOf("payment") !== -1 || key.indexOf("zahlungsmethode") !== -1 || key.indexOf("paiement") !== -1) payment = val;
+                else if (key.indexOf("موقع") !== -1 || key.indexOf("location") !== -1 || key.indexOf("address") !== -1 || key.indexOf("standort") !== -1 || key.indexOf("localisation") !== -1) location = val;
+            }
         }
         
-        var name = namePart ? namePart.replace(/الاسم:|Name:/gi, "").trim() : "غير معروف";
-        var phone = phonePart ? phonePart.replace(/الجوال:|Phone:|Mobile:/gi, "").trim() : "";
-        var payment = paymentPart ? paymentPart.replace(/الدفع:|Payment:/gi, "").trim() : "";
-        var location = locationPart ? locationPart.replace(/الموقع:|Location:|Address:/gi, "").trim() : "";
         return { name: name, phone: phone, payment: payment, location: location };
     } catch (e) { return null; }
 }
@@ -370,19 +371,16 @@ function parseNotes(text) {
             parts[i] = parts[i].trim();
         }
         
-        var notesPart = "";
         for (var i = 0; i < parts.length; i++) {
             var p = parts[i];
             var lowerP = p.toLowerCase();
-            if (p.indexOf("ملاحظات:") !== -1 || p.indexOf("الملاحظات:") !== -1 || p.indexOf("ملاحظة:") !== -1 || lowerP.indexOf("notes:") !== -1 || lowerP.indexOf("note:") !== -1) {
-                notesPart = p;
-                break;
+            var colonIdx = p.indexOf(":");
+            if (colonIdx !== -1) {
+                var key = lowerP.substring(0, colonIdx).trim();
+                if (key.indexOf("ملاحظ") !== -1 || key.indexOf("note") !== -1 || key.indexOf("anmerkung") !== -1) {
+                    return p.substring(colonIdx + 1).trim();
+                }
             }
-        }
-        
-        if (notesPart) {
-            var colonIndex = notesPart.indexOf(":");
-            return colonIndex !== -1 ? notesPart.substring(colonIndex + 1).trim() : notesPart.trim();
         }
     } catch (e) {
         console.error("خطأ في تحليل الملاحظة:", e);
@@ -404,12 +402,19 @@ function formatOrderHeader(tableNo) {
     }
     
     var cleanTable = strTableNo;
-    if (cleanTable.indexOf("محلي:") === 0) {
-        cleanTable = cleanTable.replace("محلي:", "").trim();
-    } else if (lowerTable.indexOf("dine-in:") === 0 || lowerTable.indexOf("local:") === 0) {
-        const colonIndex = cleanTable.indexOf(":");
-        cleanTable = cleanTable.substring(colonIndex + 1).trim();
+    var prefixes = ["محلي", "dine-in", "local", "vor ort", "sur place"];
+    for (var i = 0; i < prefixes.length; i++) {
+        var pref = prefixes[i];
+        if (lowerTable.indexOf(pref) !== -1 && cleanTable.indexOf(":") !== -1) {
+            var colonIndex = cleanTable.indexOf(":");
+            var keyPart = lowerTable.substring(0, colonIndex);
+            if (keyPart.indexOf(pref) !== -1) {
+                cleanTable = cleanTable.substring(colonIndex + 1).trim();
+                break;
+            }
+        }
     }
+    
     var parts = cleanTable.split('|');
     var tableNum = parts[0] ? parts[0].replace(/\D/g, '').trim() : "—";
     if (!tableNum) tableNum = parts[0] ? parts[0].trim() : "—";

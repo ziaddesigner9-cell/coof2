@@ -271,12 +271,24 @@ async function confirmOrder() {
     var notesEl = document.getElementById("order-notes");
     var notesVal = notesEl ? notesEl.value.trim() : "";
 
+    var lblLocal = phrase(null, 'local_order', 'محلي').replace(/[📍🚗 ]/g, '').trim();
+    var lblDelivery = phrase(null, 'delivery_order', 'توصيل').replace(/[📍🚗 ]/g, '').trim();
+    var lblName = phrase(null, 'name', 'الاسم').replace(/:/g, '').trim();
+    var lblPhone = phrase(null, 'phone_number', 'الجوال').replace(/:/g, '').trim();
+    var lblPayment = phrase(null, 'payment_method', 'الدفع').replace(/:/g, '').trim();
+    var lblLocation = phrase(null, 'location', 'الموقع').replace(/:/g, '').trim();
+    
+    var lblNotes = "ملاحظات";
+    if (currentLang === 'en' || currentLang === 'en-AU') lblNotes = "Notes";
+    else if (currentLang === 'de') lblNotes = "Anmerkungen";
+    else if (currentLang === 'fr') lblNotes = "Notes";
+
     var orderLocation = isLocal 
-        ? "محلي: " + localVal 
-        : "توصيل - الاسم: " + nameVal + " | الجوال: " + phoneVal + " | الدفع: " + paymentVal + " | الموقع: " + addressVal;
+        ? lblLocal + ": " + localVal 
+        : lblDelivery + " - " + lblName + ": " + nameVal + " | " + lblPhone + ": " + phoneVal + " | " + lblPayment + ": " + paymentVal + " | " + lblLocation + ": " + addressVal;
 
     if (notesVal) {
-        orderLocation += " | ملاحظات: " + notesVal;
+        orderLocation += " | " + lblNotes + ": " + notesVal;
     }
 
     if (btn) {
