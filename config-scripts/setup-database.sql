@@ -115,6 +115,12 @@ BEGIN
 END;
 $$;
 
+-- ز. إضافة قيد التحقق من الحالات لضمان جودة البيانات
+ALTER TABLE public.orders DROP CONSTRAINT IF EXISTS orders_status_check;
+ALTER TABLE public.orders ADD CONSTRAINT orders_status_check
+CHECK (status IN ('pending', 'preparing', 'ready_for_pickup', 'ready_for_delivery', 'out_for_delivery', 'completed_local', 'completed_delivery', 'cancelled'));
+
+
 -- 5. دالة آمنة لتحديث كلمة مرور الموظفين من لوحة التحكم (update_staff_password)
 CREATE OR REPLACE FUNCTION public.update_staff_password(role_type text, new_password text)
 RETURNS boolean

@@ -240,8 +240,8 @@ function clearLocalPreparing(orderId) {
     }
 }
 
-async function markAsReady(orderId) {
-    const payload = { status: "ready" };
+async function markAsReadyForPickup(orderId) {
+    const payload = { status: "ready_for_pickup" };
     const result = await updateOrder(orderId, payload, ["pending", "preparing"]);
     if (result.ok) {
         clearLocalPreparing(orderId);
@@ -256,9 +256,22 @@ async function markAsReady(orderId) {
     }
 }
 
+async function markAsReadyForDelivery(orderId) {
+    const payload = { status: "ready_for_delivery" };
+    const result = await updateOrder(orderId, payload, ["pending", "preparing"]);
+    if (result.ok) {
+        clearLocalPreparing(orderId);
+        clearOpenedAt(orderId);
+        if (String(activeOrderId) === String(orderId)) closeActive();
+        loadOrders();
+    } else {
+        alert(phrase(null, 'kitchen_db_update_error', 'فشل التحديث: ') + result.error);
+    }
+}
+
 async function markAsPickedUp(orderId) {
-    const payload = { status: "completed" };
-    const result = await updateOrder(orderId, payload, "ready");
+    const payload = { status: "completed_local" };
+    const result = await updateOrder(orderId, payload, "ready_for_pickup");
     if (result.ok) {
         loadOrders();
     } else {
@@ -471,7 +484,7 @@ function renderOrderCard(order, type) {
             </div>
             ${renderTimeBadges(order, "active")}
             <ul class="my-4 space-y-2 border-y border-amber-800/30 py-3">${renderItemsList(items)}</ul>
-            <button type="button" onclick="markAsReady('${order.id}')"
+            <button type="button" onclick="${isDelivery ? `markAsReadyForDelivery('${order.id}')` : `markAsReadyForPickup('${order.id}')`}"
                 class="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-4 rounded-xl font-bold text-lg">
                 ${isDelivery ? phrase(null, 'kitchen_mark_ready_delivery', 'تم التجهيز ✓ (إرسال للسائق)') : phrase(null, 'kitchen_mark_ready', 'تم التجهيز ✓')}
             </button>
@@ -479,8 +492,8 @@ function renderOrderCard(order, type) {
     }
 
     if (type === "finished") {
-        let displayStatus = phrase(null, 'kitchen_ready', 'جاهز 🚚');
-        if (order.status === "completed") displayStatus = phrase(null, 'kitchen_completed', 'تم التسليم ✓');
+        let displayStatus = phrase(null, 'kitchen_ready', 'جاهز 🚚'); // Default
+        if (order.status === "completed" || order.status === "completed_local" || order.status === "completed_delivery") displayStatus = phrase(null, 'kitchen_completed', 'تم التسليم ✓');
         if (order.status === "out_for_delivery") displayStatus = phrase(null, 'kitchen_out_for_delivery', 'مع السائق 🚴');
 
         // إظهار زر التسليم فقط إذا كان الطلب محلي (طاولة) وحالته "ready" (جاهز ولم يُسلّم بعد)
@@ -718,7 +731,8 @@ function initKitchen() {
 }
 
 window.openOrder = openOrder;
-window.markAsReady = markAsReady;
+window.markAsReadyForPickup = markAsReadyForPickup;
+window.markAsReadyForDelivery = markAsReadyForDelivery;
 window.markAsPickedUp = markAsPickedUp; 
 window.closeActive = closeActive;
 

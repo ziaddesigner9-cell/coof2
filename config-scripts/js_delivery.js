@@ -153,7 +153,7 @@ async function loadDeliveryOrders() {
         const { data: orders, error } = await client
             .from("orders")
             .select("*")
-            .in("status", ["pending", "preparing", "ready", "out_for_delivery"]) // جلب الحالات التي تهم السائق
+            .in("status", ["pending", "preparing", "ready_for_delivery", "out_for_delivery"]) // جلب الحالات التي تهم السائق
             .order("created_at", { ascending: false });
 
         if (error) {
@@ -175,7 +175,7 @@ async function loadDeliveryOrders() {
         if (!isFirstLoad) {
             deliveryOnly.forEach(function(order) {
                 const prevStatus = previousStatuses.get(order.id);
-                if (order.status === 'ready' && (prevStatus === 'pending' || prevStatus === 'preparing')) {
+                if (order.status === 'ready_for_delivery' && (prevStatus === 'pending' || prevStatus === 'preparing')) {
                     playReadyAlert();
                 }
             });
@@ -221,7 +221,7 @@ async function loadDeliveryOrders() {
                             ${phrase(null, 'delivery_waiting_kitchen', 'الطلب في الطريق (بانتظار المطبخ) ⏳')}
                         </button>
                     </div>`;
-            } else if (order.status === 'ready') {
+            } else if (order.status === 'ready_for_delivery') {
                 statusLabel = `<span class="bg-emerald-500/10 text-emerald-500 text-[10px] px-2 py-1 rounded-lg border border-emerald-500/20">${phrase(null, 'delivery_status_ready', 'جاهز للتوصيل')}</span>`;
                 actionContent = `
                     <div class="text-center mt-4 bg-white p-3 rounded-2xl shadow-lg shadow-emerald-500/20">
@@ -294,7 +294,7 @@ async function markAsOutForDelivery(orderId) {
         .from("orders")
         .update({ status: "out_for_delivery" })
         .eq("id", orderId)
-        .eq("status", "ready")
+        .eq("status", "ready_for_delivery")
         .select();
 
     if (error) {
@@ -311,7 +311,7 @@ async function markAsOutForDelivery(orderId) {
 
 async function finishDelivery(orderId) {
     const client = window.getSupabaseClient();
-    const { data, error } = await client.from("orders").update({ status: "completed" }).eq("id", orderId).select();
+    const { data, error } = await client.from("orders").update({ status: "completed_delivery" }).eq("id", orderId).select();
     if (error) {
         alert(phrase(null, 'delivery_load_error', 'خطأ: {error}').replace('{error}', error.message));
     } else if (!data || data.length === 0) {
