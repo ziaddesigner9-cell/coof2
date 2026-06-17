@@ -401,10 +401,8 @@ function parseNotes(text) {
 function formatOrderHeader(tableNo, isDelivery) {
     var strTableNo = String(tableNo != null ? tableNo : "—");
     if (!strTableNo || strTableNo === "—") return "—";
-    
-    const lowerTable = strTableNo.toLowerCase();
-    const hasDeliveryWord = strTableNo.indexOf("توصيل") !== -1 || lowerTable.indexOf("delivery") !== -1 || lowerTable.indexOf("lieferung") !== -1 || lowerTable.indexOf("livraison") !== -1;
-    if (isDelivery || hasDeliveryWord) {
+
+    if (isDelivery) {
         var info = parseDeliveryString(strTableNo);
         if (!info) return phrase(null, 'kitchen_delivery_header', '🚗 توصيل');
         const translatedName = translateInfoValue(info.name);
@@ -443,9 +441,8 @@ function formatLocationInfo(text) {
 function renderOrderCard(order, type) {
     const items = parseItems(order.items);
     const tableRaw = order.table_no != null ? order.table_no : "—";
-    const lowerRaw = tableRaw.toLowerCase();
-    // دعم الحقل الجديد والاحتياط بالنص في حال كانت أجهزة الزبائن تستخدم كاش قديم
-    const isDelivery = order.order_type === 'delivery' || (lowerRaw.indexOf("توصيل") !== -1 || lowerRaw.indexOf("delivery") !== -1 || lowerRaw.indexOf("lieferung") !== -1 || lowerRaw.indexOf("livraison") !== -1);
+    // الاعتماد الكلي على حقل نوع الطلب كمصدر موثوق وحيد
+    const isDelivery = order.order_type === 'delivery';
     const deliveryInfo = isDelivery ? parseDeliveryString(tableRaw) : null;
     const titleHtml = formatOrderHeader(tableRaw, isDelivery);
     
