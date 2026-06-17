@@ -162,7 +162,6 @@
         const QR_COLOR_GREEN = "#22C55E";
 
         function isQrReadyStatus(status) {
-            return status === "ready" || status === "completed" || status === "out_for_delivery";
             return status === "ready_for_pickup" || status === "ready_for_delivery" || status === "completed" || status === "completed_local" || status === "completed_delivery" || status === "out_for_delivery";
         }
 
@@ -510,7 +509,6 @@
         function updateUiForStatus(status) {
             const isPreparing = status === "preparing" || status === "pending";
 
-            if (status === "completed") {
             if (status === "completed" || status === "completed_local" || status === "completed_delivery") {
                 applyQrLabelStyle(status);
                 statusText.classList.remove("text-yellow-400");
@@ -533,7 +531,6 @@
                 statusText.textContent = phrase(appSettings, "tracking_status_out_for_delivery");
                 subText.textContent = phrase(appSettings, "tracking_sub_delivery");
                 playNotificationSound("delivery");
-            } else if (status === "ready") {
             } else if (status === "ready_for_pickup" || status === "ready_for_delivery") {
                 applyQrLabelStyle(status);
                 statusText.classList.remove("text-yellow-400");
@@ -690,8 +687,5 @@
             }
         });
     </script>
-    <!-- Vercel Analytics & Speed Insights -->
-    <script defer src="/_vercel/insights/script.js"></script>
-    <script defer src="/_vercel/speed-insights/script.js"></script>
 </body>
 </html>
