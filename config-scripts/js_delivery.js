@@ -95,7 +95,9 @@ function parseItems(raw) {
 }
 
 function parseDeliveryDetails(text) {
-    if (!text || (text.indexOf("توصيل") === -1 && text.toLowerCase().indexOf("delivery") === -1)) return null;
+    if (!text) return null;
+    var lower = text.toLowerCase();
+    if (lower.indexOf("توصيل") === -1 && lower.indexOf("delivery") === -1 && lower.indexOf("lieferung") === -1 && lower.indexOf("livraison") === -1) return null;
     try {
         var rawParts = text.split('|');
         var parts = [];
@@ -161,7 +163,9 @@ async function loadDeliveryOrders() {
         const currentOrders = orders || [];
         // الفلتر المزدوج: يعتمد على الحقل الجديد، أو يقرأ من النص كاحتياط للطلبات القادمة من كاش قديم للزبون
         const deliveryOnly = currentOrders.filter(function(o) {
-            const hasText = o.table_no && (o.table_no.indexOf("توصيل") !== -1 || o.table_no.toLowerCase().indexOf("delivery") !== -1);
+            if (!o.table_no) return o.order_type === 'delivery';
+            const lower = o.table_no.toLowerCase();
+            const hasText = lower.indexOf("توصيل") !== -1 || lower.indexOf("delivery") !== -1 || lower.indexOf("lieferung") !== -1 || lower.indexOf("livraison") !== -1;
             return o.order_type === 'delivery' || hasText;
         });
 

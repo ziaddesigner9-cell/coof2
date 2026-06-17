@@ -330,7 +330,9 @@ function renderItemsList(items) {
 
 function parseDeliveryString(text) {
     var strText = String(text != null ? text : "");
-    if (!strText || (strText.indexOf("توصيل") === -1 && strText.toLowerCase().indexOf("delivery") === -1)) return null;
+    if (!strText) return null;
+    var lower = strText.toLowerCase();
+    if (lower.indexOf("توصيل") === -1 && lower.indexOf("delivery") === -1 && lower.indexOf("lieferung") === -1 && lower.indexOf("livraison") === -1) return null;
     try {
         var parts = strText.split('|');
         for (var i = 0; i < parts.length; i++) {
@@ -393,7 +395,7 @@ function formatOrderHeader(tableNo) {
     if (!strTableNo || strTableNo === "—") return "—";
     
     const lowerTable = strTableNo.toLowerCase();
-    if (strTableNo.indexOf("توصيل") !== -1 || lowerTable.indexOf("delivery") !== -1) {
+    if (strTableNo.indexOf("توصيل") !== -1 || lowerTable.indexOf("delivery") !== -1 || lowerTable.indexOf("lieferung") !== -1 || lowerTable.indexOf("livraison") !== -1) {
         var info = parseDeliveryString(strTableNo);
         if (!info) return phrase(null, 'kitchen_delivery_header', '🚗 توصيل');
         const translatedName = translateInfoValue(info.name);
@@ -425,8 +427,9 @@ function formatLocationInfo(text) {
 function renderOrderCard(order, type) {
     const items = parseItems(order.items);
     const tableRaw = order.table_no != null ? order.table_no : "—";
+    const lowerRaw = tableRaw.toLowerCase();
     // دعم الحقل الجديد والاحتياط بالنص في حال كانت أجهزة الزبائن تستخدم كاش قديم
-    const isDelivery = order.order_type === 'delivery' || (tableRaw.indexOf("توصيل") !== -1 || tableRaw.toLowerCase().indexOf("delivery") !== -1);
+    const isDelivery = order.order_type === 'delivery' || (lowerRaw.indexOf("توصيل") !== -1 || lowerRaw.indexOf("delivery") !== -1 || lowerRaw.indexOf("lieferung") !== -1 || lowerRaw.indexOf("livraison") !== -1);
     const deliveryInfo = isDelivery ? parseDeliveryString(tableRaw) : null;
     const titleHtml = formatOrderHeader(tableRaw);
     
