@@ -343,18 +343,15 @@ function renderItemsList(items) {
 
 function parseDeliveryString(text) {
     var strText = String(text != null ? text : "");
-    if (!strText) return null;
-    var lower = strText.toLowerCase();
-    if (lower.indexOf("توصيل") === -1 && lower.indexOf("delivery") === -1 && lower.indexOf("lieferung") === -1 && lower.indexOf("livraison") === -1) return null;
     try {
         var parts = strText.split('|');
         for (var i = 0; i < parts.length; i++) {
             parts[i] = parts[i].trim();
         }
         
-        var name = "غير معروف";
-        var phone = "";
-        var payment = "";
+        var name = "unknown";
+        var phone = "unknown";
+        var payment = "unspecified";
         var location = "";
         
         for (var i = 0; i < parts.length; i++) {
@@ -401,12 +398,13 @@ function parseNotes(text) {
     return "";
 }
 
-function formatOrderHeader(tableNo) {
+function formatOrderHeader(tableNo, isDelivery) {
     var strTableNo = String(tableNo != null ? tableNo : "—");
     if (!strTableNo || strTableNo === "—") return "—";
     
     const lowerTable = strTableNo.toLowerCase();
-    if (strTableNo.indexOf("توصيل") !== -1 || lowerTable.indexOf("delivery") !== -1 || lowerTable.indexOf("lieferung") !== -1 || lowerTable.indexOf("livraison") !== -1) {
+    const hasDeliveryWord = strTableNo.indexOf("توصيل") !== -1 || lowerTable.indexOf("delivery") !== -1 || lowerTable.indexOf("lieferung") !== -1 || lowerTable.indexOf("livraison") !== -1;
+    if (isDelivery || hasDeliveryWord) {
         var info = parseDeliveryString(strTableNo);
         if (!info) return phrase(null, 'kitchen_delivery_header', '🚗 توصيل');
         const translatedName = translateInfoValue(info.name);
@@ -449,7 +447,7 @@ function renderOrderCard(order, type) {
     // دعم الحقل الجديد والاحتياط بالنص في حال كانت أجهزة الزبائن تستخدم كاش قديم
     const isDelivery = order.order_type === 'delivery' || (lowerRaw.indexOf("توصيل") !== -1 || lowerRaw.indexOf("delivery") !== -1 || lowerRaw.indexOf("lieferung") !== -1 || lowerRaw.indexOf("livraison") !== -1);
     const deliveryInfo = isDelivery ? parseDeliveryString(tableRaw) : null;
-    const titleHtml = formatOrderHeader(tableRaw);
+    const titleHtml = formatOrderHeader(tableRaw, isDelivery);
     
     const detailsHtml = deliveryInfo ? `
         <div class="mt-2 text-xs text-amber-200/60 bg-black/30 p-2 rounded-lg border border-amber-900/20">
@@ -603,7 +601,7 @@ async function loadOrders() {
                     class="w-full text-right p-4 rounded-xl border border-amber-700/40 bg-zinc-950 hover:border-amber-500 transition ${activeOrderId ? "" : "animate-pulse"}">
                     <div class="flex justify-between items-start gap-2">
                         <span class="text-amber-400 font-bold">${phrase(null, 'kitchen_new_order_badge', '🆕 طلب جديد')}</span>
-                        <span class="text-zinc-400 text-sm">${formatOrderHeader(o.table_no != null ? o.table_no : "—")}</span>
+                        <span class="text-zinc-400 text-sm">${formatOrderHeader(o.table_no != null ? o.table_no : "—", o.order_type === 'delivery')}</span>
                     </div>
                     ${renderTimeBadges(o, "pending")}
                 </button>`;

@@ -95,11 +95,9 @@ function parseItems(raw) {
 }
 
 function parseDeliveryDetails(text) {
-    if (!text) return null;
-    var lower = text.toLowerCase();
-    if (lower.indexOf("توصيل") === -1 && lower.indexOf("delivery") === -1 && lower.indexOf("lieferung") === -1 && lower.indexOf("livraison") === -1) return null;
+    var safeText = text || "";
     try {
-        var rawParts = text.split('|');
+        var rawParts = safeText.split('|');
         var parts = [];
         for (var i = 0; i < rawParts.length; i++) {
             parts.push(rawParts[i].trim());
@@ -131,7 +129,7 @@ function parseDeliveryDetails(text) {
         }
         return { name: name, phone: phone, payment: payment, location: location };
     } catch (e) {
-        return { name: "خطأ في البيانات", phone: text, location: "" };
+        return { name: "خطأ في البيانات", phone: safeText, payment: "unspecified", location: "" };
     }
 }
 
@@ -193,7 +191,6 @@ async function loadDeliveryOrders() {
 
         container.innerHTML = deliveryOnly.map(function(order) {
             const info = parseDeliveryDetails(order.table_no);
-            if (!info) return "";
             
             const items = parseItems(order.items);
             const mapLink = info.location.indexOf('http') !== -1
@@ -204,7 +201,7 @@ async function loadDeliveryOrders() {
             const qrCodeUpdateUrl = `${appBaseUrl}Front-end/delivery_status_update.html?orderId=${order.id}`;
 
             // تحديد لون الكود: ذهبي للتحضير، أخضر للجاهزية
-            const isReady = order.status === 'ready' || order.status === 'out_for_delivery';
+            const isReady = order.status === 'ready_for_delivery' || order.status === 'out_for_delivery';
             const qrColor = isReady ? '10B981' : 'D4AF37';
             const qrCodeImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&color=${qrColor}&data=${encodeURIComponent(qrCodeUpdateUrl)}`;
 
