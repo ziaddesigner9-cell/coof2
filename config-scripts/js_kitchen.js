@@ -401,6 +401,8 @@ function parseNotes(text) {
 function formatOrderHeader(tableNo, isDelivery) {
     var strTableNo = String(tableNo != null ? tableNo : "—");
     if (!strTableNo || strTableNo === "—") return "—";
+    
+    const lowerTable = strTableNo.toLowerCase();
 
     if (isDelivery) {
         var info = parseDeliveryString(strTableNo);
