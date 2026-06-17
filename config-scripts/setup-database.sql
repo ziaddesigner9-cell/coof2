@@ -1,6 +1,7 @@
 -- ========================================================================
 -- Ritzy Roast Coffee Co. - 1-Click Database Setup Installer
--- شغّل هذا الملف بالكامل في Supabase -> SQL Editor (لمشاريع الزبائن الجدد)
+-- هذا الملف هو الإصدار الشامل والمدمج. يشمل الجداول، السياسات، التخزين، والحسابات.
+-- شغّل هذا الملف بالكامل في Supabase -> SQL Editor
 -- ========================================================================
 
 -- 1. تفعيل الإضافات المطلوبة
@@ -52,6 +53,11 @@ ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.gallery ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.app_settings ENABLE ROW LEVEL SECURITY;
 
+-- إعداد التخزين (Storage) لصور الأصناف
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('menu-images', 'menu-images', true)
+ON CONFLICT (id) DO NOTHING;
+
 -- 4. إنشاء سياسات الأمان (RLS Policies)
 -- أ. سياسات الأصناف (items)
 DROP POLICY IF EXISTS "allow_anon_read_items" ON public.items;
@@ -77,7 +83,37 @@ DROP POLICY IF EXISTS "allow_staff_all_orders" ON public.orders;
 DROP POLICY IF EXISTS "allow_anon_read_own_order" ON public.orders;
 CREATE POLICY "allow_anon_insert_orders" ON public.orders FOR INSERT TO anon WITH CHECK (true);
 CREATE POLICY "allow_staff_all_orders" ON public.orders FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "allow_anon_read_own_order" ON public.orders FOR SELECT TO anon USING (true);
+
+-- [ثغرة أمنية] تم حذف السياسة التالية لأنها تسمح لأي مستخدم بقراءة كل الطلبات
+-- CREATE POLICY "allow_anon_read_own_order" ON public.orders FOR SELECT TO anon USING (true);
+
+-- هـ. سياسات الوصول للتخزين (Storage)
+GRANT USAGE ON SCHEMA storage TO authenticated;
+GRANT ALL ON TABLE storage.objects TO authenticated;
+GRANT ALL ON TABLE storage.buckets TO authenticated;
+
+DROP POLICY IF EXISTS "menu_images_select" ON storage.objects;
+CREATE POLICY "menu_images_select" ON storage.objects FOR SELECT TO anon, authenticated USING (true);
+
+DROP POLICY IF EXISTS "menu_images_insert" ON storage.objects;
+CREATE POLICY "menu_images_insert" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'menu-images');
+
+DROP POLICY IF EXISTS "menu_images_update" ON storage.objects;
+CREATE POLICY "menu_images_update" ON storage.objects FOR UPDATE TO authenticated USING (bucket_id = 'menu-images') WITH CHECK (bucket_id = 'menu-images');
+
+DROP POLICY IF EXISTS "menu_images_delete" ON storage.objects;
+CREATE POLICY "menu_images_delete" ON storage.objects FOR DELETE TO authenticated USING (bucket_id = 'menu-images');
+
+-- و. دالة تتبع الطلب الخاصة بالزبائن (آمنة ولا تسرب بقية الطلبات)
+CREATE OR REPLACE FUNCTION public.get_customer_order(target_order_id uuid)
+RETURNS SETOF public.orders
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+    RETURN QUERY SELECT * FROM public.orders WHERE id = target_order_id;
+END;
+$$;
 
 -- 5. دالة آمنة لتحديث كلمة مرور الموظفين من لوحة التحكم (update_staff_password)
 CREATE OR REPLACE FUNCTION public.update_staff_password(role_type text, new_password text)

@@ -337,6 +337,7 @@ const translations = {
         'unspecified': 'غير محدد',
         'delivery_err_session_expired': 'تعذر إنهاء الطلب (قد تكون الجلسة انتهت، يرجى تسجيل الدخول مجدداً)',
         'items_label': 'الأصناف:',
+        'auth_connect_error': '⚠️ تعذّر الاتصال بالخادم، تأكد من اتصال الإنترنت وأعِد المحاولة.',
         'kitchen_update_no_result': 'لم يتم التحديث (قد تكون الحالة تغيرت أو الجلسة انتهت)'
     },
     'en': {
@@ -696,6 +697,7 @@ const translations = {
         'unspecified': 'Unspecified',
         'delivery_err_session_expired': 'Session expired or order not found, please log in again.',
         'items_label': 'Items:',
+        'auth_connect_error': '⚠️ Could not connect to the server. Check your internet connection and try again.',
         'kitchen_update_no_result': 'Update failed (status may have changed or session expired)'
     },
     'en-AU': {
@@ -1055,6 +1057,7 @@ const translations = {
         'unspecified': 'Unspecified',
         'delivery_err_session_expired': 'Session expired or order not found, please log in again.',
         'items_label': 'Items:',
+        'auth_connect_error': '⚠️ Could not connect to the server. Check your internet connection and try again.',
         'kitchen_update_no_result': 'Update failed (status may have changed or session expired)'
     },
     'de': {
@@ -1435,6 +1438,7 @@ const translations = {
         'unspecified': 'Nicht spezifiziert',
         'delivery_err_session_expired': 'Sitzung abgelaufen oder Bestellung nicht gefunden, bitte melden Sie sich erneut an.',
         'items_label': 'Artikel:',
+        'auth_connect_error': '⚠️ Verbindung zum Server fehlgeschlagen. Überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.',
         'kitchen_update_no_result': 'Aktualisierung fehlgeschlagen (Status kann sich geändert haben oder Sitzung abgelaufen)'
     },
     'fr': {
@@ -1815,6 +1819,7 @@ const translations = {
         'unspecified': 'Non spécifié',
         'delivery_err_session_expired': 'Session expirée ou commande introuvable, veuillez vous reconnecter.',
         'items_label': 'Articles :',
+        'auth_connect_error': '⚠️ Impossible de se connecter au serveur. Vérifiez votre connexion Internet et réessayez.',
         'kitchen_update_no_result': 'Mise à jour échouée (le statut peut avoir changé ou la session a expiré)'
     }
 };

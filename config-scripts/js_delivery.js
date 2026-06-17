@@ -105,9 +105,9 @@ function parseDeliveryDetails(text) {
             parts.push(rawParts[i].trim());
         }
         
-        var name = "غير معروف";
-        var phone = "غير معروف";
-        var payment = "غير محدد";
+        var name = "unknown"; // استخدام مفتاح إنجليزي للترجمة
+        var phone = "unknown"; // استخدام مفتاح إنجليزي للترجمة
+        var payment = "unspecified"; // استخدام مفتاح إنجليزي للترجمة
         var location = "";
 
         for (var j = 0; j < parts.length; j++) {

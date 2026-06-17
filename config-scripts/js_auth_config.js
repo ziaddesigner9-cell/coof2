@@ -49,7 +49,7 @@ async function verifyLogin(password, type) {
     const client = await waitForSupabaseClient(5000);
     if (!client) {
         console.error("فشل الاتصال بـ Supabase بعد الانتظار.");
-        alert("⚠️ تعذّر الاتصال بالخادم، تأكد من اتصال الإنترنت وأعِد المحاولة.");
+        alert(phrase(null, 'auth_connect_error', '⚠️ Could not connect to the server. Check your internet connection and try again.'));
         return false;
     }
 
