@@ -425,7 +425,8 @@ function formatLocationInfo(text) {
 function renderOrderCard(order, type) {
     const items = parseItems(order.items);
     const tableRaw = order.table_no != null ? order.table_no : "—";
-    const isDelivery = order.order_type === 'delivery'; // الاعتماد على الحقل الجديد الموثوق
+    // دعم الحقل الجديد والاحتياط بالنص في حال كانت أجهزة الزبائن تستخدم كاش قديم
+    const isDelivery = order.order_type === 'delivery' || (tableRaw.indexOf("توصيل") !== -1 || tableRaw.toLowerCase().indexOf("delivery") !== -1);
     const deliveryInfo = isDelivery ? parseDeliveryString(tableRaw) : null;
     const titleHtml = formatOrderHeader(tableRaw);
     

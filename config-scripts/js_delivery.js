@@ -148,8 +148,7 @@ async function loadDeliveryOrders() {
     try {
         const { data: orders, error } = await client
             .from("orders")
-            .select("*") // فلترة مباشرة من قاعدة البيانات لطلبات التوصيل فقط
-            .eq('order_type', 'delivery') 
+            .select("*")
             .in("status", ["pending", "preparing", "ready", "out_for_delivery"]) // جلب الحالات التي تهم السائق
             .order("created_at", { ascending: false });
 
@@ -159,7 +158,12 @@ async function loadDeliveryOrders() {
             return;
         }
 
-        const deliveryOnly = orders || [];
+        const currentOrders = orders || [];
+        // الفلتر المزدوج: يعتمد على الحقل الجديد، أو يقرأ من النص كاحتياط للطلبات القادمة من كاش قديم للزبون
+        const deliveryOnly = currentOrders.filter(function(o) {
+            const hasText = o.table_no && (o.table_no.indexOf("توصيل") !== -1 || o.table_no.toLowerCase().indexOf("delivery") !== -1);
+            return o.order_type === 'delivery' || hasText;
+        });
 
         // التحقق من تغير الحالة من ذهبي (preparing/pending) إلى أخضر (ready)
         if (!isFirstLoad) {
