@@ -273,7 +273,7 @@
             
             let color = "";
             if (status === "pending") color = "#f5d76e"; 
-            else if (status === "preparing" || status === "ready") color = "#10B981"; // Emerald Green
+            else if (status === "preparing" || status === "ready_for_pickup" || status === "ready_for_delivery") color = "#10B981"; // Emerald Green
             else if (status === "out_for_delivery") color = "#3B82F6"; // Blue for delivery
             
             if (color) {
@@ -288,7 +288,7 @@
                 }
             } else {
                 el.innerHTML = "";
-                if (status === "completed" || status === "cancelled" || !status) {
+                if (status === "completed" || status === "completed_local" || status === "completed_delivery" || status === "cancelled" || !status) {
                     try {
                         localStorage.removeItem("coof2_lastOrderId");
                     } catch (e) {}

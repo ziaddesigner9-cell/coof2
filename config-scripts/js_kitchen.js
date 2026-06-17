@@ -491,8 +491,8 @@ function renderOrderCard(order, type) {
         if (order.status === "completed" || order.status === "completed_local" || order.status === "completed_delivery") displayStatus = phrase(null, 'kitchen_completed', 'تم التسليم ✓');
         if (order.status === "out_for_delivery") displayStatus = phrase(null, 'kitchen_out_for_delivery', 'مع السائق 🚴');
 
-        // إظهار زر التسليم فقط إذا كان الطلب محلي (طاولة) وحالته "ready" (جاهز ولم يُسلّم بعد)
-        const showPickupButton = !isDelivery && order.status === "ready";
+        // إظهار زر التسليم فقط إذا كان الطلب محلي (طاولة) وحالته "ready_for_pickup" (جاهز ولم يُسلّم بعد)
+        const showPickupButton = !isDelivery && order.status === "ready_for_pickup";
 
         return `
         <div class="p-3 rounded-xl border border-zinc-800/40 bg-zinc-900/40 text-sm">
@@ -539,7 +539,7 @@ async function loadOrders() {
     try {
         const [activeRes, finishedRes] = await Promise.all([
             client.from("orders").select("*").in("status", ["pending", "preparing"]).order("created_at", { ascending: false }),
-            client.from("orders").select("*").in("status", ["ready", "out_for_delivery", "completed"]).order("created_at", { ascending: false }).limit(5)
+            client.from("orders").select("*").in("status", ["ready_for_pickup", "ready_for_delivery", "out_for_delivery", "completed_local", "completed_delivery"]).order("created_at", { ascending: false }).limit(5)
         ]);
 
         if (activeRes.error) {
