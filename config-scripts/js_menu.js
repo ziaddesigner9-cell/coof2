@@ -42,21 +42,26 @@ async function loadMenu() {
             .order("created_at", { ascending: false });
 
         if (error) {
-            menuContainer.innerHTML = `<p class='text-center text-red-400 p-4'>خطأ في الاتصال: ${error.message}</p>`;
+            menuContainer.innerHTML = `<p class='text-center text-red-400 p-4'>Error: ${error.message}</p>`;
             return;
         }
 
         if (!items || items.length === 0) {
             const label = MENU_CATEGORY_LABELS[category] || category;
-            menuContainer.innerHTML = `<p class='text-center col-span-full gold-text-soft py-10'>لا توجد أصناف في «${label}» حالياً.<br><span class="text-sm text-zinc-500">أضف صنفاً واختر التصنيف الصحيح من لوحة المدير.</span></p>`;
+            const labelLocalized = phrase(null, "category_" + category + "_label") || label;
+            const noItemsMsg = (phrase(null, "no_items_in_category") || "لا توجد أصناف في «{label}» حالياً.").replace("{label}", labelLocalized);
+            const addAdminMsg = phrase(null, "add_item_from_admin") || "أضف صنفاً واختر التصنيف الصحيح من لوحة المدير.";
+            menuContainer.innerHTML = `<p class='text-center col-span-full gold-text-soft py-10'>${noItemsMsg}<br><span class="text-sm text-zinc-500">${addAdminMsg}</span></p>`;
             return;
         }
 
         menuContainer.innerHTML = items
             .map(
                 function(item) {
-                    const safeName = escapeHtml(item.name || "غير معروف");
-                    const safePrice = escapeHtml(parseFloat(item.price || 0).toFixed(2));
+                    const translatedName = phrase(null, item.name) || item.name || "غير معروف";
+                    const safeName = escapeHtml(translatedName);
+                    const formattedPrice = typeof formatPrice === 'function' ? formatPrice(item.price) : (parseFloat(item.price || 0).toFixed(2) + " ريال");
+                    const safePrice = escapeHtml(formattedPrice);
                     const safeImage = escapeHtml(window.getSafeImageUrl(item.image_url));
                     return `
         <div class="menu-card menu-item p-4 rounded-2xl flex items-center gap-4 transition">
@@ -64,7 +69,7 @@ async function loadMenu() {
                    class="w-20 h-20 object-cover rounded-xl border border-amber-500/50 flex-shrink-0">
             <div class="flex-grow min-w-0">
                 <h3 class="font-bold gold-title text-lg leading-tight">${safeName}</h3>
-                <p class="gold-text font-bold mt-1 text-base">${safePrice} ريال</p>
+                <p class="gold-text font-bold mt-1 text-base">${safePrice}</p>
             </div>
             <button class="add-to-cart-btn bg-gradient-to-b from-amber-400 to-amber-600 text-black p-3 rounded-full hover:from-amber-300 hover:to-amber-500 transition flex-shrink-0 shadow-md shadow-amber-900/40" 
                     data-id="${escapeHtml(item.id)}" 
@@ -141,7 +146,11 @@ function playCartSound() {
 
 /** إظهار عبارة عشوائية متساقطة من الإعدادات */
 async function showCartFeedback() {
-    let text = "تمت الإضافة للسلة"; // نص احتياطي في حال فشل التحميل
+    let currentLang = 'ar';
+    try {
+        currentLang = localStorage.getItem('coof2_userLang') || 'ar';
+    } catch (_) {}
+    let text = (window.translations[currentLang] && window.translations[currentLang]['added_to_cart_toast']) || "تمت الإضافة للسلة ✓";
 
     try {
         if (typeof window.loadAppSettings !== "function" || typeof window.phrase !== "function") {

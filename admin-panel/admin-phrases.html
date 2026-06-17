@@ -3,41 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تعديل العبارات</title>
+    <title data-key="phrases_title">تعديل العبارات</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../config-scripts/dependencies.js?v=6"></script>
+    <script src="../config-scripts/language.js"></script>
     <script src="../config-scripts/js_app_settings.js"></script>
     <script>
         if (localStorage.getItem("coof2_role") !== "admin") location.href = "admin-login.html";
     </script>
 </head>
-<body class="bg-black text-white min-h-screen p-4 md:p-8">
+<body class="bg-black text-white min-h-screen p-4 md:p-8 relative">
+    
+    <div id="lang-picker-container" class="absolute top-4 right-4 z-50"></div>
+
     <div id="admin-loader" class="fixed inset-0 bg-black z-[100] flex items-center justify-center hidden">
         <div class="text-center">
             <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500 mx-auto"></div>
-            <p class="mt-4 text-amber-500 font-bold">جاري حفظ التعديلات...</p>
+            <p class="mt-4 text-amber-500 font-bold" data-key="saving_changes_loader">جاري حفظ التعديلات...</p>
         </div>
     </div>
 
     <div class="max-w-3xl mx-auto">
-        <a href="admin-dashboard.html" class="text-amber-500 text-sm hover:text-amber-300">← لوحة المدير</a>
-        <h1 class="text-2xl font-bold text-amber-400 mt-4 mb-2">تعديل العبارات</h1>
-        <p class="text-zinc-500 text-sm mb-6">كل حقل يوضح أين تظهر العبارة في التطبيق.</p>
+        <a href="admin-dashboard.html" class="text-amber-500 text-sm hover:text-amber-300" data-key="back_to_dashboard_link">← لوحة المدير</a>
+        <h1 class="text-2xl font-bold text-amber-400 mt-4 mb-2" data-key="phrases_title">تعديل العبارات</h1>
+        <p class="text-zinc-500 text-sm mb-6" data-key="phrases_desc">كل حقل يوضح أين تظهر العبارة في التطبيق.</p>
 
         <div id="phrases-form" class="space-y-4"></div>
 
         <div class="mt-10 pt-8 border-t border-zinc-800/80">
             <h3 class="text-amber-500 font-black text-base flex items-center gap-2 mb-2">
-                <span>🛒</span> عبارات تشجيعية عند الإضافة للسلة
+                <span>🛒</span> <span data-key="motivational_phrases_title">عبارات تشجيعية عند الإضافة للسلة</span>
             </h3>
-            <p class="text-zinc-500 text-xs mb-4">تظهر هذه العبارات بالتوالي وبشكل عشوائي متتابع للزبون فور الضغط على إضافة صنف لزيادة تفاعله مع التطبيق.</p>
+            <p class="text-zinc-500 text-xs mb-4" data-key="motivational_phrases_desc">تظهر هذه العبارات بالتوالي وبشكل عشوائي متتابع للزبون فور الضغط على إضافة صنف لزيادة تفاعله مع التطبيق.</p>
             
             <div id="cart-phrases-form" class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-zinc-950 p-5 rounded-2xl border border-amber-800/20">
-                </div>
+            </div>
         </div>
 
-        <button type="button" id="saveBtn"
+        <button type="button" id="saveBtn" data-key="save_all_settings_btn"
             class="w-full mt-8 py-4 rounded-xl bg-amber-600 hover:bg-amber-500 text-black font-bold text-lg sticky bottom-4 shadow-xl z-10">
             حفظ جميع العبارات والإعدادات
         </button>
@@ -46,35 +50,35 @@
     <div id="style-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm">
         <div class="w-full max-w-md bg-zinc-950 border border-amber-800/40 rounded-3xl p-6 shadow-2xl">
             <div class="flex justify-between items-center mb-6 border-b border-amber-800/20 pb-4">
-                <h2 class="text-xl font-bold text-amber-400">تعديل المظهر والحجم</h2>
+                <h2 class="text-xl font-bold text-amber-400" data-key="edit_style_modal_title">تعديل المظهر والحجم</h2>
                 <button type="button" onclick="closeStyleModal()" class="text-zinc-500 hover:text-white text-2xl">&times;</button>
             </div>
             
             <div class="space-y-5">
                 <div>
-                    <label class="text-xs text-zinc-500 block mb-1">حجم الخط (تكبير/تصغير)</label>
+                    <label class="text-xs text-zinc-500 block mb-1" data-key="font_size_label">حجم الخط (تكبير/تصغير)</label>
                     <input id="ui_font_size" type="range" min="12" max="48" class="w-full accent-amber-500 h-2 bg-zinc-900 rounded-lg appearance-none cursor-pointer" />
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="text-xs text-zinc-500 block mb-1">عرض الإطار (Scaling)</label>
+                        <label class="text-xs text-zinc-500 block mb-1" data-key="box_width_label">عرض الإطار (Scaling)</label>
                         <input id="ui_box_width" type="number" min="50" max="800" class="w-full p-3 rounded-xl bg-black border border-zinc-800 text-amber-100 outline-none focus:border-amber-500" />
                     </div>
                     <div>
-                        <label class="text-xs text-zinc-500 block mb-1">طول الإطار (Scaling)</label>
+                        <label class="text-xs text-zinc-500 block mb-1" data-key="box_height_label">طول الإطار (Scaling)</label>
                         <input id="ui_box_height" type="number" min="50" max="800" class="w-full p-3 rounded-xl bg-black border border-zinc-800 text-amber-100 outline-none focus:border-amber-500" />
                     </div>
                 </div>
                 <div>
-                    <label class="text-xs text-zinc-500 block mb-1">سمك إطار الصندوق</label>
+                    <label class="text-xs text-zinc-500 block mb-1" data-key="border_width_label">سمك إطار الصندوق</label>
                     <input id="ui_border_width" type="number" min="0" max="15" class="w-full p-3 rounded-xl bg-black border border-zinc-800 text-amber-100 outline-none focus:border-amber-500" />
                 </div>
                 <div>
-                    <label class="text-xs text-zinc-500 block mb-1">اللون الذهبي الموحد</label>
+                    <label class="text-xs text-zinc-500 block mb-1" data-key="gold_color_label">اللون الذهبي الموحد</label>
                     <input id="ui_gold_color" type="color" class="w-full h-12 rounded-xl border-2 border-zinc-800 bg-transparent cursor-pointer p-1" />
                 </div>
                 
-                <button type="button" id="modalSaveBtn" class="w-full py-4 rounded-2xl bg-amber-600 hover:bg-amber-500 text-black font-bold text-lg mt-2 transition shadow-lg shadow-amber-900/20">
+                <button type="button" id="modalSaveBtn" class="w-full py-4 rounded-2xl bg-amber-600 hover:bg-amber-500 text-black font-bold text-lg mt-2 transition shadow-lg shadow-amber-900/20" data-key="apply_style_btn">
                     تطبيق وحفظ المظهر
                 </button>
             </div>
@@ -82,76 +86,287 @@
     </div>
 
     <script>
-        // 1. العبارات الأساسية للتطبيق كما كانت لديك
         const PHRASE_FIELDS = [
-            { key: "brand_tagline", label: "اسم العلامة (إنجليزي)", location: "🏠 الرئيسية — السطر فوق الشعار" },
-            { key: "home_slogan", label: "شعار المقهى (Slogan)", location: "🏠 الرئيسية — تحت شعار الصورة" },
-            { key: "home_welcome_title", label: "عنوان الترحيب", location: "🏠 الرئيسية — العنوان الذهبي الكبير" },
-            { key: "home_welcome_sub", label: "نص تحت الترحيب", location: "🏠 الرئيسية — تحت العنوان مباشرة" },
-            { key: "category_row_hint", label: "كلمة «تصفح» على الصفوف", location: "🏠 الرئيسية — أعلى كل صف تصنيف" },
-            { key: "category_hot_label", label: "عنوان صف الساخن", location: "🏠 الرئيسية — داخل صورة المشروبات الساخنة" },
-            { key: "category_cold_label", label: "عنوان صف البارد", location: "🏠 الرئيسية — داخل صورة المشروبات الباردة" },
-            { key: "category_dessert_label", label: "عنوان صف الحلى", location: "🏠 الرئيسية — داخل صورة الحلى" },
-            { key: "tracking_title", label: "عنوان صفحة التتبع", location: "📱 بعد تأكيد الطلب — أعلى رمز QR مباشرة" },
-            { key: "tracking_scan_hint", label: "تلميح مسح QR", location: "📱 صفحة التتبع — السطر الصغير تحت رمز QR" },
-            { key: "tracking_sub_pending", label: "نص تحت QR (قبل الجاهزية)", location: "📱 صفحة التتبع — تحت QR أثناء الانتظار/التجهيز" },
-            { key: "tracking_status_waiting", label: "حالة: بانتظار العامل", location: "📱 صفحة التتبع — سطر «حالة الطلب»" },
-            { key: "tracking_status_preparing", label: "حالة: قيد التجهيز", location: "📱 صفحة التتبع — عندما يبدأ العامل" },
-            { key: "tracking_status_ready", label: "حالة: جاهز للاستلام", location: "📱 صفحة التتبع — عند تم التجهيز (QR أخضر)" },
-            { key: "tracking_sub_ready", label: "نص تحت QR (جاهز)", location: "📱 صفحة التتبع — تحت QR عندما يصبح أخضر" },
-            { key: "tracking_status_completed", label: "حالة: تم الاستلام", location: "📱 صفحة التتبع — بعد تم الاستلام" },
-            { key: "tracking_sub_completed", label: "نص تحت QR (بعد الاستلام)", location: "📱 صفحة التتبع — تحت QR النهائي بعد الاستلام" },
-            { key: "order_view_brand_en", label: "العلامة إنجليزي", location: "🔗 صفحة QR عند المسح — أعلى الصفحة" },
-            { key: "order_view_brand_ar", label: "اسم المقهى عربي", location: "🔗 صفحة QR — العنوان الرئيسي" },
-            { key: "order_view_ready_msg", label: "رسالة الجاهزية", location: "🔗 صفحة QR — عند جاهزية الطلب" },
-            { key: "order_view_completed_msg", label: "رسالة بعد الاستلام", location: "🔗 صفحة QR — بعد تم الاستلام" },
-            { key: "google_maps_review_url", label: "رابط تقييم جوجل ماب", location: "📱 صفحة التتبع — رابط الزر عند اكتمال الطلب" },
+            { key: "brand_tagline" },
+            { key: "home_slogan" },
+            { key: "home_welcome_title" },
+            { key: "home_welcome_sub" },
+            { key: "category_row_hint" },
+            { key: "category_hot_label" },
+            { key: "category_cold_label" },
+            { key: "category_dessert_label" },
+            { key: "tracking_title" },
+            { key: "tracking_scan_hint" },
+            { key: "tracking_sub_pending" },
+            { key: "tracking_status_waiting" },
+            { key: "tracking_status_preparing" },
+            { key: "tracking_status_ready" },
+            { key: "tracking_sub_ready" },
+            { key: "tracking_status_completed" },
+            { key: "tracking_sub_completed" },
+            { key: "order_view_brand_en" },
+            { key: "order_view_brand_ar" },
+            { key: "order_view_ready_msg" },
+            { key: "order_view_completed_msg" },
+            { key: "google_maps_review_url" },
         ];
 
-        // 🌟 المصفوفة الجديدة المضافة: لإدراج مفاتيح عبارات السلة الستة بشكل ديناميكي هندسي
         const CART_PHRASE_FIELDS = [
-            { key: "phrase_1", label: "العبارة الأولى (1)", placeholder: "مثال: أحسنت الاختيار ✨" },
-            { key: "phrase_2", label: "العبارة الثانية (2)", placeholder: "مثال: اختيار موفق جداً 👌" },
-            { key: "phrase_3", label: "العبارة الثالثة (3)", placeholder: "مثال: هذا اختيار الأذكياء 🧠" },
-            { key: "phrase_4", label: "العبارة الرابعة (4)", placeholder: "مثال: هذا اختيار الأمراء 👑" },
-            { key: "phrase_5", label: "العبارة الخامسة (5)", placeholder: "مثال: اختيار الشيوخ الفاخر 🦅" },
-            { key: "phrase_6", label: "العبارة السادسة (6)", placeholder: "مثال: إضافة رائعة لطلبك 🌟" }
+            { key: "cart_feedback_1" },
+            { key: "cart_feedback_2" },
+            { key: "cart_feedback_3" },
+            { key: "cart_feedback_4" },
+            { key: "cart_feedback_5" },
+            { key: "cart_feedback_6" }
         ];
+
+        const FIELD_TRANSLATIONS = {
+            "brand_tagline": {
+                ar: { label: "اسم العلامة (إنجليزي)", location: "🏠 الرئيسية — السطر فوق الشعار" },
+                en: { label: "Brand Tagline (English)", location: "🏠 Home — Line above logo" },
+                "en-AU": { label: "Brand Tagline (English)", location: "🏠 Home — Line above logo" },
+                de: { label: "Brand-Slogan (Englisch)", location: "🏠 Home — Zeile über dem Logo" },
+                fr: { label: "Slogan de la marque (Anglais)", location: "🏠 Accueil — Ligne au-dessus du logo" }
+            },
+            "home_slogan": {
+                ar: { label: "شعار المقهى (Slogan)", location: "🏠 الرئيسية — تحت شعار الصورة" },
+                en: { label: "Cafe Slogan", location: "🏠 Home — Under cover image" },
+                "en-AU": { label: "Cafe Slogan", location: "🏠 Home — Under cover image" },
+                de: { label: "Café-Slogan", location: "🏠 Home — Unter dem Titelbild" },
+                fr: { label: "Slogan du Café", location: "🏠 Accueil — Sous l'image de couverture" }
+            },
+            "home_welcome_title": {
+                ar: { label: "عنوان الترحيب", location: "🏠 الرئيسية — العنوان الذهبي الكبير" },
+                en: { label: "Welcome Title", location: "🏠 Home — Large golden title" },
+                "en-AU": { label: "Welcome Title", location: "🏠 Home — Large golden title" },
+                de: { label: "Begrüßungstitel", location: "🏠 Home — Großer goldener Titel" },
+                fr: { label: "Titre de bienvenue", location: "🏠 Accueil — Grand titre doré" }
+            },
+            "home_welcome_sub": {
+                ar: { label: "نص تحت الترحيب", location: "🏠 الرئيسية — تحت العنوان مباشرة" },
+                en: { label: "Subtitle under welcome", location: "🏠 Home — Directly under title" },
+                "en-AU": { label: "Subtitle under welcome", location: "🏠 Home — Directly under title" },
+                de: { label: "Untertitel unter Willkommen", location: "🏠 Home — Direkt unter dem Titel" },
+                fr: { label: "Sous-titre sous bienvenue", location: "🏠 Accueil — Directement sous le titre" }
+            },
+            "category_row_hint": {
+                ar: { label: "كلمة «تصفح» على الصفوف", location: "🏠 الرئيسية — أعلى كل صف تصنيف" },
+                en: { label: "«Browse» label on rows", location: "🏠 Home — Above each category row" },
+                "en-AU": { label: "«Browse» label on rows", location: "🏠 Home — Above each category row" },
+                de: { label: "«Durchsuchen»-Label auf Zeilen", location: "🏠 Home — Über jeder Kategoriezeile" },
+                fr: { label: "Libellé «Parcourir» sur les lignes", location: "🏠 Accueil — Au-dessus de chaque ligne de catégorie" }
+            },
+            "category_hot_label": {
+                ar: { label: "عنوان صف الساخن", location: "🏠 الرئيسية — داخل صورة المشروبات الساخنة" },
+                en: { label: "Hot Drinks label", location: "🏠 Home — Inside hot drinks cover" },
+                "en-AU": { label: "Hot Drinks label", location: "🏠 Home — Inside hot drinks cover" },
+                de: { label: "Label für heiße Getränke", location: "🏠 Home — Im Cover für Heißgetränke" },
+                fr: { label: "Libellé des boissons chaudes", location: "🏠 Accueil — Dans la couverture des boissons chaudes" }
+            },
+            "category_cold_label": {
+                ar: { label: "عنوان صف البارد", location: "🏠 الرئيسية — داخل صورة المشروبات الباردة" },
+                en: { label: "Cold Drinks label", location: "🏠 Home — Inside cold drinks cover" },
+                "en-AU": { label: "Cold Drinks label", location: "🏠 Home — Inside cold drinks cover" },
+                de: { label: "Label für kalte Getränke", location: "🏠 Home — Im Cover für Kaltgetränke" },
+                fr: { label: "Libellé des boissons froides", location: "🏠 Accueil — Dans la couverture des boissons froides" }
+            },
+            "category_dessert_label": {
+                ar: { label: "عنوان صف الحلى", location: "🏠 الرئيسية — داخل صورة الحلى" },
+                en: { label: "Desserts label", location: "🏠 Home — Inside desserts cover" },
+                "en-AU": { label: "Desserts label", location: "🏠 Home — Inside desserts cover" },
+                de: { label: "Label für Desserts", location: "🏠 Home — Im Cover für Desserts" },
+                fr: { label: "Libellé des desserts", location: "🏠 Accueil — Dans la couverture des desserts" }
+            },
+            "tracking_title": {
+                ar: { label: "عنوان صفحة التتبع", location: "📱 بعد تأكيد الطلب — أعلى رمز QR مباشرة" },
+                en: { label: "Tracking page title", location: "📱 After order confirmation — Directly above QR code" },
+                "en-AU": { label: "Tracking page title", location: "📱 After order confirmation — Directly above QR code" },
+                de: { label: "Titel der Verfolgungsseite", location: "📱 Nach Bestellbestätigung — Direkt über dem QR-Code" },
+                fr: { label: "Titre de la page de suivi", location: "📱 Après confirmation de commande — Directement au-dessus du code QR" }
+            },
+            "tracking_scan_hint": {
+                ar: { label: "تلميح مسح QR", location: "📱 صفحة التتبع — السطر الصغير تحت رمز QR" },
+                en: { label: "QR scan hint", location: "📱 Tracking page — Small line under QR code" },
+                "en-AU": { label: "QR scan hint", location: "📱 Tracking page — Small line under QR code" },
+                de: { label: "QR-Scan-Hinweis", location: "📱 Verfolgungsseite — Kleine Zeile unter dem QR-Code" },
+                fr: { label: "Indication de scan QR", location: "📱 Page de suivi — Petite ligne sous le code QR" }
+            },
+            "tracking_sub_pending": {
+                ar: { label: "نص تحت QR (قبل الجاهزية)", location: "📱 صفحة التتبع — تحت QR أثناء الانتظار/التجهيز" },
+                en: { label: "Text under QR (Before ready)", location: "📱 Tracking page — Under QR during pending/preparing" },
+                "en-AU": { label: "Text under QR (Before ready)", location: "📱 Tracking page — Under QR during pending/preparing" },
+                de: { label: "Text unter QR (Vor Fertigstellung)", location: "📱 Verfolgungsseite — Unter QR während Wartezeit/Zubereitung" },
+                fr: { label: "Texte sous QR (Avant préparation)", location: "📱 Page de suivi — Sous QR pendant l'attente/préparation" }
+            },
+            "tracking_status_waiting": {
+                ar: { label: "حالة: بانتظار العامل", location: "📱 صفحة التتبع — سطر «حالة الطلب»" },
+                en: { label: "Status: Waiting for staff", location: "📱 Tracking page — «Order Status» line" },
+                "en-AU": { label: "Status: Waiting for staff", location: "📱 Tracking page — «Order Status» line" },
+                de: { label: "Status: Warten auf Personal", location: "📱 Verfolgungsseite — Zeile «Bestellstatus»" },
+                fr: { label: "Statut : En attente du personnel", location: "📱 Page de suivi — Ligne «Statut de la commande»" }
+            },
+            "tracking_status_preparing": {
+                ar: { label: "حالة: قيد التجهيز", location: "📱 صفحة التتبع — عندما يبدأ العامل" },
+                en: { label: "Status: Preparing", location: "📱 Tracking page — When staff starts prep" },
+                "en-AU": { label: "Status: Preparing", location: "📱 Tracking page — When staff starts prep" },
+                de: { label: "Status: Zubereitung", location: "📱 Verfolgungsseite — Wenn Personal mit der Zubereitung beginnt" },
+                fr: { label: "Statut : En préparation", location: "📱 Page de suivi — Quand le personnel commence la préparation" }
+            },
+            "tracking_status_ready": {
+                ar: { label: "حالة: جاهز للاستلام", location: "📱 صفحة التتبع — عند تم التجهيز (QR أخضر)" },
+                en: { label: "Status: Ready for pickup", location: "📱 Tracking page — When prep completed (Green QR)" },
+                "en-AU": { label: "Status: Ready for pickup", location: "📱 Tracking page — When prep completed (Green QR)" },
+                de: { label: "Status: Bereit zur Abholung", location: "📱 Verfolgungsseite — Wenn Zubereitung abgeschlossen (Grüner QR)" },
+                fr: { label: "Statut : Prêt pour le retrait", location: "📱 Page de suivi — Quand la préparation est terminée (QR vert)" }
+            },
+            "tracking_sub_ready": {
+                ar: { label: "نص تحت QR (جاهز)", location: "📱 صفحة التتبع — تحت QR عندما يصبح أخضر" },
+                en: { label: "Text under QR (Ready)", location: "📱 Tracking page — Under QR when it turns green" },
+                "en-AU": { label: "Text under QR (Ready)", location: "📱 Tracking page — Under QR when it turns green" },
+                de: { label: "Text unter QR (Bereit)", location: "📱 Verfolgungsseite — Unter QR wenn er grün wird" },
+                fr: { label: "Texte sous QR (Prêt)", location: "📱 Page de suivi — Sous QR quand il devient vert" }
+            },
+            "tracking_status_completed": {
+                ar: { label: "حالة: تم الاستلام", location: "📱 صفحة التتبع — بعد تم الاستلام" },
+                en: { label: "Status: Received", location: "📱 Tracking page — After order received" },
+                "en-AU": { label: "Status: Received", location: "📱 Tracking page — After order received" },
+                de: { label: "Status: Erhalten", location: "📱 Verfolgungsseite — Nach Erhalt der Bestellung" },
+                fr: { label: "Statut : Reçu", location: "📱 Page de suivi — Après réception de la commande" }
+            },
+            "tracking_sub_completed": {
+                ar: { label: "نص تحت QR (بعد الاستلام)", location: "📱 صفحة التتبع — تحت QR النهائي بعد الاستلام" },
+                en: { label: "Text under QR (After received)", location: "📱 Tracking page — Under final QR after receipt" },
+                "en-AU": { label: "Text under QR (After received)", location: "📱 Tracking page — Under final QR after receipt" },
+                de: { label: "Text unter QR (Nach Erhalt)", location: "📱 Verfolgungsseite — Unter dem letzten QR nach Erhalt" },
+                fr: { label: "Texte sous QR (Après réception)", location: "📱 Page de suivi — Sous le QR final après réception" }
+            },
+            "order_view_brand_en": {
+                ar: { label: "العلامة إنجليزي", location: "🔗 صفحة QR عند المسح — أعلى الصفحة" },
+                en: { label: "Brand Name (English)", location: "🔗 QR view page — Top of page" },
+                "en-AU": { label: "Brand Name (English)", location: "🔗 QR view page — Top of page" },
+                de: { label: "Markenname (Englisch)", location: "🔗 QR-Ansichtsseite — Oben auf der Seite" },
+                fr: { label: "Nom de marque (Anglais)", location: "🔗 Page de vue QR — Haut de la page" }
+            },
+            "order_view_brand_ar": {
+                ar: { label: "اسم المقهى عربي", location: "🔗 صفحة QR — العنوان الرئيسي" },
+                en: { label: "Brand Name (Arabic)", location: "🔗 QR view page — Main title" },
+                "en-AU": { label: "Brand Name (Arabic)", location: "🔗 QR view page — Main title" },
+                de: { label: "Markenname (Arabisch)", location: "🔗 QR-Ansichtsseite — Haupttitel" },
+                fr: { label: "Nom de marque (Arabe)", location: "🔗 Page de vue QR — Titre principal" }
+            },
+            "order_view_ready_msg": {
+                ar: { label: "رسالة الجاهزية", location: "🔗 صفحة QR — عند جاهزية الطلب" },
+                en: { label: "Ready Message", location: "🔗 QR view page — When order is ready" },
+                "en-AU": { label: "Ready Message", location: "🔗 QR view page — When order is ready" },
+                de: { label: "Bereit-Meldung", location: "🔗 QR-Ansichtsseite — Wenn Bestellung bereit ist" },
+                fr: { label: "Message de préparation terminée", location: "🔗 Page de vue QR — Quand la commande est prête" }
+            },
+            "order_view_completed_msg": {
+                ar: { label: "رسالة بعد الاستلام", location: "🔗 صفحة QR — بعد تم الاستلام" },
+                en: { label: "Received Message", location: "🔗 QR view page — After order received" },
+                "en-AU": { label: "Received Message", location: "🔗 QR view page — After order received" },
+                de: { label: "Erhalten-Meldung", location: "🔗 QR-Ansichtsseite — Nach Erhalt der Bestellung" },
+                fr: { label: "Message de réception", location: "🔗 Page de vue QR — Après réception" }
+            },
+            "google_maps_review_url": {
+                ar: { label: "رابط تقييم جوجل ماب", location: "📱 صفحة التتبع — رابط الزر عند اكتمال الطلب" },
+                en: { label: "Google Maps Review URL", location: "📱 Tracking page — Button link on completion" },
+                "en-AU": { label: "Google Maps Review URL", location: "📱 Tracking page — Button link on completion" },
+                de: { label: "Google Maps Review URL", location: "📱 Verfolgungsseite — Link der Schaltfläche bei Fertigstellung" },
+                fr: { label: "Google Maps Review URL", location: "📱 Page de suivi — Lien de bouton à la complétion" }
+            },
+            "cart_feedback_1": {
+                ar: { label: "العبارة الأولى (1)", placeholder: "مثال: أحسنت الاختيار ✨" },
+                en: { label: "First Phrase (1)", placeholder: "e.g. Excellent choice! ✨" },
+                "en-AU": { label: "First Phrase (1)", placeholder: "e.g. Excellent choice! ✨" },
+                de: { label: "Erste Phrase (1)", placeholder: "z.B. Ausgezeichnete Wahl! ✨" },
+                fr: { label: "Première phrase (1)", placeholder: "ex: Excellent choix ! ✨" }
+            },
+            "cart_feedback_2": {
+                ar: { label: "العبارة الثانية (2)", placeholder: "مثال: اختيار موفق جداً 👌" },
+                en: { label: "Second Phrase (2)", placeholder: "e.g. Great selection! 👌" },
+                "en-AU": { label: "Second Phrase (2)", placeholder: "e.g. Great selection! 👌" },
+                de: { label: "Zweite Phrase (2)", placeholder: "z.B. Tolle Auswahl! 👌" },
+                fr: { label: "Deuxième phrase (2)", placeholder: "ex: Choix très réussi ! 👌" }
+            },
+            "cart_feedback_3": {
+                ar: { label: "العبارة الثالثة (3)", placeholder: "مثال: هذا اختيار الأذكياء 🧠" },
+                en: { label: "Third Phrase (3)", placeholder: "e.g. Wise decision! 🧠" },
+                "en-AU": { label: "Third Phrase (3)", placeholder: "e.g. Wise decision! 🧠" },
+                de: { label: "Dritte Phrase (3)", placeholder: "z.B. Kluge Entscheidung! 🧠" },
+                fr: { label: "Troisième phrase (3)", placeholder: "ex: Décision sage ! 🧠" }
+            },
+            "cart_feedback_4": {
+                ar: { label: "العبارة الرابعة (4)", placeholder: "مثال: هذا اختيار الأمراء 👑" },
+                en: { label: "Fourth Phrase (4)", placeholder: "e.g. Splendid pick! 👑" },
+                "en-AU": { label: "Fourth Phrase (4)", placeholder: "e.g. Splendid pick! 👑" },
+                de: { label: "Vierte Phrase (4)", placeholder: "z.B. Herrliche Wahl! 👑" },
+                fr: { label: "Quatrième phrase (4)", placeholder: "ex: Choix splendide ! 👑" }
+            },
+            "cart_feedback_5": {
+                ar: { label: "العبارة الخامسة (5)", placeholder: "مثال: اختيار الشيوخ الفاخر 🦅" },
+                en: { label: "Fifth Phrase (5)", placeholder: "e.g. Royal taste! 👑" },
+                "en-AU": { label: "Fifth Phrase (5)", placeholder: "e.g. Royal taste! 👑" },
+                de: { label: "Fünfte Phrase (5)", placeholder: "z.B. Königlicher Geschmack! 👑" },
+                fr: { label: "Cinquième phrase (5)", placeholder: "ex: Goût royal ! 👑" }
+            },
+            "cart_feedback_6": {
+                ar: { label: "العبارة السادسة (6)", placeholder: "مثال: إضافة رائعة لطلبك 🌟" },
+                en: { label: "Sixth Phrase (6)", placeholder: "e.g. Superb choice! 🌟" },
+                "en-AU": { label: "Sixth Phrase (6)", placeholder: "e.g. Superb choice! 🌟" },
+                de: { label: "Sechste Phrase (6)", placeholder: "z.B. Hervorragende Wahl! 🌟" },
+                fr: { label: "Sixième phrase (6)", placeholder: "ex: Superbe ajout ! 🌟" }
+            }
+        };
 
         let settings = mergeSettings(null);
 
-        // بناء وعرض نموذج العبارات الأساسية والجديدة بالسلة
+        function getFieldInfo(fieldKey) {
+            let lang = localStorage.getItem("coof2_userLang") || "ar";
+            if (!FIELD_TRANSLATIONS[fieldKey]) {
+                return { label: fieldKey, location: "", placeholder: "" };
+            }
+            const item = FIELD_TRANSLATIONS[fieldKey];
+            return item[lang] || item["ar"] || { label: fieldKey, location: "", placeholder: "" };
+        }
+
         function renderForm() {
             // أولاً: بناء عبارات النظام العادية
             const form = document.getElementById("phrases-form");
             form.innerHTML = PHRASE_FIELDS.map(
-                (f) => `
-                <div class="p-4 rounded-xl border border-amber-800/30 bg-zinc-950 hover:border-amber-600/50 transition cursor-pointer group" onclick="openStyleModal()">
-                    <div class="flex flex-wrap justify-between gap-2 mb-2">
-                        <span class="font-bold text-amber-300 text-sm">${f.label}</span>
-                        <span class="text-[11px] text-zinc-500 bg-zinc-900 px-2 py-1 rounded">${f.location}</span>
-                    </div>
-                    <div class="flex gap-2" onclick="event.stopPropagation()">
-                        <input type="text" data-phrase-key="${f.key}" value="${(settings.phrases[f.key] || "").replace(/"/g, "&quot;")}"
-                            class="flex-1 p-3 rounded-lg bg-black border border-amber-800/40 text-white text-sm focus:border-amber-500 outline-none" />
-                        <button type="button" onclick="openStyleModal()" class="shrink-0 w-11 h-11 flex items-center justify-center rounded-lg bg-zinc-900 border border-amber-700/30 text-amber-400 hover:bg-amber-500 hover:text-black transition" title="تعديل المظهر">
-                            🎨
-                        </button>
-                    </div>
-                </div>`
+                (f) => {
+                    const info = getFieldInfo(f.key);
+                    return `
+                    <div class="p-4 rounded-xl border border-amber-800/30 bg-zinc-950 hover:border-amber-600/50 transition cursor-pointer group" onclick="openStyleModal()">
+                        <div class="flex flex-wrap justify-between gap-2 mb-2">
+                            <span class="font-bold text-amber-300 text-sm">${info.label}</span>
+                            <span class="text-[11px] text-zinc-500 bg-zinc-900 px-2 py-1 rounded">${info.location}</span>
+                        </div>
+                        <div class="flex gap-2" onclick="event.stopPropagation()">
+                            <input type="text" data-phrase-key="${f.key}" value="${(settings.phrases[f.key] || "").replace(/"/g, "&quot;")}"
+                                class="flex-1 p-3 rounded-lg bg-black border border-amber-800/40 text-white text-sm focus:border-amber-500 outline-none" />
+                            <button type="button" onclick="openStyleModal()" class="shrink-0 w-11 h-11 flex items-center justify-center rounded-lg bg-zinc-900 border border-amber-700/30 text-amber-400 hover:bg-amber-500 hover:text-black transition" title="${phrase(null, 'edit_btn_text', 'تعديل')}">
+                                🎨
+                            </button>
+                        </div>
+                    </div>`;
+                }
             ).join("");
 
             // ثانياً: بناء حقول عبارات السلة الستة الجديدة داخل قسمها المخصص
             const cartForm = document.getElementById("cart-phrases-form");
             if (cartForm) {
                 cartForm.innerHTML = CART_PHRASE_FIELDS.map(
-                    (cf) => `
-                    <div>
-                        <label class="block text-xs text-zinc-400 mb-1 font-medium">${cf.label}</label>
-                        <input type="text" data-phrase-key="${cf.key}" placeholder="${cf.placeholder}" 
-                            value="${(settings.phrases[cf.key] || "").replace(/"/g, "&quot;")}"
-                            class="w-full p-3 rounded-xl bg-black border border-zinc-800 text-amber-100 text-sm outline-none focus:border-amber-500 transition" />
-                    </div>`
+                    (cf) => {
+                        const info = getFieldInfo(cf.key);
+                        return `
+                        <div>
+                            <label class="block text-xs text-zinc-400 mb-1 font-medium">${info.label}</label>
+                            <input type="text" data-phrase-key="${cf.key}" placeholder="${info.placeholder}" 
+                                value="${(settings.phrases[cf.key] || "").replace(/"/g, "&quot;")}"
+                                class="w-full p-3 rounded-xl bg-black border border-zinc-800 text-amber-100 text-sm outline-none focus:border-amber-500 transition" />
+                        </div>`;
+                    }
                 ).join("");
             }
         }
@@ -159,7 +374,6 @@
         async function init() {
             settings = await loadAppSettings(true);
             settings.ui = settings.ui || window.DEFAULT_APP_SETTINGS?.ui || {};
-            // تأكيد تصفير أو وجود الكائن لتجنب الأخطاء
             settings.phrases = settings.phrases || {};
             renderForm();
             populateUiControls();
@@ -184,7 +398,7 @@
         async function saveAll(source) {
             const isModal = source === 'modal';
             
-            // مزامنة العبارات من كافة حقول الإدخال في الصفحة (تشمل العبارات الأساسية وعبارات السلة الستة تلقائياً بفضل الـ attribute الموحد)
+            // مزامنة العبارات من كافة حقول الإدخال في الصفحة
             document.querySelectorAll("[data-phrase-key]").forEach((input) => {
                 settings.phrases[input.dataset.phraseKey] = input.value;
             });
@@ -208,17 +422,17 @@
             
             if (btn) {
                 btn.disabled = true;
-                btn.textContent = "جاري الحفظ...";
+                btn.textContent = phrase(null, 'saving_changes_loader', 'جاري حفظ التعديلات...');
             }
             showLoader();
             
             try {
                 await saveAppSettings(settings);
-                alert("تم حفظ المظهر وجميع العبارات (بما فيها عبارات السلة) بنجاح! ✓");
+                alert(phrase(null, 'save_success_toast', 'تم الحفظ وتحديث المظهر بنجاح! ✓'));
                 if (isModal) closeStyleModal();
             } catch (e) {
                 console.error("خطأ في الحفظ:", e);
-                alert("فشل الحفظ: " + e.message);
+                alert(phrase(null, 'save_failed_msg', 'فشل الحفظ: ') + e.message);
             } finally {
                 hideLoader();
                 btn.disabled = false;
@@ -246,6 +460,17 @@
             if (brEl) brEl.value = ui.border_width || 1;
             if (gcEl) gcEl.value = ui.gold_color || '#D4AF37';
         }
+
+        // الاستماع لتغيير اللغة لإعادة بناء الحقول بلغتها المترجمة
+        window.addEventListener('languageChanged', function() {
+            renderForm();
+        });
+
+        window.addEventListener("DOMContentLoaded", () => {
+            if (typeof renderLanguageDropdown === "function") {
+                renderLanguageDropdown('lang-picker-container');
+            }
+        });
 
         window.addEventListener("supabaseReady", init);
         if (window.getSupabaseClient?.()) init();

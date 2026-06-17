@@ -11,6 +11,7 @@
     <script src="../config-scripts/app_env.js"></script>
     <script src="../config-scripts/dependencies.js"></script>
     <script src="../config-scripts/js_app_settings.js"></script>
+    <script src="../config-scripts/language.js"></script>
     <style>
         #qrBox {
             width: 14rem;
@@ -70,8 +71,9 @@
         }
     </style>
 </head>
-<body class="bg-black text-white min-h-screen flex items-center justify-center p-4 pb-8">
-    <div class="w-full max-w-md bg-zinc-900 border border-yellow-600/40 rounded-3xl p-6 shadow-2xl fade-in-up">
+<body class="bg-black text-white min-h-screen flex items-center justify-center p-4 pb-8 relative">
+    <div id="lang-picker-container" class="absolute top-4 right-4 z-50"></div>
+    <div class="w-full max-w-md bg-zinc-900 border border-yellow-600/40 rounded-3xl p-6 shadow-2xl fade-in-up mt-12">
         <!-- QR فعلي يُولَّد محلياً ويُمسح بالكاميرا -->
         <div id="qrBox" class="mx-auto rounded-2xl p-2 flex items-center justify-center">
             <div id="qrHost" aria-label="رمز QR للطلب">
@@ -79,34 +81,34 @@
             </div>
         </div>
         <p id="qrCodeLabel" class="text-center text-3xl font-black mt-3 tracking-widest shiny-gold-code"></p>
-        <p id="tracking-scan-hint" class="hidden text-center text-xs text-amber-600/80 mt-1">امسح الرمز لفتح صفحة الطلب</p>
+        <p id="tracking-scan-hint" data-key="scan_hint" class="hidden text-center text-xs text-amber-600/80 mt-1">امسح الرمز لفتح صفحة الطلب</p>
 
         <div class="mt-6 space-y-1">
-            <h1 id="tracking-title" class="text-2xl font-bold text-yellow-400 text-center">شكراً لطلبك</h1>
-            <p id="subText" class="text-zinc-300 mb-5 text-sm text-center">انتظر تحويل اللون إلى الأخضر عند اكتمال التجهيز</p>
+            <h1 id="tracking-title" data-key="thank_you" class="text-2xl font-bold text-yellow-400 text-center">شكراً لطلبك</h1>
+            <p id="subText" data-key="tracking_sub_pending" class="text-zinc-300 mb-5 text-sm text-center">انتظر تحويل اللون إلى الأخضر عند اكتمال التجهيز</p>
         </div>
 
         <div id="qrNetworkBanner" class="hidden mt-4 p-3 rounded-xl border border-amber-600/50 bg-amber-950/40 text-right text-sm">
-            <p class="text-amber-200 font-bold mb-2">⚠️ الرابط الحالي لا يعمل من الجوال</p>
-            <p class="text-zinc-400 text-xs mb-2">أدخل عنوان جهازك على شبكة الواي فاي (من cmd اكتب: ipconfig)</p>
+            <p class="text-amber-200 font-bold mb-2" data-key="qr_network_title">⚠️ الرابط الحالي لا يعمل من الجوال</p>
+            <p class="text-zinc-400 text-xs mb-2" data-key="qr_network_desc">أدخل عنوان جهازك على شبكة الواي فاي (من cmd اكتب: ipconfig)</p>
             <input id="publicBaseInput" type="text" dir="ltr"
                 placeholder="http://192.168.1.10:5500/front-end/"
                 class="w-full p-2 rounded-lg bg-black border border-amber-700/50 text-amber-100 text-xs mb-2" />
             <button type="button" id="savePublicBaseBtn"
-                class="w-full py-2 rounded-lg bg-amber-600 text-black font-bold text-sm hover:bg-amber-500">
+                class="w-full py-2 rounded-lg bg-amber-600 text-black font-bold text-sm hover:bg-amber-500" data-key="qr_save_btn">
                 حفظ وتحديث QR
             </button>
         </div>
         <p id="qrLinkPreview" class="hidden mt-2 text-[10px] text-zinc-500 break-all text-center px-2" dir="ltr"></p>
 
         <div class="mt-4 text-center">
-            <p class="text-zinc-400 text-sm">حالة الطلب</p>
-            <p id="statusText" class="text-xl font-bold text-yellow-400 mt-1">قيد التحضير</p>
+            <p data-key="status_label" class="text-zinc-400 text-sm">حالة الطلب</p>
+            <p id="statusText" data-key="status_pending" class="text-xl font-bold text-yellow-400 mt-1">قيد التحضير</p>
         </div>
 
         <!-- قسم التقييم يظهر فقط عند اكتمال الطلب -->
         <div id="ratingSection" class="hidden mt-6 p-4 rounded-2xl bg-zinc-800 border border-emerald-500/30 text-center">
-            <p class="text-emerald-400 font-bold mb-3">كيف كانت تجربتك؟</p>
+            <p data-key="experience_rating" class="text-emerald-400 font-bold mb-3">كيف كانت تجربتك؟</p>
             <a href="#" target="_blank" class="block group no-underline">
                 <div class="animate-star-pulse flex justify-center gap-1 mb-1 text-3xl transition-transform group-active:scale-95">
                     <span class="text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.4)]">⭐</span>
@@ -115,9 +117,9 @@
                     <span class="text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.4)]">⭐</span>
                     <span class="text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.4)]">⭐</span>
                 </div>
-                <p class="text-zinc-300 font-bold group-hover:text-yellow-400 transition-colors">ننتظر تقييمك</p>
+                <p data-key="rating_hint" class="text-zinc-300 font-bold group-hover:text-yellow-400 transition-colors">ننتظر تقييمك</p>
             </a>
-            <p id="ratingThanks" class="hidden text-xs text-zinc-400">شكراً لتقييمك! ❤️</p>
+            <p id="ratingThanks" data-key="rating_thanks" class="hidden text-xs text-zinc-400">شكراً لتقييمك! ❤️</p>
         </div>
 
         <p id="orderMeta" class="mt-3 text-center text-yellow-500/90 text-sm font-semibold"></p>
@@ -125,18 +127,18 @@
         <!-- تفاصيل الطلب -->
         <div class="mt-6 rounded-2xl border border-yellow-600/25 bg-zinc-950/80 overflow-hidden">
             <div class="px-4 py-3 border-b border-yellow-600/20 bg-zinc-900/90">
-                <h2 class="text-lg font-bold text-yellow-400">تفاصيل الطلب</h2>
+                <h2 data-key="order_details" class="text-lg font-bold text-yellow-400">تفاصيل الطلب</h2>
             </div>
             <ul id="orderItemsList" class="divide-y divide-zinc-800 px-4 py-2 max-h-52 overflow-y-auto text-sm">
-                <li class="py-4 text-zinc-500 text-center">جاري تحميل التفاصيل...</li>
+                <li data-key="loading_details" class="py-4 text-zinc-500 text-center">جاري تحميل التفاصيل...</li>
             </ul>
             <div class="px-4 py-3 border-t border-yellow-600/20 flex justify-between items-center">
-                <span class="text-zinc-400">المجموع الكلي</span>
+                <span data-key="total_sum" class="text-zinc-400">المجموع الكلي</span>
                 <span id="orderTotal" class="text-xl font-bold text-yellow-400">—</span>
             </div>
         </div>
 
-        <a href="menu.html" class="block text-center mt-6 text-yellow-500 hover:text-yellow-300 underline text-sm">العودة للقائمة</a>
+        <a href="menu.html" data-key="back_to_menu" class="block text-center mt-6 text-yellow-500 hover:text-yellow-300 underline text-sm">العودة للقائمة</a>
     </div>
 
     <script>
@@ -266,7 +268,6 @@
                 parts[i] = parts[i].trim();
             }
             
-            // استخراج الملاحظة باستخدام حلقة فور التقليدية
             var notesPart = "";
             for (var i = 0; i < parts.length; i++) {
                 var p = parts[i];
@@ -291,29 +292,47 @@
                     }
                 }
                 var name = namePart ? namePart.replace("الاسم:", "").trim() : "توصيل";
-                return "توصيل باسم " + name + (notes ? " (" + notes + ")" : "");
+                const deliveryWithName = (phrase(null, "delivery_with_name") || "توصيل باسم {name}").replace("{name}", name);
+                return deliveryWithName + (notes ? " (" + notes + ")" : "");
             } else {
                 var cleanTable = strText;
                 if (cleanTable.indexOf("محلي:") === 0) {
                     cleanTable = cleanTable.replace("محلي:", "").trim();
                 }
                 var firstPart = cleanTable.split('|')[0] ? cleanTable.split('|')[0].trim() : "—";
-                return "طاولة " + firstPart + (notes ? " (" + notes + ")" : "");
+                const tableNoWithNum = (phrase(null, "table_no_with_num") || "طاولة {num}").replace("{num}", firstPart);
+                return tableNoWithNum + (notes ? " (" + notes + ")" : "");
             }
         }
 
         function renderOrderDetails(order) {
             var items = parseItems(order.items);
+            
+            let currentLang = 'ar';
+            try {
+                currentLang = localStorage.getItem('coof2_userLang') || 'ar';
+            } catch (_) {}
+            
+            const isRtl = currentLang === 'ar';
+            const alignment = isRtl ? 'text-right' : 'text-left';
+            const paddingClass = isRtl ? 'pr-1' : 'pl-1';
+
             if (items.length === 0) {
+                const noItemsMsg = phrase(null, "no_items") || "لا توجد أصناف مسجّلة";
                 orderItemsList.innerHTML =
-                    '<li class="py-4 text-zinc-500 text-center">لا توجد أصناف مسجّلة</li>';
+                    '<li class="py-4 text-zinc-500 text-center">' + noItemsMsg + '</li>';
             } else {
                 orderItemsList.innerHTML = items
                     .map(function(item) {
                         var qty = parseInt(item.quantity) || 1;
                         var price = parseFloat(item.price) || 0;
                         var lineTotal = price * qty;
-                        return '\n                        <li class="order-item-row py-3 flex justify-between gap-3 border-b border-zinc-800">\n                             <div class="text-right flex-1">\n                                  <p class="font-bold text-zinc-100">' + escapeHtml(item.name || "صنف") + '</p>\n                                  <p class="text-zinc-500 text-xs mt-0.5">' + price + ' ر.س × ' + qty + '</p>\n                             </div>\n                             <span class="text-yellow-400 font-bold whitespace-nowrap">' + lineTotal + ' ر.س</span>\n                        </li>';
+                        
+                        const displayName = phrase(null, item.name) || item.name || "صنف";
+                        const priceFormatted = typeof formatPrice === 'function' ? formatPrice(price) : (price + " ر.س");
+                        const lineTotalFormatted = typeof formatPrice === 'function' ? formatPrice(lineTotal) : (lineTotal + " ر.س");
+
+                        return '\n                        <li class="order-item-row py-3 flex justify-between gap-3 border-b border-zinc-800">\n                             <div class="' + alignment + ' flex-1 ' + paddingClass + '">\n                                  <p class="font-bold text-zinc-100">' + escapeHtml(displayName) + '</p>\n                                  <p class="text-zinc-500 text-xs mt-0.5">' + priceFormatted + ' × ' + qty + '</p>\n                             </div>\n                             <span class="text-yellow-400 font-bold whitespace-nowrap">' + lineTotalFormatted + '</span>\n                        </li>';
                     })
                     .join("");
             }
@@ -327,10 +346,10 @@
                           },
                           0
                       );
-            orderTotal.textContent = total + " ر.س";
+            orderTotal.textContent = typeof formatPrice === 'function' ? formatPrice(total) : (total + " ر.س");
 
             var tableRaw = order.table_no != null ? order.table_no : "—";
-            var priceText = parseFloat(order.total_price || 0) + " ريال";
+            var priceText = typeof formatPrice === 'function' ? formatPrice(order.total_price || 0) : (parseFloat(order.total_price || 0) + " ريال");
             orderMeta.textContent = formatTableNoForUser(tableRaw) + " · " + priceText;
         }
 
@@ -347,7 +366,7 @@
             const url = buildOrderPageUrl(order);
             const fillColor = getQrFillColor(order.status);
 
-            const priceText = `${parseFloat(order.total_price || 0)} ريال`;
+            const priceText = typeof formatPrice === 'function' ? formatPrice(order.total_price || 0) : (parseFloat(order.total_price || 0) + " ريال");
             document.getElementById("qrCodeLabel").textContent = priceText;
             applyQrLabelStyle(order.status);
 
@@ -509,8 +528,8 @@
                 applyQrLabelStyle(status);
                 statusText.classList.remove("text-yellow-400");
                 statusText.classList.add("text-emerald-400");
-                statusText.textContent = "الطلب في الطريق";
-                subText.textContent = "طلبك مع سائق التوصيل الآن، استمتع بوقتك!";
+                statusText.textContent = phrase(appSettings, "tracking_status_out_for_delivery");
+                subText.textContent = phrase(appSettings, "tracking_sub_delivery");
                 playNotificationSound("delivery");
             } else if (status === "ready") {
                 applyQrLabelStyle(status);
@@ -519,7 +538,7 @@
                 
                 var isDelivery = (currentOrder && currentOrder.table_no) ? (currentOrder.table_no.indexOf("توصيل") !== -1) : false;
                 statusText.textContent = isDelivery 
-                    ? "تم التجهيز وبانتظار السائق" 
+                    ? phrase(appSettings, "tracking_status_ready_delivery")
                     : phrase(appSettings, "tracking_status_ready");
                 subText.textContent = phrase(appSettings, "tracking_sub_ready");
                 playNotificationSound("ready");
@@ -542,12 +561,12 @@
         async function loadOrder() {
             const client = window.getSupabaseClient ? window.getSupabaseClient() : null;
             if (!orderId) {
-                statusText.textContent = "لم يُعثر على رقم الطلب";
+                statusText.textContent = phrase(appSettings, "order_id_not_found");
                 statusText.classList.add("text-red-400");
                 return;
             }
             if (!client) {
-                statusText.textContent = "جاري الاتصال...";
+                statusText.textContent = phrase(appSettings, "connecting");
                 return;
             }
 
@@ -558,11 +577,11 @@
                 .single();
 
             if (error || !data) {
-                statusText.textContent = "تعذر تحميل الطلب";
+                statusText.textContent = phrase(appSettings, "order_load_failed");
                 statusText.classList.remove("text-yellow-400");
                 statusText.classList.add("text-red-400");
                 orderItemsList.innerHTML =
-                    '<li class="py-4 text-red-400 text-center">تعذر جلب التفاصيل</li>';
+                    '<li class="py-4 text-red-400 text-center">' + phrase(appSettings, "details_load_failed") + '</li>';
                 return;
             }
 
@@ -622,6 +641,12 @@
             isTrackingInit = true;
 
             appSettings = await loadAppSettings();
+
+            // تهيئة قائمة اختيار اللغة
+            if (typeof renderLanguageDropdown === 'function') {
+                renderLanguageDropdown('lang-picker-container');
+            }
+
             applyTrackingPhrases();
             applyLayoutSettings();
             const saved = window.getCoof2PublicBase ? window.getCoof2PublicBase() : "";
@@ -635,6 +660,20 @@
             loadOrder();
             subscribeToOrder();
         }
+
+        window.addEventListener('languageChanged', function(e) {
+            applyTrackingPhrases();
+            applyLayoutSettings();
+            if (currentOrder) {
+                // Immediately update the price label above the QR with the new currency symbol
+                const qrLabel = document.getElementById("qrCodeLabel");
+                if (qrLabel && typeof formatPrice === 'function') {
+                    qrLabel.textContent = formatPrice(currentOrder.total_price || 0);
+                }
+                renderOrderDetails(currentOrder);
+                updateUiForStatus(currentOrder.status);
+            }
+        });
 
         window.addEventListener("supabaseReady", init);
         if (document.readyState !== "loading") init();

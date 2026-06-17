@@ -1,5 +1,5 @@
 /**
- * نظام عامل التوصيل: يعرض الطلبات الجاهزة فقط
+ * نظام عامل التوصيل: يعرض الطلبات الجاهزة فقط والموطنة بالكامل
  */
 
 let isFetching = false;
@@ -26,6 +26,30 @@ function initAudio() {
         }
     } catch (_) {}
 }
+
+function translatePayment(paymentStr) {
+    if (!paymentStr) return phrase(null, 'unspecified', 'غير محدد');
+    const p = String(paymentStr).toLowerCase();
+    if (p.indexOf("كاش") !== -1 || p.indexOf("cash") !== -1) {
+        return phrase(null, 'cash', '💵 كاش');
+    }
+    if (p.indexOf("بطاقة") !== -1 || p.indexOf("card") !== -1) {
+        return phrase(null, 'card', '💳 بطاقة');
+    }
+    return phrase(null, paymentStr, paymentStr);
+}
+
+function translateInfoValue(val) {
+    if (!val) return phrase(null, 'unspecified', 'غير محدد');
+    const v = String(val).trim();
+    if (v === "غير معروف" || v.toLowerCase() === "unknown") {
+        return phrase(null, 'unknown', 'غير معروف');
+    }
+    if (v === "غير محدد" || v.toLowerCase() === "unspecified") {
+        return phrase(null, 'unspecified', 'غير محدد');
+    }
+    return v;
+}
 document.addEventListener("click", initAudio, { once: true });
 document.addEventListener("touchstart", initAudio, { once: true });
 
@@ -49,7 +73,6 @@ function _playTone() {
     gain.connect(audioContext.destination);
     
     osc.type = 'sine';
-    // نغمة مزدوجة سريعة وصاعدة (تنبيه إيجابي)
     osc.frequency.setValueAtTime(880, now); 
     osc.frequency.exponentialRampToValueAtTime(1320, now + 0.15); 
     
@@ -72,8 +95,7 @@ function parseItems(raw) {
 }
 
 function parseDeliveryDetails(text) {
-    if (!text || text.indexOf("توصيل") === -1) return null;
-    // الصيغة: توصيل - الاسم: زيد | الجوال: 05... | الموقع: رابط أو نص
+    if (!text || (text.indexOf("توصيل") === -1 && text.toLowerCase().indexOf("delivery") === -1)) return null;
     try {
         var rawParts = text.split('|');
         var parts = [];
@@ -88,17 +110,18 @@ function parseDeliveryDetails(text) {
 
         for (var j = 0; j < parts.length; j++) {
             var part = parts[j];
-            if (part.indexOf("الاسم:") !== -1) {
-                var splitName = part.split("الاسم:");
+            var lowerPart = part.toLowerCase();
+            if (part.indexOf("الاسم:") !== -1 || lowerPart.indexOf("name:") !== -1) {
+                var splitName = part.split(/:/);
                 if (splitName[1]) name = splitName[1].trim();
-            } else if (part.indexOf("الجوال:") !== -1) {
-                var splitPhone = part.split("الجوال:");
+            } else if (part.indexOf("الجوال:") !== -1 || lowerPart.indexOf("phone:") !== -1 || lowerPart.indexOf("mobile:") !== -1) {
+                var splitPhone = part.split(/:/);
                 if (splitPhone[1]) phone = splitPhone[1].trim();
-            } else if (part.indexOf("الدفع:") !== -1) {
-                var splitPayment = part.split("الدفع:");
+            } else if (part.indexOf("الدفع:") !== -1 || lowerPart.indexOf("payment:") !== -1) {
+                var splitPayment = part.split(/:/);
                 if (splitPayment[1]) payment = splitPayment[1].trim();
-            } else if (part.indexOf("الموقع:") !== -1) {
-                var splitLoc = part.split("الموقع:");
+            } else if (part.indexOf("الموقع:") !== -1 || lowerPart.indexOf("location:") !== -1 || lowerPart.indexOf("address:") !== -1) {
+                var splitLoc = part.split(/:/);
                 if (splitLoc[1]) location = splitLoc[1].trim();
             }
         }
@@ -117,7 +140,7 @@ async function loadDeliveryOrders() {
     if (!container) { isFetching = false; return; }
 
     if (!client) {
-        container.innerHTML = `<p class="text-amber-500 text-center py-10">جاري الاتصال بالنظام...</p>`;
+        container.innerHTML = `<p class="text-amber-500 text-center py-10">${phrase(null, 'delivery_connecting', 'جاري الاتصال بالنظام...')}</p>`;
         isFetching = false;
         return;
     }
@@ -130,7 +153,7 @@ async function loadDeliveryOrders() {
             .order("created_at", { ascending: false });
 
         if (error) {
-            container.innerHTML = `<p class="text-red-400 text-center">خطأ: ${error.message}</p>`;
+            container.innerHTML = `<p class="text-red-400 text-center">${phrase(null, 'delivery_load_error', 'خطأ: {error}').replace('{error}', error.message)}</p>`;
             isFetching = false;
             return;
         }
@@ -149,24 +172,26 @@ async function loadDeliveryOrders() {
 
         // تصفية الطلبات التي هي "توصيل" فقط
         const deliveryOnly = currentOrders.filter(function(o) {
-            return o.table_no && o.table_no.indexOf("توصيل") !== -1;
+            return o.table_no && (o.table_no.indexOf("توصيل") !== -1 || o.table_no.toLowerCase().indexOf("delivery") !== -1);
         });
 
         if (deliveryOnly.length === 0) {
             container.innerHTML = `
                 <div class="text-center py-20">
                     <span class="text-5xl block mb-4">💤</span>
-                    <p class="text-zinc-500">لا توجد طلبات توصيل جاهزة حالياً</p>
+                    <p class="text-zinc-500">${phrase(null, 'delivery_no_orders', 'لا توجد طلبات توصيل جاهزة حالياً')}</p>
                 </div>`;
             return;
         }
 
         container.innerHTML = deliveryOnly.map(function(order) {
             const info = parseDeliveryDetails(order.table_no);
+            if (!info) return "";
+            
             const items = parseItems(order.items);
             const mapLink = info.location.indexOf('http') !== -1
-                ? `<a href="${info.location}" target="_blank" class="block w-full bg-blue-600 text-center py-3 rounded-xl font-bold mb-2">📍 فتح الموقع في الخرائط</a>`
-                : `<div class="bg-zinc-800 p-3 rounded-xl mb-2 text-sm text-zinc-300">🏠 العنوان: ${info.location || 'غير محدد'}</div>`;
+                ? `<a href="${info.location}" target="_blank" class="block w-full bg-blue-600 text-center py-3 rounded-xl font-bold mb-2">${phrase(null, 'delivery_map_button', '📍 فتح الموقع في الخرائط')}</a>`
+                : `<div class="bg-zinc-800 p-3 rounded-xl mb-2 text-sm text-zinc-300">${phrase(null, 'delivery_address_label', '🏠 العنوان: {address}').replace('{address}', info.location || '—')}</div>`;
 
             const appBaseUrl = window.resolveSiteBase();
             const qrCodeUpdateUrl = `${appBaseUrl}Front-end/delivery_status_update.html?orderId=${order.id}`;
@@ -180,58 +205,62 @@ async function loadDeliveryOrders() {
             let statusLabel = '';
 
             if (order.status === 'pending' || order.status === 'preparing') {
-                statusLabel = `<span class="bg-amber-500/10 text-amber-500 text-[10px] px-2 py-1 rounded-lg border border-amber-500/20">جاري التحضير بالمطبخ</span>`;
+                statusLabel = `<span class="bg-amber-500/10 text-amber-500 text-[10px] px-2 py-1 rounded-lg border border-amber-500/20">${phrase(null, 'delivery_status_preparing', 'جاري التحضير بالمطبخ')}</span>`;
                 actionContent = `
                     <div class="text-center mt-4 bg-zinc-800/50 p-3 rounded-2xl border border-amber-500/20">
-                        <p class="text-amber-500 text-xs font-bold mb-2">انتظر اللون الأخضر:</p>
+                        <p class="text-amber-500 text-xs font-bold mb-2">${phrase(null, 'delivery_wait_green', 'انتظر اللون الأخضر:')}</p>
                         <img src="${qrCodeImageUrl}" class="mx-auto w-32 h-32 opacity-50 mb-3">
                         <button disabled class="w-full bg-zinc-800 text-zinc-600 py-3 rounded-xl font-bold cursor-not-allowed border border-zinc-700">
-                            الطلب في الطريق (بانتظار المطبخ) ⏳
+                            ${phrase(null, 'delivery_waiting_kitchen', 'الطلب في الطريق (بانتظار المطبخ) ⏳')}
                         </button>
                     </div>`;
             } else if (order.status === 'ready') {
-                statusLabel = `<span class="bg-emerald-500/10 text-emerald-500 text-[10px] px-2 py-1 rounded-lg border border-emerald-500/20">جاهز للتوصيل</span>`;
+                statusLabel = `<span class="bg-emerald-500/10 text-emerald-500 text-[10px] px-2 py-1 rounded-lg border border-emerald-500/20">${phrase(null, 'delivery_status_ready', 'جاهز للتوصيل')}</span>`;
                 actionContent = `
                     <div class="text-center mt-4 bg-white p-3 rounded-2xl shadow-lg shadow-emerald-500/20">
-                        <p class="text-black text-xs font-bold mb-2">امسح أو اضغط للبدء:</p>
+                        <p class="text-black text-xs font-bold mb-2">${phrase(null, 'delivery_scan_or_click', 'امسح أو اضغط للبدء:')}</p>
                         <img src="${qrCodeImageUrl}" class="mx-auto w-32 h-32 mb-3">
                         <button onclick="startDeliveryManually('${order.id}')" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold hover:bg-emerald-500 transition shadow-md">
-                            تأكيد الاستلام (الطلب في الطريق) 🚚
+                            ${phrase(null, 'delivery_confirm_receipt', 'تأكيد الاستلام (الطلب في الطريق) 🚚')}
                         </button>
                     </div>`;
             } else {
-                statusLabel = `<span class="bg-blue-500/10 text-blue-500 text-[10px] px-2 py-1 rounded-lg border border-blue-500/20">في الطريق</span>`;
+                statusLabel = `<span class="bg-blue-500/10 text-blue-500 text-[10px] px-2 py-1 rounded-lg border border-blue-500/20">${phrase(null, 'delivery_status_out', 'في الطريق')}</span>`;
                 actionContent = `
                     <button onclick="finishDelivery('${order.id}')" class="w-full bg-zinc-100 text-black py-4 rounded-2xl font-bold hover:bg-white transition">
-                        تم التسليم للزبون ✓
+                        ${phrase(null, 'delivery_delivered_btn', 'تم التسليم للزبون ✓')}
                     </button>`;
             }
 
-            const totalPrice = parseFloat(order.total_price || 0).toFixed(2);
+            const totalPrice = parseFloat(order.total_price || 0);
+
+            const translatedName = translateInfoValue(info.name);
+            const translatedPhone = translateInfoValue(info.phone);
+            const translatedPayment = translatePayment(info.payment);
 
             return `
             <div class="bg-zinc-900 border border-emerald-500/30 rounded-3xl p-5 shadow-xl">
                 <div class="flex justify-between items-start mb-4">
                     <div>
-                        <h3 class="text-xl font-bold text-emerald-400">${info.name}</h3>
-                        <a href="tel:${info.phone}" class="text-amber-500 font-mono text-lg font-bold">📞 ${info.phone}</a>
-                        <p class="text-lg font-black text-white mt-1">المجموع: ${totalPrice} ر.س</p>
-                        <p class="text-xs text-zinc-400 mt-1">💳 طريقة الدفع: <span class="text-amber-300 font-bold">${info.payment}</span></p>
+                        <h3 class="text-xl font-bold text-emerald-400">${escapeHtml(translatedName)}</h3>
+                        <a href="tel:${translatedPhone}" class="text-amber-500 font-mono text-lg font-bold">📞 ${escapeHtml(translatedPhone)}</a>
+                        <p class="text-lg font-black text-white mt-1">${phrase(null, 'delivery_total', 'المجموع: {price}').replace('{price}', formatPrice(totalPrice))}</p>
+                        <p class="text-xs text-zinc-400 mt-1">${phrase(null, 'delivery_payment_method', '💳 طريقة الدفع: ')}<span class="text-amber-300 font-bold">${escapeHtml(translatedPayment)}</span></p>
                     </div>
                     ${statusLabel}
                 </div>
 
                 <div class="space-y-2 mb-4">
-                    <p class="text-xs text-zinc-500">الأصناف:</p>
+                    <p class="text-xs text-zinc-500">${phrase(null, 'items_label', 'Items:')}</p>
                     <ul class="text-sm text-zinc-300">
-                        ${items.map(function(i) { return `<li>• ${i.name} × ${i.quantity}</li>`; }).join('')}
+                        ${items.map(function(i) { return `<li>• ${escapeHtml(phrase(null, i.name, i.name))} × ${i.quantity}</li>`; }).join('')}
                     </ul>
                 </div>
 
                 ${mapLink}
                 ${actionContent}
             </div>`;
-        }).join('');
+        }).filter(Boolean).join('');
 
         // تحديث سجل الحالات للمرة القادمة
         previousStatuses.clear();
@@ -246,7 +275,7 @@ async function loadDeliveryOrders() {
 async function startDeliveryManually(orderId) {
     const result = await markAsOutForDelivery(orderId);
     if (!result.ok) {
-        alert("⚠️ فشل تحديث الحالة: " + result.error);
+        alert(phrase(null, 'delivery_update_failed', 'فشل تحديث حالة الطلب.') + " " + result.error);
     } else {
         loadDeliveryOrders();
     }
@@ -267,7 +296,7 @@ async function markAsOutForDelivery(orderId) {
     }
     
     if (!data || data.length === 0) {
-        return { ok: false, error: "الطلب غير موجود أو الجلسة انتهت (يرجى تسجيل الدخول مجدداً)" };
+        return { ok: false, error: phrase(null, 'delivery_err_no_order', 'الطلب غير موجود') };
     }
 
     return { ok: true, data };
@@ -277,9 +306,9 @@ async function finishDelivery(orderId) {
     const client = window.getSupabaseClient();
     const { data, error } = await client.from("orders").update({ status: "completed" }).eq("id", orderId).select();
     if (error) {
-        alert("خطأ: " + error.message);
+        alert(phrase(null, 'delivery_load_error', 'خطأ: {error}').replace('{error}', error.message));
     } else if (!data || data.length === 0) {
-        alert("تعذر إنهاء الطلب (قد تكون الجلسة انتهت، يرجى تسجيل الدخول مجدداً)");
+        alert(phrase(null, 'delivery_err_session_expired', 'تعذر إنهاء الطلب (قد تكون الجلسة انتهت، يرجى تسجيل الدخول مجدداً)'));
     } else {
         loadDeliveryOrders();
     }
@@ -308,23 +337,38 @@ function subscribeDeliveryRealtime() {
     }
 }
 
+function applyDirection() {
+    const lang = localStorage.getItem("coof2_userLang") || "ar";
+    if (lang === "ar") {
+        document.documentElement.dir = "rtl";
+        document.documentElement.lang = "ar";
+    } else {
+        document.documentElement.dir = "ltr";
+        document.documentElement.lang = lang;
+    }
+}
+
 let isDeliveryInit = false;
 function initDelivery() {
     if (isDeliveryInit) return;
     isDeliveryInit = true;
 
-    // 🔒 فرض التنصيص الإجباري: التحقق من الصلاحية (توصيل أو مدير)
     if (typeof checkAccess === "function" && !checkAccess('delivery') && !checkAccess('admin')) {
         window.location.replace("admin-login.html");
         return;
     }
 
+    applyDirection();
     loadDeliveryOrders();
-    // تحديث تلقائي كل دقيقة كاحتياط
     setInterval(loadDeliveryOrders, 60000);
 
     subscribeDeliveryRealtime();
 }
+
+window.addEventListener('languageChanged', function() {
+    applyDirection();
+    loadDeliveryOrders();
+});
 
 document.addEventListener("DOMContentLoaded", function() {
     const client = typeof window.getSupabaseClient === "function" ? window.getSupabaseClient() : null;

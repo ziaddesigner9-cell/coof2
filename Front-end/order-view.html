@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تفاصيل الطلب | مقهى السعادة</title>
+    <title data-key="order_view_title">تفاصيل الطلب | مقهى السعادة</title>
     <script src="https://cdn.tailwindcss.com?v=16"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2?v=16"></script>
     <script src="../app_global_env.js"></script>
+    <script src="../config-scripts/language.js"></script>
     <script src="../config-scripts/dependencies.js?v=16"></script>
     <script src="../config-scripts/js_app_settings.js?v=16"></script>
     <style>
@@ -43,7 +44,8 @@
         #orderItemsList img[loading] { opacity: 0; }
     </style>
 </head>
-<body class="min-h-screen text-white p-4 pb-10 fade-in">
+<body class="min-h-screen text-white p-4 pb-10 fade-in relative">
+    <div id="lang-picker-container" class="absolute top-4 right-4 z-50"></div>
     <div class="max-w-md mx-auto">
         <header class="text-center pt-4 pb-2">
             <p id="brand-en" class="text-xs tracking-[0.35em] text-amber-600/80 uppercase">Cafe Al-Saada</p>
@@ -59,7 +61,7 @@
         </div>
 
         <div class="mt-5 text-center">
-            <span id="statusBadge" class="inline-block px-4 py-1.5 rounded-full text-sm font-bold border gold-border bg-zinc-900 gold-text">
+            <span id="statusBadge" data-key="loading" class="inline-block px-4 py-1.5 rounded-full text-sm font-bold border gold-border bg-zinc-900 gold-text">
                 جاري التحميل...
             </span>
         </div>
@@ -68,7 +70,7 @@
 
         <!-- قسم التقييم يظهر فقط عند اكتمال الطلب -->
         <div id="ratingSection" class="hidden mt-6 p-4 rounded-2xl bg-zinc-900 border gold-border text-center shadow-xl">
-            <p class="gold-text font-bold mb-3">كيف كانت تجربتك معنا؟</p>
+            <p data-key="experience_rating" class="gold-text font-bold mb-3">كيف كانت تجربتك معنا؟</p>
             <a id="googleMapsLink" href="#" target="_blank" class="block group no-underline">
                 <div class="animate-star-pulse flex justify-center gap-1 mb-1 text-3xl transition-transform group-active:scale-95">
                     <span class="text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.4)]">⭐</span>
@@ -77,19 +79,19 @@
                     <span class="text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.4)]">⭐</span>
                     <span class="text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.4)]">⭐</span>
                 </div>
-                <p class="text-zinc-300 font-bold group-hover:text-yellow-400 transition-colors">ننتظر تقييمك على جوجل</p>
+                <p data-key="rating_hint_google" class="text-zinc-300 font-bold group-hover:text-yellow-400 transition-colors">ننتظر تقييمك على جوجل</p>
             </a>
         </div>
 
         <div class="mt-6 rounded-2xl border gold-border bg-zinc-950/90 overflow-hidden">
             <div class="px-4 py-3 border-b gold-border bg-black/60">
-                <h2 class="text-lg font-bold gold-text">تفاصيل الطلب</h2>
+                <h2 data-key="order_details" class="text-lg font-bold gold-text">تفاصيل الطلب</h2>
             </div>
             <ul id="orderItemsList" class="px-3 py-2 max-h-64 overflow-y-auto text-sm">
-                <li class="py-6 text-zinc-500 text-center">جاري تحميل الطلب...</li>
+                <li data-key="loading_details" class="py-6 text-zinc-500 text-center">جاري تحميل الطلب...</li>
             </ul>
             <div class="px-4 py-4 border-t gold-border flex justify-between items-center bg-black/50">
-                <span class="text-zinc-400">المجموع الكلي</span>
+                <span data-key="total_sum" class="text-zinc-400">المجموع الكلي</span>
                 <span id="orderTotal" class="text-2xl font-bold gold-text">—</span>
             </div>
         </div>
@@ -105,6 +107,7 @@
         var orderCode = query.get("code");
         var appSettings = mergeSettings(null);
         var orderViewChannel = null;
+        var currentOrder = null;
 
         function applyOrderViewBranding() {
             var en = document.getElementById("brand-en");
@@ -150,9 +153,9 @@
             var ratingSec = document.getElementById("ratingSection");
             
             if (status === "completed") {
-                badge.textContent = isDelivery ? "تم التوصيل" : "تم الاستلام";
+                badge.textContent = isDelivery ? phrase(appSettings, "completed_delivery") : phrase(appSettings, "completed_pickup");
                 badge.className = "inline-block px-4 py-1.5 rounded-full text-sm font-bold border border-emerald-500/60 bg-emerald-950 text-emerald-400";
-                readyMsg.textContent = phrase(appSettings, "order_view_completed_msg");
+                readyMsg.textContent = phrase(appSettings, "order_view_completed_msg") || phrase(appSettings, "completed_msg");
                 readyMsg.classList.remove("hidden");
                 if (ratingSec) {
                     ratingSec.classList.remove("hidden");
@@ -160,18 +163,18 @@
                     if (link) link.href = phrase(appSettings, "google_maps_review_url");
                 }
             } else if (status === "ready") {
-                badge.textContent = "جاهز للاستلام";
+                badge.textContent = isDelivery ? phrase(appSettings, "tracking_status_ready_delivery") : phrase(appSettings, "tracking_status_ready");
                 badge.className = "inline-block px-4 py-1.5 rounded-full text-sm font-bold border border-emerald-500/60 bg-emerald-950 text-emerald-400";
-                readyMsg.textContent = isDelivery ? "تم تجهيز طلبك وهو بانتظار استلام السائق" : phrase(appSettings, "order_view_ready_msg");
+                readyMsg.textContent = isDelivery ? phrase(appSettings, "ready_delivery_msg") : phrase(appSettings, "ready_pickup_msg");
                 readyMsg.classList.remove("hidden");
                 if (ratingSec) ratingSec.classList.add("hidden");
             } else if (status === "preparing") {
-                badge.textContent = "قيد التجهيز";
+                badge.textContent = phrase(appSettings, "tracking_status_preparing");
                 badge.className = "inline-block px-4 py-1.5 rounded-full text-sm font-bold border border-amber-500/60 bg-amber-950 gold-text";
                 readyMsg.classList.add("hidden");
                 if (ratingSec) ratingSec.classList.add("hidden");
             } else {
-                badge.textContent = "بانتظار العامل";
+                badge.textContent = phrase(appSettings, "tracking_status_waiting");
                 badge.className = "inline-block px-4 py-1.5 rounded-full text-sm font-bold border gold-border bg-zinc-900 gold-text";
                 readyMsg.classList.add("hidden");
                 if (ratingSec) ratingSec.classList.add("hidden");
@@ -204,39 +207,44 @@
                     if (parts[i].indexOf("الاسم:") !== -1) { namePart = parts[i]; break; }
                 }
                 var name = namePart ? namePart.replace("الاسم:", "").trim() : "توصيل";
-                return "توصيل باسم " + name + (notes ? " (" + notes + ")" : "");
+                var deliveryWithName = (phrase(null, "delivery_with_name") || "توصيل باسم {name}").replace("{name}", name);
+                return deliveryWithName + (notes ? " (" + notes + ")" : "");
             } else {
                 var cleanTable = strText;
                 if (cleanTable.indexOf("محلي:") === 0) cleanTable = cleanTable.replace("محلي:", "").trim();
                 var firstPart = cleanTable.split('|')[0] ? cleanTable.split('|')[0].trim() : "—";
-                return "طاولة " + firstPart + (notes ? " (" + notes + ")" : "");
+                var tableNoWithNum = (phrase(null, "table_no_with_num") || "طاولة {num}").replace("{num}", firstPart);
+                return tableNoWithNum + (notes ? " (" + notes + ")" : "");
             }
         }
 
         function renderOrder(order) {
             var items = parseItems(order.items);
             var list = document.getElementById("orderItemsList");
-            var priceDisplay = parseFloat(order.total_price || 0).toFixed(2) + " ريال";
+            var priceDisplay = typeof formatPrice === 'function' ? formatPrice(order.total_price || 0) : (parseFloat(order.total_price || 0).toFixed(2) + " ريال");
             var tableRaw = order.table_no != null ? order.table_no : "—";
             document.getElementById("orderMeta").textContent = formatTableNoForUser(tableRaw) + " · " + priceDisplay;
 
             if (items.length === 0) {
-                list.innerHTML = '<li class="py-6 text-zinc-500 text-center">لا توجد أصناف</li>';
+                list.innerHTML = '<li class="py-6 text-zinc-500 text-center">' + phrase(appSettings, "no_items") + '</li>';
             } else {
                 list.innerHTML = items.map(function(item) {
                     var qty = parseInt(item.quantity) || 1;
                     var price = parseFloat(item.price) || 0;
                     var img = window.getSafeImageUrl ? window.getSafeImageUrl(item.image_url) : (item.image_url || "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=200&h=200&fit=crop");
+                    var displayName = phrase(appSettings, item.name) || item.name || "صنف";
+                    var priceFormatted = typeof formatPrice === 'function' ? formatPrice(price) : (price + " ر.س");
+                    var lineTotalFormatted = typeof formatPrice === 'function' ? formatPrice(price * qty) : ((price * qty) + " ر.س");
                     return '<li class="flex gap-3 items-center py-3 border-b border-zinc-800/80 last:border-0">' +
                            '<img src="' + escapeHtml(img) + '" alt="صنف" loading="lazy" class="w-14 h-14 rounded-xl object-cover border gold-border flex-shrink-0" />' +
-                           '<div class="flex-1 min-w-0"><p class="font-bold gold-text truncate">' + escapeHtml(item.name || "صنف") + '</p>' +
-                           '<p class="text-zinc-500 text-xs">' + price + ' ر.س × ' + qty + '</p></div>' +
-                           '<span class="gold-text font-bold">' + (price * qty) + ' ر.س</span></li>';
+                           '<div class="flex-1 min-w-0"><p class="font-bold gold-text truncate">' + escapeHtml(displayName) + '</p>' +
+                           '<p class="text-zinc-500 text-xs">' + priceFormatted + ' × ' + qty + '</p></div>' +
+                           '<span class="gold-text font-bold">' + lineTotalFormatted + '</span></li>';
                 }).join("");
             }
 
             var total = order.total_price != null ? parseFloat(order.total_price) : items.reduce(function(s, i) { return s + (parseFloat(i.price) || 0) * (parseInt(i.quantity) || 1); }, 0);
-            document.getElementById("orderTotal").textContent = total + " ر.س";
+            document.getElementById("orderTotal").textContent = typeof formatPrice === 'function' ? formatPrice(total) : (total + " ر.س");
             var isDelivery = order.table_no && (order.table_no.indexOf("توصيل") !== -1);
             
             var heroWrap = document.getElementById("heroWrap");
@@ -246,16 +254,15 @@
             
             if (firstWithImage) {
                 heroImg.src = window.getSafeImageUrl ? window.getSafeImageUrl(firstWithImage.image_url) : firstWithImage.image_url;
-                heroCaption.textContent = firstWithImage.name || "طلبك من مقهى السعادة";
+                heroCaption.textContent = phrase(appSettings, firstWithImage.name) || firstWithImage.name || phrase(appSettings, "your_order");
                 heroWrap.classList.remove("hidden");
             } else if (items.length > 0) {
                 heroImg.src = "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800&h=600&fit=crop";
-                heroCaption.textContent = items[0].name || "طلبك";
+                heroCaption.textContent = phrase(appSettings, items[0].name) || items[0].name || phrase(appSettings, "your_order");
                 heroWrap.classList.remove("hidden");
             }
             setStatusUi(order.status, isDelivery);
         }
-
 
         async function loadOrder() {
             var client = window.getSupabaseClient ? window.getSupabaseClient() : null;
@@ -264,16 +271,16 @@
             var req = client.from("orders").select("id, status, order_code, table_no, items, total_price, created_at");
             var res = await (orderCode ? req.eq("order_code", orderCode) : req.eq("id", orderId)).single();
             if (res.error || !res.data) {
-                document.getElementById("statusBadge").textContent = "الطلب غير موجود";
+                document.getElementById("statusBadge").textContent = phrase(appSettings, "order_not_found");
                 document.getElementById("orderItemsList").innerHTML =
-                    '<li class="py-6 text-red-400 text-center">تعذر تحميل الطلب.</li>';
+                    '<li class="py-6 text-red-400 text-center">' + phrase(appSettings, "order_load_failed") + '</li>';
                 return;
             }
 
-            var orderData = res.data;
-            renderOrder(orderData);
+            currentOrder = res.data;
+            renderOrder(currentOrder);
 
-            var resolvedId = orderData.id;
+            var resolvedId = currentOrder.id;
             try {
                 if (orderViewChannel) {
                     client.removeChannel(orderViewChannel);
@@ -294,7 +301,10 @@
                         filter: "id=eq." + resolvedId,
                     },
                     function(payload) {
-                        if (payload.new) renderOrder(payload.new);
+                        if (payload.new) {
+                            currentOrder = payload.new;
+                            renderOrder(currentOrder);
+                        }
                     }
                 );
             orderViewChannel.subscribe();
@@ -308,10 +318,24 @@
             isOrderViewInit = true;
 
             appSettings = await loadAppSettings();
+
+            // تهيئة مغير اللغة
+            if (typeof renderLanguageDropdown === 'function') {
+                renderLanguageDropdown('lang-picker-container');
+            }
+
             applyOrderViewBranding();
             applyLayoutSettings();
             loadOrder();
         }
+
+        window.addEventListener('languageChanged', function(e) {
+            applyLayoutSettings();
+            if (currentOrder) {
+                renderOrder(currentOrder);
+            }
+        });
+
         window.addEventListener("supabaseReady", init);
         if (document.readyState !== "loading") init();
         else document.addEventListener("DOMContentLoaded", init);

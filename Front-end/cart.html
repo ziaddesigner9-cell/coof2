@@ -8,39 +8,55 @@
     <link rel="stylesheet" href="../config-scripts/theme.css" />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../config-scripts/app_env.js"></script>
+    <script src="../config-scripts/dependencies.js"></script>
+    <script src="../config-scripts/js_app_settings.js"></script>
+    <script src="../config-scripts/language.js"></script>
+    <style>
+        /* تحسين استجابة اللمس */
+        a, button, [role="button"], input, textarea {
+            touch-action: manipulation !important;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+    </style>
 </head>
-<body class="cart-page app-theme min-h-screen pb-8">
-    <div class="max-w-md mx-auto p-6">
-        <a href="../index.html" class="inline-flex items-center gap-2 text-amber-500 text-sm mb-6 hover:text-amber-300">
+<body class="cart-page app-theme min-h-screen pb-8 relative">
+
+    <div id="lang-picker-container" class="absolute top-4 right-4 z-50"></div>
+
+    <div class="max-w-md mx-auto p-6 pt-12">
+        <a href="../index.html" data-key="back_to_home" class="inline-flex items-center gap-2 text-amber-500 text-sm mb-6 hover:text-amber-300">
             ← العودة للرئيسية
         </a>
 
-        <h1 class="text-2xl gold-title mb-6">سلة الطلبات <span class="gold-text">🛒</span></h1>
+        <h1 class="text-2xl gold-title mb-6">
+            <span data-key="cart_title">سلة الطلبات</span> <span class="gold-text">🛒</span>
+        </h1>
 
         <div id="cart-items" class="space-y-4"></div>
 
         <div class="mt-8 p-6 bg-zinc-900 rounded-2xl border border-amber-800/30">
             <div class="flex justify-between items-center mb-6">
-                <span class="text-zinc-400 font-bold">الإجمالي:</span>
-                <span id="cart-total" class="text-2xl font-bold text-amber-400">0 ريال</span>
+                <span data-key="total" class="text-zinc-400 font-bold">الإجمالي:</span>
+                <span id="cart-total" class="text-2xl font-bold text-amber-400">0 ر.س</span>
             </div>
 
             <!-- أزرار الاختيار (محلي/توصيل) -->
             <div class="grid grid-cols-2 gap-2 mb-4">
                 <button id="tab-local" type="button" class="p-3 border-2 rounded-xl font-bold transition flex flex-col items-center gap-1 border-orange-500 bg-orange-50 text-black">
-                    <span>📍 محلي</span>
-                    <span class="text-[10px] font-normal opacity-70">داخل المقهى</span>
+                    <span data-key="local_order">📍 محلي</span>
+                    <span data-key="local_desc" class="text-[10px] font-normal opacity-70">داخل المقهى</span>
                 </button>
                 <button id="tab-delivery" type="button" class="p-3 border-2 rounded-xl font-bold transition flex flex-col items-center gap-1 border-amber-800/40 text-zinc-400">
-                    <span>🚗 توصيل</span>
-                    <span class="text-[10px] font-normal opacity-70">خارج المقهى</span>
+                    <span data-key="delivery_order">🚗 توصيل</span>
+                    <span data-key="delivery_desc" class="text-[10px] font-normal opacity-70">خارج المقهى</span>
                 </button>
             </div>
 
             <!-- قسم المحلي -->
             <div id="local-section" class="mb-6">
-                <label class="block text-amber-200/90 font-bold mb-2">رقم الطاولة:</label>
-                <input type="number" id="localInput"
+                <label data-key="table_number" class="block text-amber-200/90 font-bold mb-2">رقم الطاولة:</label>
+                <input type="number" id="localInput" data-key="table_placeholder"
                     class="w-full bg-black border-2 border-amber-800/40 rounded-xl p-4 text-white outline-none focus:border-amber-500 text-center text-xl font-bold"
                     placeholder="مثلاً: 5">
             </div>
@@ -48,54 +64,57 @@
             <!-- قسم التوصيل -->
             <div id="delivery-section" class="mb-6 hidden space-y-4">
                 <div>
-                    <label class="block text-amber-200/90 text-sm mb-1">الاسم</label>
-                    <input type="text" id="deliveryName" class="w-full bg-black border border-amber-800/40 rounded-xl p-3 text-white outline-none focus:border-amber-500" placeholder="اسم المستلم">
+                    <label data-key="name" class="block text-amber-200/90 text-sm mb-1">الاسم</label>
+                    <input type="text" id="deliveryName" data-key="recipient_name" class="w-full bg-black border border-amber-800/40 rounded-xl p-3 text-white outline-none focus:border-amber-500" placeholder="اسم المستلم">
                 </div>
                 <div>
-                    <label class="block text-amber-200/90 text-sm mb-1">رقم الجوال</label>
+                    <label data-key="phone_number" class="block text-amber-200/90 text-sm mb-1">رقم الجوال</label>
                     <input type="tel" id="deliveryPhone" class="w-full bg-black border border-amber-800/40 rounded-xl p-3 text-white outline-none focus:border-amber-500 text-center font-mono" placeholder="05xxxxxxxx">
                 </div>
                 <div>
-                    <label class="block text-amber-200/90 text-sm mb-1">طريقة الدفع</label>
+                    <label data-key="payment_method" class="block text-amber-200/90 text-sm mb-1">طريقة الدفع</label>
                     <div class="grid grid-cols-2 gap-2">
                         <label class="flex items-center justify-center p-3 border rounded-xl cursor-pointer border-amber-800/40 has-[:checked]:border-amber-500 has-[:checked]:bg-amber-950/50">
-                            <input type="radio" name="paymentMethod" value="كاش" class="hidden" checked> <span class="text-sm">💵 كاش</span>
+                            <input type="radio" name="paymentMethod" value="كاش" class="hidden" checked> <span data-key="cash" class="text-sm">💵 كاش</span>
                         </label>
                         <label class="flex items-center justify-center p-3 border rounded-xl cursor-pointer border-amber-800/40 has-[:checked]:border-amber-500 has-[:checked]:bg-amber-950/50">
-                            <input type="radio" name="paymentMethod" value="بطاقة" class="hidden"> <span class="text-sm">💳 بطاقة</span>
+                            <input type="radio" name="paymentMethod" value="بطاقة" class="hidden"> <span data-key="card" class="text-sm">💳 بطاقة</span>
                         </label>
                     </div>
                 </div>
                 <div>
-                    <label class="block text-amber-200/90 text-sm mb-2 font-bold">الموقع</label>
+                    <label data-key="location" class="block text-amber-200/90 text-sm mb-2 font-bold">الموقع</label>
                     <button type="button" onclick="shareLocation(this)" id="btn-share-location"
                         class="w-full mb-3 flex items-center justify-center gap-2 bg-gradient-to-r from-amber-700/20 to-amber-900/35 border border-amber-800/60 hover:border-amber-500 text-amber-300 hover:text-amber-200 py-3 px-4 rounded-xl font-bold text-sm transition-all duration-200 active:scale-[0.98] shadow-md shadow-black/25">
                         <span>📍</span>
-                        <span id="share-location-text">تحديد موقعي التلقائي عبر GPS</span>
+                        <span id="share-location-text" data-key="gps_button">تحديد موقعي التلقائي عبر GPS</span>
                     </button>
-                    <textarea id="deliveryAddress" class="w-full bg-black border border-amber-800/40 rounded-xl p-3 text-white outline-none focus:border-amber-500 h-20 text-sm placeholder-zinc-500" placeholder="الحي، الشارع..."></textarea>
+                    <textarea id="deliveryAddress" data-key="address_placeholder" class="w-full bg-black border border-amber-800/40 rounded-xl p-3 text-white outline-none focus:border-amber-500 h-20 text-sm placeholder-zinc-500" placeholder="الحي، الشارع..."></textarea>
                 </div>
             </div>
 
             <!-- خانة ملاحظات إضافية (اختياري) -->
             <div class="mb-6">
-                <label class="block text-amber-200/90 text-sm mb-2 font-bold">ملاحظات إضافية (اختياري):</label>
-                <textarea id="order-notes" 
+                <label data-key="additional_notes" class="block text-amber-200/90 text-sm mb-2 font-bold">ملاحظات إضافية (اختياري):</label>
+                <textarea id="order-notes" data-key="notes_placeholder"
                     class="w-full bg-black border border-amber-800/40 rounded-xl p-3 text-white outline-none focus:border-amber-500 h-20 placeholder-zinc-500 text-sm" 
                     placeholder="مثال: سكر زيادة، بدون سكر، بدون ثلج..."></textarea>
             </div>
 
             <button id="confirm-btn"
                 class="w-full bg-amber-600 hover:bg-amber-500 text-black p-4 rounded-2xl font-bold text-lg transition shadow-lg">
-                تأكيد الطلب
+                <span data-key="confirm_order">تأكيد الطلب</span>
             </button>
         </div>
     </div>
 
-    <script src="../config-scripts/dependencies.js"></script>
     <script src="../config-scripts/js_cart.js"></script>
-    <!-- Vercel Analytics & Speed Insights -->
-    <script defer src="/_vercel/insights/script.js"></script>
-    <script defer src="/_vercel/speed-insights/script.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            if (typeof renderLanguageDropdown === 'function') {
+                renderLanguageDropdown('lang-picker-container');
+            }
+        });
+    </script>
 </body>
 </html>

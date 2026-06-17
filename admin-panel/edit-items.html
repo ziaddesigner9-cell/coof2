@@ -3,37 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تعديل الأصناف</title>
+    <title data-key="edit_items_title">تعديل الأصناف</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../config-scripts/dependencies.js?v=6"></script>
     <script src="../config-scripts/js_categories.js"></script>
+    <script src="../config-scripts/language.js"></script>
+    <script src="../config-scripts/js_app_settings.js"></script>
     <script src="../config-scripts/js_auth_config.js"></script>
     <script>if (localStorage.getItem("coof2_role") !== "admin") location.href = "admin-login.html";</script>
 </head>
-<body class="bg-black text-white min-h-screen p-4 md:p-8">
+<body class="bg-black text-white min-h-screen p-4 md:p-8 relative">
+
+    <div id="lang-picker-container" class="absolute top-4 right-4 z-50"></div>
+
     <div class="max-w-3xl mx-auto">
-        <a href="admin-dashboard.html" class="text-amber-500 text-sm hover:text-amber-300">← لوحة المدير</a>
+        <a href="admin-dashboard.html" data-key="back_to_dashboard_link" class="text-amber-500 text-sm hover:text-amber-300">← لوحة المدير</a>
         <div class="flex flex-wrap justify-between items-start gap-3 mt-4 mb-6">
             <div>
-                <h1 class="text-2xl font-bold text-amber-400">تعديل الأصناف الموجودة</h1>
-                <p class="text-zinc-500 text-sm mt-1">عدّل الاسم، السعر، التصنيف، والصورة من المكتبة</p>
+                <h1 class="text-2xl font-bold text-amber-400" data-key="edit_items_header">تعديل الأصناف الموجودة</h1>
+                <p class="text-zinc-500 text-sm mt-1" data-key="edit_items_desc">عدّل الاسم، السعر، التصنيف، والصورة من المكتبة</p>
             </div>
-            <a href="manage-menu.html" class="text-sm px-4 py-2 rounded-xl border border-amber-700/50 text-amber-300 hover:bg-amber-950">
+            <a href="manage-menu.html" data-key="add_new_item_link" class="text-sm px-4 py-2 rounded-xl border border-amber-700/50 text-amber-300 hover:bg-amber-950">
                 ➕ إضافة صنف جديد
             </a>
         </div>
 
         <div class="flex flex-wrap gap-2 mb-5">
-            <button type="button" data-filter="all" class="filter-btn px-4 py-2 rounded-full text-sm border border-amber-600/50 bg-amber-950 text-amber-300">الكل</button>
-            <button type="button" data-filter="hot" class="filter-btn px-4 py-2 rounded-full text-sm border border-zinc-700 text-zinc-400">ساخن</button>
-            <button type="button" data-filter="cold" class="filter-btn px-4 py-2 rounded-full text-sm border border-zinc-700 text-zinc-400">بارد</button>
-            <button type="button" data-filter="dessert" class="filter-btn px-4 py-2 rounded-full text-sm border border-zinc-700 text-zinc-400">حلى</button>
-            <button type="button" data-filter="shisha" class="filter-btn px-4 py-2 rounded-full text-sm border border-zinc-700 text-zinc-400">شيشة</button>
+            <button type="button" data-filter="all" data-key="filter_all" class="filter-btn px-4 py-2 rounded-full text-sm border border-amber-600/50 bg-amber-950 text-amber-300">الكل</button>
+            <button type="button" data-filter="hot" data-key="filter_hot" class="filter-btn px-4 py-2 rounded-full text-sm border border-zinc-700 text-zinc-400">ساخن</button>
+            <button type="button" data-filter="cold" data-key="filter_cold" class="filter-btn px-4 py-2 rounded-full text-sm border border-zinc-700 text-zinc-400">بارد</button>
+            <button type="button" data-filter="dessert" data-key="filter_dessert" class="filter-btn px-4 py-2 rounded-full text-sm border border-zinc-700 text-zinc-400">حلى</button>
+            <button type="button" data-filter="shisha" data-key="filter_shisha" class="filter-btn px-4 py-2 rounded-full text-sm border border-zinc-700 text-zinc-400">شيشة</button>
         </div>
 
         <div id="items-list" class="space-y-3">
-            <p class="text-zinc-500 text-center py-10">جاري التحميل...</p>
+            <p class="text-zinc-500 text-center py-10" data-key="loading_text">جاري التحميل...</p>
         </div>
     </div>
 
@@ -41,7 +46,7 @@
     <div id="edit-modal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80">
         <div class="w-full sm:max-w-lg bg-zinc-900 border border-amber-800/40 rounded-t-3xl sm:rounded-2xl p-5 max-h-[92vh] overflow-y-auto">
             <div class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-bold text-amber-400">تعديل الصنف</h2>
+                <h2 class="text-lg font-bold text-amber-400" data-key="edit_modal_title">تعديل الصنف</h2>
                 <button type="button" id="close-modal" class="text-zinc-500 hover:text-white text-2xl leading-none">&times;</button>
             </div>
 
@@ -49,39 +54,39 @@
 
             <div class="space-y-4">
                 <div>
-                    <label class="text-xs text-zinc-500 mb-1 block">اسم الصنف</label>
+                    <label class="text-xs text-zinc-500 mb-1 block" data-key="item_name_label">اسم الصنف</label>
                     <input type="text" id="edit-name" class="w-full p-3 rounded-xl bg-black border border-amber-800/40 focus:border-amber-500 outline-none" />
                 </div>
                 <div>
-                    <label class="text-xs text-zinc-500 mb-1 block">السعر (ريال)</label>
+                    <label class="text-xs text-zinc-500 mb-1 block" id="editPriceLabel" data-key="price_label_with_currency">السعر (ر.س)</label>
                     <input type="number" id="edit-price" step="0.01" class="w-full p-3 rounded-xl bg-black border border-amber-800/40 focus:border-amber-500 outline-none" />
                 </div>
                 <div>
-                    <label class="text-xs text-zinc-500 mb-1 block">التصنيف</label>
+                    <label class="text-xs text-zinc-500 mb-1 block" data-key="item_category_label">التصنيف</label>
                     <select id="edit-category" class="w-full p-3 rounded-xl bg-black border border-amber-800/40">
-                        <option value="hot">مشروبات ساخنة</option>
-                        <option value="cold">مشروبات باردة</option>
-                        <option value="dessert">الحلى</option>
-                        <option value="shisha">شيشة</option>
+                        <option value="hot" data-key="category_hot_label">مشروبات ساخنة</option>
+                        <option value="cold" data-key="category_cold_label">مشروبات باردة</option>
+                        <option value="dessert" data-key="category_dessert_label">الحلى</option>
+                        <option value="shisha" data-key="category_shisha_label">شيشة</option>
                     </select>
                 </div>
                 <div>
-                    <label class="text-xs text-zinc-500 mb-1 block">الصورة الحالية</label>
+                    <label class="text-xs text-zinc-500 mb-1 block" data-key="current_image_label">الصورة الحالية</label>
                     <img id="edit-current-img" src="" alt="" class="w-20 h-20 rounded-xl object-cover border border-amber-700/40 mb-2" />
-                    <label class="text-xs text-zinc-500 mb-1 block">اختر صورة من المكتبة</label>
+                    <label class="text-xs text-zinc-500 mb-1 block" data-key="select_image_from_gallery">اختر صورة من المكتبة</label>
                     <div id="edit-gallery" class="grid grid-cols-4 gap-2 border border-amber-800/30 rounded-xl p-2 max-h-36 overflow-y-auto bg-black"></div>
                 </div>
                 <label class="flex items-center gap-2 text-sm text-zinc-300 cursor-pointer">
                     <input type="checkbox" id="edit-available" class="w-4 h-4 accent-amber-500" />
-                    يظهر في القائمة للزبائن
+                    <span data-key="visible_to_customers">يظهر في القائمة للزبائن</span>
                 </label>
             </div>
 
             <div class="flex flex-col gap-2 mt-6">
-                <button type="button" id="save-edit-btn" class="w-full py-3 rounded-xl bg-amber-600 hover:bg-amber-500 text-black font-bold">
+                <button type="button" id="save-edit-btn" data-key="save_changes_btn" class="w-full py-3 rounded-xl bg-amber-600 hover:bg-amber-500 text-black font-bold">
                     حفظ التعديلات
                 </button>
-                <button type="button" id="delete-item-btn" class="w-full py-3 rounded-xl border border-red-700/50 text-red-400 hover:bg-red-950/50 text-sm">
+                <button type="button" id="delete-item-btn" data-key="delete_item_btn" class="w-full py-3 rounded-xl border border-red-700/50 text-red-400 hover:bg-red-950/50 text-sm">
                     حذف الصنف نهائياً
                 </button>
             </div>
@@ -109,7 +114,7 @@
 
         function categoryLabel(item) {
             const k = categoryKey(item);
-            return MENU_CATEGORY_LABELS[k] || item.category || "—";
+            return phrase(null, "category_" + k + "_label") || item.category || "—";
         }
 
         function filteredItems() {
@@ -122,9 +127,15 @@
             const items = filteredItems();
 
             if (!items.length) {
-                list.innerHTML = `<p class="text-zinc-500 text-center py-10 border border-zinc-800 rounded-2xl">لا توجد أصناف${currentFilter !== "all" ? " في هذا القسم" : ""}. <a href="manage-menu.html" class="text-amber-500 underline">أضف صنفاً</a></p>`;
+                const emptyMsg = currentFilter !== "all" 
+                    ? phrase(null, "no_items_in_category_admin", "لا توجد أصناف في هذا القسم") 
+                    : phrase(null, "no_items_found", "لا توجد أصناف");
+                const addLinkText = phrase(null, "add_item_link_text", "أضف صنفاً");
+                list.innerHTML = `<p class="text-zinc-500 text-center py-10 border border-zinc-800 rounded-2xl">${emptyMsg}. <a href="manage-menu.html" class="text-amber-500 underline">${addLinkText}</a></p>`;
                 return;
             }
+
+            const hiddenBadgeText = phrase(null, "hidden_label", "مخفي");
 
             list.innerHTML = items
                 .map(
@@ -133,14 +144,28 @@
                     <img src="${escapeHtml(item.image_url || "")}" alt="" class="w-16 h-16 rounded-xl object-cover border border-amber-800/30 shrink-0 bg-zinc-900" />
                     <div class="flex-1 min-w-0 text-right">
                         <p class="font-bold text-amber-100 truncate">${escapeHtml(item.name || "—")}</p>
-                        <p class="text-amber-400 text-sm font-bold mt-0.5">${parseFloat(item.price || 0)} ر.س</p>
-                        <p class="text-zinc-500 text-xs mt-1">${escapeHtml(categoryLabel(item))}${item.is_available === false ? " · مخفي" : ""}</p>
+                        <p class="text-amber-400 text-sm font-bold mt-0.5">${formatPrice(item.price || 0)}</p>
+                        <p class="text-zinc-500 text-xs mt-1">${escapeHtml(categoryLabel(item))}${item.is_available === false ? " · " + hiddenBadgeText : ""}</p>
                     </div>
-                    <button type="button" data-edit-id="${item.id}" class="edit-btn shrink-0 px-4 py-2 rounded-xl bg-amber-600/90 hover:bg-amber-500 text-black text-sm font-bold">
+                    <button type="button" data-edit-id="${item.id}" class="edit-btn shrink-0 px-4 py-2 rounded-xl bg-amber-600/90 hover:bg-amber-500 text-black text-sm font-bold" data-key="edit_btn_text">
                         تعديل
                     </button>
                 </div>`
                 )
+                .map(html => {
+                    // Translate dynamically created elements
+                    let temp = document.createElement('div');
+                    temp.innerHTML = html;
+                    let btn = temp.querySelector('[data-key]');
+                    if (btn && window.translations) {
+                        let lang = localStorage.getItem('coof2_userLang') || 'ar';
+                        let k = btn.getAttribute('data-key');
+                        if (translations[lang] && translations[lang][k]) {
+                            btn.innerText = translations[lang][k];
+                        }
+                    }
+                    return temp.innerHTML;
+                })
                 .join("");
 
             list.querySelectorAll(".edit-btn").forEach((btn) => {
@@ -151,7 +176,8 @@
         function renderGalleryGrid(selectedUrl) {
             const grid = document.getElementById("edit-gallery");
             if (!galleryImages.length) {
-                grid.innerHTML = '<p class="col-span-full text-xs text-zinc-500 text-center py-4">لا صور في المكتبة — <a href="upload-images.html" class="text-amber-500">ارفع صوراً</a></p>';
+                const noImgLink = phrase(null, "no_images_in_gallery_link", "لا صور في المكتبة — ارفع صوراً");
+                grid.innerHTML = `<p class="col-span-full text-xs text-zinc-500 text-center py-4"><a href="upload-images.html" class="text-amber-500">${noImgLink}</a></p>`;
                 return;
             }
             grid.innerHTML = galleryImages
@@ -189,7 +215,7 @@
             if (catEl) catEl.value = categoryKey(editingItem) || "hot";
 
             const currentImg = document.getElementById("edit-current-img");
-            if (currentImg) currentImg.src = selectedEditImage; // Already safe
+            if (currentImg) currentImg.src = selectedEditImage; 
 
             const availEl = document.getElementById("edit-available");
             if (availEl) availEl.checked = editingItem.is_available !== false;
@@ -209,7 +235,7 @@
             const client = window.getSupabaseClient?.();
             const list = document.getElementById("items-list");
             if (!client) {
-                list.innerHTML = '<p class="text-red-400 text-center py-10">تعذر الاتصال بقاعدة البيانات</p>';
+                list.innerHTML = `<p class="text-red-400 text-center py-10">${phrase(null, "db_load_failed", "تعذر الاتصال بقاعدة البيانات")}</p>`;
                 return;
             }
 
@@ -241,14 +267,14 @@
             const availEl = document.getElementById("edit-available");
             const is_available = availEl ? availEl.checked : true;
 
-            if (!name) return alert("أدخل اسم الصنف");
-            if (!Number.isFinite(price) || price < 0) return alert("أدخل سعراً صحيحاً");
-            if (!selectedEditImage) return alert("اختر صورة من المكتبة");
+            if (!name) return alert(phrase(null, "validate_enter_name", "يرجى إدخال اسم الصنف"));
+            if (!Number.isFinite(price) || price < 0) return alert(phrase(null, "validate_enter_price", "يرجى إدخال سعر صحيح"));
+            if (!selectedEditImage) return alert(phrase(null, "validate_select_image", "يرجى اختيار صورة من المكتبة أولاً"));
 
             const saveBtn = document.getElementById("save-edit-btn");
             if (saveBtn) {
                 saveBtn.disabled = true;
-                saveBtn.textContent = "جاري الحفظ...";
+                saveBtn.textContent = phrase(null, "saving_changes_loader", "جاري حفظ التعديلات...");
             }
 
             const { error } = await client
@@ -258,33 +284,34 @@
 
             if (saveBtn) {
                 saveBtn.disabled = false;
-                saveBtn.textContent = "حفظ التعديلات";
+                saveBtn.textContent = phrase(null, "save_changes_btn", "حفظ التعديلات");
             }
 
             if (error) {
-                alert("فشل الحفظ: " + error.message + "\n\nإن لزم، شغّل supabase-items-admin-migration.sql في Supabase.");
+                alert(phrase(null, "save_failed_msg", "فشل الحفظ: ") + error.message);
                 return;
             }
 
-            alert("تم حفظ التعديلات ✓");
+            alert(phrase(null, "save_success_toast", "تم الحفظ بنجاح! ✓"));
             closeEdit();
             loadData();
         }
 
         async function deleteItem() {
             if (!editingItem) return;
-            if (!confirm(`حذف «${editingItem.name}» نهائياً؟ لا يمكن التراجع.`)) return;
+            const confirmMsg = phrase(null, "delete_confirm_prompt", "حذف الصنف نهائياً؟ لا يمكن التراجع.") + ` (${editingItem.name})`;
+            if (!confirm(confirmMsg)) return;
 
             const client = window.getSupabaseClient?.();
             if (!client) return;
 
             const { error } = await client.from("items").delete().eq("id", editingItem.id);
             if (error) {
-                alert("فشل الحذف: " + error.message);
+                alert(phrase(null, "save_failed_msg", "فشل الحفظ: ") + error.message);
                 return;
             }
 
-            alert("تم حذف الصنف");
+            alert(phrase(null, "delete_success_toast", "تم حذف الصنف"));
             closeEdit();
             loadData();
         }
@@ -314,6 +341,17 @@
         if (saveEditBtn) saveEditBtn.addEventListener("click", saveEdit);
         const deleteItemBtn = document.getElementById("delete-item-btn");
         if (deleteItemBtn) deleteItemBtn.addEventListener("click", deleteItem);
+
+        window.addEventListener("DOMContentLoaded", () => {
+            if (typeof renderLanguageDropdown === "function") {
+                renderLanguageDropdown('lang-picker-container');
+            }
+        });
+
+        // Listen for language changes to update localized text values dynamically
+        window.addEventListener("languageChanged", () => {
+            renderList();
+        });
 
         window.addEventListener("supabaseReady", loadData);
         if (window.getSupabaseClient?.()) loadData();

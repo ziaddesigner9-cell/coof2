@@ -2,28 +2,29 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>مراقبة الطلبات</title>
+    <title data-key="order_monitor_title">مراقبة الطلبات</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../config-scripts/dependencies.js?v=6"></script>
+    <script src="../config-scripts/js_app_settings.js"></script>
+    <script src="../config-scripts/language.js"></script>
 </head>
-<body class="bg-gray-100 p-8">
+<body class="bg-gray-100 p-8 relative">
+    <div id="lang-picker-container" class="absolute top-4 right-4 z-50"></div>
     <div class="max-w-4xl mx-auto">
-        <h1 class="text-2xl font-bold mb-6">طلبات الزبائن الحالية</h1>
+        <h1 data-key="live_orders_header" class="text-2xl font-bold mb-6">طلبات الزبائن الحالية</h1>
         <div id="live-orders" class="grid gap-4">
-            </div>
-        <a href="admin-dashboard.html" class="block mt-6 text-orange-600 underline">العودة للوحة الأصناف</a>
+        </div>
+        <a href="admin-dashboard.html" data-key="back_to_menu_dashboard" class="block mt-6 text-orange-600 underline">العودة للوحة الأصناف</a>
     </div>
 
     <script>
-        // دالة آمنة لجلب عميل Supabase المستقر في مشروعك
         function getClient() {
             if (window.supabase) return window.supabase;
             if (typeof window.getSupabaseClient === "function") return window.getSupabaseClient();
             return null;
         }
 
-        // جلب الطلبات المفتوحة فقط (بأداء خفيف ومستقر)
         async function fetchLiveOrders() {
             const client = getClient();
             if (!client) return;
@@ -43,32 +44,39 @@
             if (!container) return;
             
             const rows = Array.isArray(data) ? data : [];
+            let currentLang = 'ar';
+            try {
+                currentLang = localStorage.getItem('coof2_userLang') || 'ar';
+            } catch (_) {}
             
             container.innerHTML = rows.length ? rows.map(o => {
                 const tableRaw = o.table_no ?? o.table_number ?? '---';
-                // فحص إذا كان الطلب توصيل أو طاولة محلي لتنسيق العرض
                 const isDelivery = tableRaw.includes("توصيل");
-                const displayName = isDelivery ? "🚗 طلب توصيل خارجي" : `🍽️ طاولة رقم: ${tableRaw}`;
+                
+                const displayName = isDelivery 
+                    ? phrase(null, "delivery_order_title") 
+                    : phrase(null, "table_order_title").replace("{num}", tableRaw);
+
+                const timeString = new Date(o.created_at).toLocaleTimeString(currentLang === 'ar' ? 'ar-SA' : 'en-US', {hour: '2-digit', minute:'2-digit'});
+                const orderTimeStr = phrase(null, "order_time_label").replace("{time}", timeString);
 
                 return `
                     <div class="bg-white p-4 rounded-xl shadow border-r-4 ${isDelivery ? 'border-blue-500' : 'border-amber-500'}">
                         <p class="font-bold text-lg text-gray-800">${displayName}</p>
-                        <p class="text-sm text-gray-500 mt-1">🕒 وقت الطلب: ${new Date(o.created_at).toLocaleTimeString('ar-SA', {hour: '2-digit', minute:'2-digit'})}</p>
+                        <p class="text-sm text-gray-500 mt-1">${orderTimeStr}</p>
                     </div>
                 `;
             }).join('') : `
                 <div class="text-center py-12 text-gray-400">
-                    <p class="text-xl">👍 لا توجد طلبات معلقة حالياً.</p>
+                    <p class="text-xl">${phrase(null, "no_pending_orders")}</p>
                 </div>`;
         }
 
-        // تفعيل الاستماع الفوري والتحديث التلقائي (Realtime)
         function initLiveMonitor() {
             fetchLiveOrders();
 
             const client = getClient();
             if (client) {
-                // تحديث الشاشة فوراً عند حدوث أي تغيير في قاعدة البيانات
                 client.channel('live_monitor_changes')
                     .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
                         fetchLiveOrders();
@@ -77,10 +85,16 @@
             }
         }
 
-        // التشغيل الآمن فور الجاهزية
         document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderLanguageDropdown === 'function') {
+                renderLanguageDropdown('lang-picker-container');
+            }
             if (getClient()) initLiveMonitor();
             window.addEventListener("supabaseReady", initLiveMonitor);
+            
+            window.addEventListener('languageChanged', () => {
+                fetchLiveOrders();
+            });
         });
     </script>
 </body>

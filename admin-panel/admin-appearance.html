@@ -3,71 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تعديل المظهر</title>
+    <title data-key="appearance_title">تعديل المظهر</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../config-scripts/dependencies.js?v=6"></script>
+    <script src="../config-scripts/language.js"></script>
     <script src="../config-scripts/js_app_settings.js"></script>
     <script src="../config-scripts/js_auth_config.js"></script>
     <script>if (localStorage.getItem("coof2_role") !== "admin") location.href = "admin-login.html";</script>
 </head>
-<body class="bg-black text-white min-h-screen p-4 md:p-8">
+<body class="bg-black text-white min-h-screen p-4 md:p-8 relative">
+
+    <div id="lang-picker-container" class="absolute top-4 right-4 z-50"></div>
+
     <div class="max-w-6xl mx-auto">
-        <a href="admin-dashboard.html" class="text-amber-500 text-sm hover:text-amber-300">← لوحة المدير</a>
-        <h1 class="text-2xl font-bold text-amber-400 mt-4 mb-2">تعديل عام — مظهر التطبيق</h1>
-        <p class="text-zinc-500 text-sm mb-6">اختر الصور من المكتبة. المعاينة على اليمين كما يراها الزبون تقريباً.</p>
+        <a href="admin-dashboard.html" data-key="back_to_dashboard_link" class="text-amber-500 text-sm hover:text-amber-300">← لوحة المدير</a>
+        <h1 class="text-2xl font-bold text-amber-400 mt-4 mb-2" data-key="appearance_header">تعديل عام — مظهر التطبيق</h1>
+        <p class="text-zinc-500 text-sm mb-6" data-key="appearance_desc">اختر الصور من المكتبة. المعاينة على اليمين كما يراها الزبون تقريباً.</p>
 
         <div class="grid lg:grid-cols-2 gap-8">
             <div class="space-y-5">
                 <div class="p-4 rounded-xl border border-amber-800/30 bg-zinc-950">
-                    <p class="text-amber-400 font-bold mb-2">خلفية الصفحة الرئيسية</p>
+                    <p class="text-amber-400 font-bold mb-2" data-key="homepage_bg_label">خلفية الصفحة الرئيسية</p>
                     <div id="pick-bg" class="grid grid-cols-4 gap-2 max-h-28 overflow-y-auto"></div>
                 </div>
                 <div class="p-4 rounded-xl border border-amber-800/30 bg-zinc-950">
-                    <p class="text-amber-400 font-bold mb-2">الشعار</p>
+                    <p class="text-amber-400 font-bold mb-2" data-key="logo_label">الشعار</p>
                     <div id="pick-logo" class="grid grid-cols-4 gap-2 max-h-28 overflow-y-auto"></div>
                 </div>
                 <div class="p-4 rounded-xl border border-amber-800/30 bg-zinc-950">
-                    <p class="text-amber-400 font-bold mb-2">صورة صف — مشروبات ساخنة</p>
+                    <p class="text-amber-400 font-bold mb-2" data-key="hot_row_img_label">صورة صف — مشروبات ساخنة</p>
                     <div id="pick-hot" class="grid grid-cols-4 gap-2 max-h-28 overflow-y-auto"></div>
                 </div>
                 <div class="p-4 rounded-xl border border-amber-800/30 bg-zinc-950">
-                    <p class="text-amber-400 font-bold mb-2">صورة صف — مشروبات باردة</p>
+                    <p class="text-amber-400 font-bold mb-2" data-key="cold_row_img_label">صورة صف — مشروبات باردة</p>
                     <div id="pick-cold" class="grid grid-cols-4 gap-2 max-h-28 overflow-y-auto"></div>
                 </div>
                 <div class="p-4 rounded-xl border border-amber-800/30 bg-zinc-950">
-                    <p class="text-amber-400 font-bold mb-2">صورة صف — الحلى</p>
+                    <p class="text-amber-400 font-bold mb-2" data-key="dessert_row_img_label">صورة صف — الحلى</p>
                     <div id="pick-dessert" class="grid grid-cols-4 gap-2 max-h-28 overflow-y-auto"></div>
                 </div>
                 <div class="p-4 rounded-xl border border-amber-800/30 bg-zinc-950">
-                    <p class="text-amber-400 font-bold mb-2">صورة صف — الشيشة</p>
+                    <p class="text-amber-400 font-bold mb-2" data-key="shisha_row_img_label">صورة صف — الشيشة</p>
                     <div id="pick-shisha" class="grid grid-cols-4 gap-2 max-h-28 overflow-y-auto"></div>
                 </div>
                 <div class="p-4 rounded-xl border border-amber-800/30 bg-zinc-950 flex justify-between items-center">
                     <div>
-                        <p class="text-amber-400 font-bold">تفعيل وإظهار قسم الشيشة</p>
-                        <p class="text-zinc-500 text-xs mt-1">تحديد إظهار/إخفاء قسم الشيشة في المنيو والشريط السفلي للزبائن</p>
+                        <p class="text-amber-400 font-bold" data-key="enable_shisha_label">تفعيل وإظهار قسم الشيشة</p>
+                        <p class="text-zinc-500 text-xs mt-1" data-key="enable_shisha_desc">تحديد إظهار/إخفاء قسم الشيشة في المنيو والشريط السفلي للزبائن</p>
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer select-none">
                         <input type="checkbox" id="showShishaToggle" class="sr-only peer">
                         <div class="w-14 h-7 bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-black after:border-zinc-600 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-amber-500"></div>
                     </label>
                 </div>
-                <button type="button" id="saveBtn"
+                <button type="button" id="saveBtn" data-key="save_appearance_btn"
                     class="w-full py-4 rounded-xl bg-amber-600 hover:bg-amber-500 text-black font-bold text-lg">
                     حفظ المظهر
                 </button>
             </div>
 
             <div class="rounded-2xl border border-amber-700/40 overflow-hidden bg-zinc-900 sticky top-4 h-fit">
-                <p class="text-center text-xs text-amber-600/80 py-2 border-b border-amber-800/30">معاينة الواجهة الرئيسية</p>
+                <p class="text-center text-xs text-amber-600/80 py-2 border-b border-amber-800/30" data-key="preview_header">معاينة الواجهة الرئيسية</p>
                 <div id="preview" class="relative min-h-[520px] p-4 text-white">
                     <div id="preview-bg" class="absolute inset-0 opacity-40" style="background-size:contain;background-repeat:no-repeat;background-position:center"></div>
                     <div class="relative z-10 text-center pt-6">
                         <p id="preview-brand" class="text-[10px] tracking-widest text-amber-600/80">CAFE</p>
                         <img id="preview-logo" class="w-16 h-16 mx-auto mt-2 rounded-full object-contain bg-zinc-900 border-2 border-amber-600/50 hidden" alt="" />
                         <div id="preview-logo-ph" class="w-16 h-16 mx-auto mt-2 rounded-full bg-zinc-800 flex items-center justify-center text-2xl">☕</div>
-                        <h2 class="text-xl font-bold text-amber-400 mt-3">أهلاً بك</h2>
+                        <h2 class="text-xl font-bold text-amber-400 mt-3" data-key="preview_welcome_label">أهلاً بك</h2>
                     </div>
                     <div class="relative z-10 mt-6 space-y-3 px-2">
                         <div id="preview-hot" class="h-16 rounded-xl border border-amber-700/40 bg-zinc-900" style="background-size:contain;background-repeat:no-repeat;background-position:center"></div>
@@ -171,7 +175,7 @@
             const btn = document.getElementById("saveBtn");
             if (btn) {
                 btn.disabled = true;
-                btn.textContent = "جاري الحفظ...";
+                btn.textContent = phrase(null, 'saving_changes_loader', 'جاري حفظ التعديلات...');
             }
             try {
                 // التأكد من عدم مسح إعدادات UI السابقة بما أن الحقول غير موجودة في هذه الصفحة
@@ -182,14 +186,20 @@
                 settings.ui.show_shisha_category = document.getElementById("showShishaToggle").checked;
                 
                 await saveAppSettings(settings);
-                alert("تم حفظ الصور وتحديث المظهر بنجاح! ✓");
+                alert(phrase(null, 'save_success_toast', 'تم الحفظ وتحديث المظهر بنجاح! ✓'));
             } catch (e) {
-                alert("فشل الحفظ: " + e.message + "\n\nتأكد من تشغيل ملف supabase-app-settings-migration.sql في Supabase");
+                alert(phrase(null, 'save_failed_msg', 'فشل الحفظ: ') + e.message + "\n\n" + (localStorage.getItem("coof2_userLang") === "ar" ? "تأكد من تشغيل ملف supabase-app-settings-migration.sql في Supabase" : "Make sure to run supabase-app-settings-migration.sql in Supabase"));
             } finally {
                 if (btn) {
                     btn.disabled = false;
-                    btn.textContent = "حفظ المظهر";
+                    btn.textContent = phrase(null, 'save_appearance_btn', 'حفظ المظهر');
                 }
+            }
+        });
+
+        window.addEventListener("DOMContentLoaded", () => {
+            if (typeof renderLanguageDropdown === "function") {
+                renderLanguageDropdown('lang-picker-container');
             }
         });
 

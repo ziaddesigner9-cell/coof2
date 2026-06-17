@@ -2,18 +2,22 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>إدارة الصور</title>
+    <title data-key="upload_images_title">إدارة الصور</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- 1. تحميل المكتبة الأساسية -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- 2. تحميل الإعدادات والارتباطات -->
     <script src="../config-scripts/dependencies.js"></script>
+    <script src="../config-scripts/language.js"></script>
+    <script src="../config-scripts/js_app_settings.js"></script>
     <script src="../config-scripts/js_auth_config.js"></script>
     <script src="../config-scripts/js_admin.js"></script>
     <script>if (!checkAccess('admin')) location.href = "admin-login.html";</script>
 </head>
-<body class="bg-black text-white p-4 md:p-8 min-h-screen flex flex-col items-center">
+<body class="bg-black text-white p-4 md:p-8 min-h-screen flex flex-col items-center relative">
     
+    <div id="lang-picker-container" class="absolute top-4 right-4 z-50"></div>
+
     <style>
         .gold-glow {
             box-shadow: 0 0 20px rgba(245, 215, 110, 0.1);
@@ -24,15 +28,15 @@
     <div id="admin-loader" class="fixed inset-0 bg-black z-[100] flex items-center justify-center hidden">
         <div class="text-center">
             <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500 mx-auto"></div>
-            <p class="mt-4 text-amber-500 font-bold">جاري التحميل...</p>
+            <p class="mt-4 text-amber-500 font-bold" data-key="loading">جاري التحميل...</p>
         </div>
     </div>
 
     <div class="w-full max-w-4xl space-y-12">
-        <a href="admin-dashboard.html" class="inline-block text-amber-600 text-sm mb-4 hover:text-amber-400 transition">← العودة للوحة المدير</a>
+        <a href="admin-dashboard.html" data-key="back_to_dashboard_link" class="inline-block text-amber-600 text-sm mb-4 hover:text-amber-400 transition">← العودة للوحة المدير</a>
         <div class="text-center md:text-right">
-            <h1 class="text-3xl font-bold text-amber-500 mb-2">مكتبة الصور</h1>
-            <p class="text-zinc-500 text-sm mb-8">ارفع صور الأصناف هنا لتظهر في قائمة الاختيار</p>
+            <h1 class="text-3xl font-bold text-amber-500 mb-2" data-key="upload_images_header">مكتبة الصور</h1>
+            <p class="text-zinc-500 text-sm mb-8" data-key="upload_images_desc">ارفع صور الأصناف هنا لتظهر في قائمة الاختيار</p>
         </div>
 
         <div class="bg-zinc-900 p-8 rounded-[2.5rem] border border-amber-500/20 shadow-2xl gold-glow max-w-md mx-auto">
@@ -44,16 +48,16 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
                     </svg>
                 </div>
-                <span class="text-amber-500 font-bold text-lg">اضغط لاختيار صورة</span>
-                <span class="text-zinc-500 text-xs mt-2 italic font-mono">الصور تُحول تلقائياً لـ WebP لزيادة السرعة</span>
+                <span class="text-amber-500 font-bold text-lg" data-key="click_to_select_image">اضغط لاختيار صورة</span>
+                <span class="text-zinc-500 text-xs mt-2 italic font-mono" data-key="webp_conversion_hint">الصور تُحول تلقائياً لـ WebP لزيادة السرعة</span>
             </label>
             
             <div id="previewContainer" class="mt-8 hidden text-center animate-in fade-in zoom-in duration-300">
                 <div class="relative inline-block">
                     <img id="imagePreview" class="w-48 h-48 object-cover rounded-3xl mx-auto border-2 border-amber-500/50 shadow-lg shadow-amber-500/10">
-                    <div class="absolute -top-2 -right-2 bg-amber-500 text-black text-[10px] font-bold px-2 py-1 rounded-lg">معاينة</div>
+                    <div class="absolute -top-2 -right-2 bg-amber-500 text-black text-[10px] font-bold px-2 py-1 rounded-lg" data-key="preview_label">معاينة</div>
                 </div>
-                <button id="uploadBtn" class="w-full mt-8 bg-amber-500 hover:bg-amber-400 text-black font-extrabold py-4 rounded-2xl shadow-xl shadow-amber-600/20 transition-all active:scale-95">
+                <button id="uploadBtn" data-key="upload_and_save_btn" class="w-full mt-8 bg-amber-500 hover:bg-amber-400 text-black font-extrabold py-4 rounded-2xl shadow-xl shadow-amber-600/20 transition-all active:scale-95">
                     رفع وحفظ في المكتبة ✓
                 </button>
             </div>
@@ -63,10 +67,10 @@
         <div class="mt-12">
             <h2 class="text-xl font-bold text-amber-500/80 mb-6 flex items-center gap-3">
                 <span class="w-8 h-1 bg-amber-500 rounded-full"></span>
-                الصور المتوفرة في المكتبة
+                <span data-key="gallery_title">الصور المتوفرة في المكتبة</span>
             </h2>
             <div id="gallery-container" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 p-4 bg-zinc-900/50 rounded-[2rem] border border-amber-500/10 min-h-[200px]">
-                <p class="text-zinc-500 text-center col-span-full py-10">جاري تحميل المكتبة...</p>
+                <p class="text-zinc-500 text-center col-span-full py-10" data-key="gallery_loading_text">جاري تحميل المكتبة...</p>
             </div>
         </div>
     </div>
@@ -74,63 +78,68 @@
     <script>
         (function() {
             const imageInput = document.getElementById('imageInput');
-        const previewContainer = document.getElementById('previewContainer');
-        const imagePreview = document.getElementById('imagePreview');
-        const uploadBtn = document.getElementById('uploadBtn');
+            const previewContainer = document.getElementById('previewContainer');
+            const imagePreview = document.getElementById('imagePreview');
+            const uploadBtn = document.getElementById('uploadBtn');
 
-        imageInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                imagePreview.src = URL.createObjectURL(file);
-                previewContainer.classList.remove('hidden');
-            }
-        });
-
-        uploadBtn.addEventListener('click', async () => {
-            console.log("0. تم الضغط على زر الرفع.");
-            const file = imageInput.files[0];
-            if (!file) return;
-
-            try {
-                showAdminLoader(); // إظهار التحميل عند بدء الرفع
-                
-                // 1. الرفع إلى Storage
-                const result = await window.uploadItemImage(file);
-                
-                if (result && result.url) {
-                    console.log("3. جاري حفظ البيانات في جدول gallery...");
-                    // 2. الحفظ في جدول gallery (هذا هو زر "الحفظ" الذي طلبته)
-                    const supabase = window.getSupabaseClient();
-                    const { error: dbError } = await supabase
-                        .from('gallery')
-                        .insert([{ image_url: result.url, name: file.name }]);
-
-                    console.log("4. انتهت عملية الحفظ في الجدول. النتيجة:", dbError);
-
-                    if (dbError) throw dbError;
-
-                    // إعادة تعيين الواجهة لرفع صورة أخرى
-                    imageInput.value = ""; 
-                    previewContainer.classList.add('hidden');
-                    imagePreview.src = "";
-
-                    alert('تم الرفع والحفظ في المكتبة بنجاح! ✓');
-
-                    // تحديث قائمة الصور فوراً
-                    if (typeof window.fetchGallery === "function") window.fetchGallery();
-                } else if (result && result.error) {
-                    throw new Error(result.error);
+            imageInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    imagePreview.src = URL.createObjectURL(file);
+                    previewContainer.classList.remove('hidden');
                 }
-            } catch (err) {
-                console.error("حدث خطأ أثناء العملية:", err);
-                alert('فشل الرفع: ' + err.message);
-            } finally {
-                console.log("5. تم الوصول لنهاية الدالة وإيقاف الدوران!");
-                hideAdminLoader(); // إخفاء التحميل عند الانتهاء (حتى لو فشل)
-            }
-        });
+            });
 
-        // السطر 57 - التأكد من إغلاق الدوال قبل أي جملة if
+            uploadBtn.addEventListener('click', async () => {
+                console.log("0. تم الضغط على زر الرفع.");
+                const file = imageInput.files[0];
+                if (!file) return;
+
+                try {
+                    showAdminLoader(); // إظهار التحميل عند بدء الرفع
+                    
+                    // 1. الرفع إلى Storage
+                    const result = await window.uploadItemImage(file);
+                    
+                    if (result && result.url) {
+                        console.log("3. جاري حفظ البيانات في جدول gallery...");
+                        // 2. الحفظ في جدول gallery (هذا هو زر "الحفظ" الذي طلبته)
+                        const supabase = window.getSupabaseClient();
+                        const { error: dbError } = await supabase
+                            .from('gallery')
+                            .insert([{ image_url: result.url, name: file.name }]);
+
+                        console.log("4. انتهت عملية الحفظ في الجدول. النتيجة:", dbError);
+
+                        if (dbError) throw dbError;
+
+                        // إعادة تعيين الواجهة لرفع صورة أخرى
+                        imageInput.value = ""; 
+                        previewContainer.classList.add('hidden');
+                        imagePreview.src = "";
+
+                        alert(phrase(null, 'upload_success', 'تم الرفع والحفظ في المكتبة بنجاح! ✓'));
+
+                        // تحديث قائمة الصور فوراً
+                        if (typeof window.fetchGallery === "function") window.fetchGallery();
+                    } else if (result && result.error) {
+                        throw new Error(result.error);
+                    }
+                } catch (err) {
+                    console.error("حدث خطأ أثناء العملية:", err);
+                    alert(phrase(null, 'upload_failed', 'فشل الرفع: ') + err.message);
+                } finally {
+                    console.log("5. تم الوصول لنهاية الدالة وإيقاف الدوران!");
+                    hideAdminLoader(); // إخفاء التحميل عند الانتهاء (حتى لو فشل)
+                }
+            });
+
+            window.addEventListener("DOMContentLoaded", () => {
+                if (typeof renderLanguageDropdown === "function") {
+                    renderLanguageDropdown('lang-picker-container');
+                }
+            });
+
             if (window.location.search && window.location.search.indexOf('status=ready') !== -1) {
                 console.log("النظام جاهز تماماً");
             }

@@ -3,20 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تحديث حالة الطلب</title>
+    <title data-key="delivery_update_title">تحديث حالة الطلب</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
     <style>body { font-family: 'Tajawal', sans-serif; }</style>
+    <script src="../config-scripts/language.js"></script>
+    <script src="../config-scripts/js_app_settings.js"></script>
 </head>
 <body class="bg-zinc-950 text-zinc-100 min-h-screen flex items-center justify-center p-6">
     <div class="w-full max-w-md bg-zinc-900 p-8 rounded-3xl border border-amber-500/30 shadow-2xl text-center">
         <div id="status-message">
             <span class="text-5xl block mb-4">⏳</span>
-            <h1 class="text-2xl font-bold text-amber-500">جاري تحديث حالة الطلب...</h1>
-            <p class="text-zinc-400 mt-2">يرجى الانتظار قليلاً.</p>
+            <h1 class="text-2xl font-bold text-amber-500" data-key="delivery_updating_header">جاري تحديث حالة الطلب...</h1>
+            <p class="text-zinc-400 mt-2" data-key="delivery_updating_desc">يرجى الانتظار قليلاً.</p>
         </div>
         <button onclick="window.location.href='delivery_dashboard.html'"
-                class="mt-8 w-full bg-amber-600 hover:bg-amber-500 text-black font-bold py-3 rounded-2xl transition shadow-lg hidden" id="back-to-dashboard">
+                class="mt-8 w-full bg-amber-600 hover:bg-amber-500 text-black font-bold py-3 rounded-2xl transition shadow-lg hidden" 
+                id="back-to-dashboard" data-key="delivery_back_btn">
             العودة للوحة التوصيل
         </button>
     </div>
@@ -27,6 +30,18 @@
     <script src="../config-scripts/js_delivery.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
+            let lang = localStorage.getItem("coof2_userLang") || "ar";
+            if (lang === "ar") {
+                document.documentElement.dir = "rtl";
+                document.documentElement.lang = "ar";
+            } else {
+                document.documentElement.dir = "ltr";
+                document.documentElement.lang = lang;
+            }
+
+            // تفعيل تعريب الكلمات الثابتة المتبقية
+            applyLanguage(lang);
+
             const urlParams = new URLSearchParams(window.location.search);
             const orderId = urlParams.get('orderId');
             const statusMessageEl = document.getElementById('status-message');
@@ -35,8 +50,8 @@
             if (!orderId) {
                 statusMessageEl.innerHTML = `
                     <span class="text-5xl block mb-4">❌</span>
-                    <h1 class="text-2xl font-bold text-red-500">خطأ: لم يتم تحديد الطلب.</h1>
-                    <p class="text-zinc-400 mt-2">يرجى التأكد من مسح الكود الصحيح.</p>
+                    <h1 class="text-2xl font-bold text-red-500">${phrase(null, 'delivery_err_no_order', 'خطأ: لم يتم تحديد الطلب.')}</h1>
+                    <p class="text-zinc-400 mt-2">${phrase(null, 'delivery_err_no_order_desc', 'يرجى التأكد من مسح الكود الصحيح.')}</p>
                 `;
                 backButton.classList.remove('hidden');
                 return;
@@ -51,14 +66,15 @@
             if (result.ok) {
                 statusMessageEl.innerHTML = `
                     <span class="text-5xl block mb-4">✅</span>
-                    <h1 class="text-2xl font-bold text-emerald-500">تم تحديث حالة الطلب بنجاح!</h1>
-                    <p class="text-zinc-400 mt-2">الطلب الآن في طريق التوصيل.</p>
+                    <h1 class="text-2xl font-bold text-emerald-500">${phrase(null, 'delivery_update_success', 'تم تحديث حالة الطلب بنجاح!')}</h1>
+                    <p class="text-zinc-400 mt-2">${phrase(null, 'delivery_update_success_desc', 'الطلب الآن في طريق التوصيل.')}</p>
                 `;
             } else {
+                const reasonText = result.error || phrase(null, 'unknown', 'غير معروف');
                 statusMessageEl.innerHTML = `
                     <span class="text-5xl block mb-4">⚠️</span>
-                    <h1 class="text-2xl font-bold text-amber-500">فشل تحديث حالة الطلب.</h1>
-                    <p class="text-zinc-400 mt-2">السبب: ${result.error || 'غير معروف'}. قد يكون الطلب ليس جاهزاً للتوصيل بعد.</p>
+                    <h1 class="text-2xl font-bold text-amber-500">${phrase(null, 'delivery_update_failed', 'فشل تحديث حالة الطلب.')}</h1>
+                    <p class="text-zinc-400 mt-2">${phrase(null, 'delivery_update_failed_desc', 'السبب: {reason}. قد يكون الطلب ليس جاهزاً للتوصيل بعد.').replace('{reason}', reasonText)}</p>
                 `;
             }
             backButton.classList.remove('hidden');

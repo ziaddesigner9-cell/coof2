@@ -56,11 +56,8 @@ FOR ALL TO authenticated
 USING (true) 
 WITH CHECK (true);
 
--- السماح للزبون المجهول بقراءة الطلب الخاص به فقط
--- نستخدم معيار التحقق: يجب أن يملك الزبون المعرف الفريد للطلب (ID) لقراءته
-CREATE POLICY "allow_anon_read_own_order" ON public.orders 
-FOR SELECT TO anon 
-USING (true);
+-- تم إزالة سياسة القراءة المفتوحة للزبون المجهول (USING true) لأنها تشكل ثغرة أمنية (Data Leak).
+-- للزبون المجهول (Anon)، سيتم الاعتماد فقط على الدالة الآمنة get_customer_order التي تتطلب UUID.
 
 
 -- 5. دالة آمنة لتحديث كلمة مرور الموظفين من لوحة التحكم (update_staff_password)

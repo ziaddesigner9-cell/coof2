@@ -35,6 +35,7 @@
     <script src="config-scripts/app_env.js"></script>
     <script src="config-scripts/dependencies.js"></script>
     <script src="config-scripts/js_app_settings.js"></script>
+    <script src="config-scripts/language.js"></script>
     <link rel="stylesheet" href="config-scripts/theme.css" />
     <style>
         body.has-bottom-nav { padding-bottom: 5.5rem; }
@@ -153,10 +154,9 @@
     <div id="app-bg-layer" class="hidden"></div>
     <div class="app-vignette absolute inset-0 pointer-events-none z-[1]"></div>
 
-    <button type="button" onclick="location.href='admin-panel/admin-only-login.html'"
-        class="fixed top-4 left-4 z-50 text-amber-400 border border-amber-700/50 px-3 py-1.5 rounded-full text-xs">⚙️ المدير</button>
-    <a href="admin-panel/admin-login.html"
-        class="fixed top-4 right-4 z-50 text-amber-400 border border-amber-700/50 px-3 py-1.5 rounded-full text-xs">عامل</a>
+    <button type="button" onclick="location.href='admin-panel/admin-login.html'" data-key="admin_btn"
+        class="fixed top-4 left-4 z-50 text-amber-400 bg-black/60 border border-amber-700/50 px-3.5 py-2 rounded-full text-xs font-bold pointer-events-auto shadow-md">⚙️ بوابة الموظفين</button>
+    <div id="lang-picker-container" class="fixed top-4 right-4 z-50"></div>
 
     <div class="relative z-10 max-w-lg mx-auto px-4 pt-2 pb-4">
 
@@ -231,6 +231,9 @@
         }
         document.addEventListener("DOMContentLoaded", () => {
             if (window.getSupabaseClient()) bootHome();
+            if (typeof renderLanguageDropdown === 'function') {
+                renderLanguageDropdown('lang-picker-container');
+            }
         });
         window.addEventListener("supabaseReady", bootHome); // Already safe
     </script>

@@ -165,6 +165,27 @@ async function saveAppSettings(settings) {
 }
 
 function phrase(settings, key, fallback = "") {
+    let currentLang = 'ar';
+    try {
+        currentLang = localStorage.getItem('coof2_userLang') || 'ar';
+    } catch (_) {}
+
+    if (!key) return fallback;
+    const normalizedKey = String(key).trim().replace(/\s+/g, ' ');
+
+    if (window.translations && window.translations[currentLang]) {
+        if (window.translations[currentLang][normalizedKey] !== undefined) {
+            return window.translations[currentLang][normalizedKey];
+        }
+        // Fallback check for case-insensitive matches
+        const lowerKey = normalizedKey.toLowerCase();
+        for (const k in window.translations[currentLang]) {
+            if (k.toLowerCase() === lowerKey) {
+                return window.translations[currentLang][k];
+            }
+        }
+    }
+
     if (settings && settings.phrases && settings.phrases[key] !== undefined) {
         return settings.phrases[key];
     }

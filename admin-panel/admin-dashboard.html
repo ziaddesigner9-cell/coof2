@@ -3,66 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة تحكم المدير</title>
+    <title data-key="admin_dashboard_title">لوحة تحكم المدير</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="../config-scripts/js_auth_config.js"></script>
+    <script src="../config-scripts/language.js"></script>
     <script>
         if (localStorage.getItem("coof2_role") !== "admin") location.href = "admin-login.html";
     </script>
 </head>
-<body class="bg-black text-white min-h-screen p-6 md:p-10">
+<body class="bg-black text-white min-h-screen p-6 md:p-10 relative">
+    <div id="lang-picker-container" class="absolute top-4 right-4 z-50"></div>
     <div class="max-w-5xl mx-auto">
         <header class="flex justify-between items-center mb-10 border-b border-amber-800/30 pb-4">
             <div>
                 <p class="text-amber-600/70 text-xs tracking-widest">ADMIN</p>
-                <h1 class="text-3xl font-bold text-amber-400">لوحة تحكم المدير</h1>
+                <h1 data-key="admin_dashboard_header" class="text-3xl font-bold text-amber-400">لوحة تحكم المدير</h1>
             </div>
-            <a href="../index.html" class="text-sm text-zinc-500 hover:text-amber-400">العودة للموقع</a>
+            <a href="../index.html" data-key="back_to_site" class="text-sm text-zinc-500 hover:text-amber-400">العودة للموقع</a>
         </header>
 
-        <p class="text-amber-500/80 text-sm font-bold mb-3">الأهم — إدارة المحتوى</p>
+        <p data-key="admin_section_content" class="text-amber-500/80 text-sm font-bold mb-3">الأهم — إدارة المحتوى</p>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
             <a href="upload-images.html"
                 class="block p-6 rounded-2xl border-2 border-amber-600/50 bg-zinc-900 hover:border-amber-500 transition shadow-lg shadow-amber-900/10">
                 <div class="text-4xl mb-3">🖼️</div>
-                <h2 class="text-xl font-bold text-amber-400">مكتبة الصور</h2>
-                <p class="text-zinc-400 mt-2 text-sm">رفع الصور واستخدامها في القائمة والمظهر والشعار</p>
+                <h2 data-key="admin_photo_library" class="text-xl font-bold text-amber-400">مكتبة الصور</h2>
+                <p data-key="admin_photo_desc" class="text-zinc-400 mt-2 text-sm">رفع الصور واستخدامها في القائمة والمظهر والشعار</p>
             </a>
             <a href="manage-menu.html"
                 class="block p-6 rounded-2xl border-2 border-amber-600/50 bg-zinc-900 hover:border-amber-500 transition shadow-lg shadow-amber-900/10">
                 <div class="text-4xl mb-3">➕</div>
-                <h2 class="text-xl font-bold text-amber-400">إضافة صنف جديد</h2>
-                <p class="text-zinc-400 mt-2 text-sm">اسم، سعر، تصنيف، وصورة من المكتبة</p>
+                <h2 data-key="admin_add_item" class="text-xl font-bold text-amber-400">إضافة صنف جديد</h2>
+                <p data-key="admin_add_desc" class="text-zinc-400 mt-2 text-sm">اسم، سعر، تصنيف، وصورة من المكتبة</p>
             </a>
             <a href="edit-items.html"
                 class="block p-6 rounded-2xl border-2 border-amber-600/50 bg-zinc-900 hover:border-amber-500 transition shadow-lg shadow-amber-900/10 md:col-span-2">
                 <div class="text-4xl mb-3">✏️</div>
-                <h2 class="text-xl font-bold text-amber-400">تعديل الأصناف الموجودة</h2>
-                <p class="text-zinc-400 mt-2 text-sm">عدّل القائمة الحالية: الاسم، السعر، التصنيف، الصورة، إخفاء أو حذف صنف</p>
+                <h2 data-key="admin_edit_items" class="text-xl font-bold text-amber-400">تعديل الأصناف الموجودة</h2>
+                <p data-key="admin_edit_desc" class="text-zinc-400 mt-2 text-sm">عدّل القائمة الحالية: الاسم، السعر، التصنيف، الصورة، إخفاء أو حذف صنف</p>
             </a>
         </div>
 
-        <p class="text-zinc-500 text-sm font-bold mb-3">تخصيص التطبيق والأمان</p>
+        <p data-key="admin_section_settings" class="text-zinc-500 text-sm font-bold mb-3">تخصيص التطبيق والأمان</p>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
             <a href="admin-appearance.html"
                 class="block p-6 rounded-2xl border border-amber-800/30 bg-zinc-950 hover:border-amber-600/60 transition">
                 <div class="text-3xl mb-3">🎨</div>
-                <h2 class="text-lg font-bold text-amber-300">تعديل عام (المظهر)</h2>
-                <p class="text-zinc-500 mt-2 text-sm">الخلفية، الشعار، صور صفوف الساخن/البارد/الحلى</p>
+                <h2 data-key="admin_appearance" class="text-lg font-bold text-amber-300">تعديل عام (المظهر)</h2>
+                <p data-key="admin_appearance_desc" class="text-zinc-500 mt-2 text-sm">الخلفية، الشعار، صور صفوف الساخن/البارد/الحلى</p>
             </a>
             <a href="admin-phrases.html"
                 class="block p-6 rounded-2xl border border-amber-800/30 bg-zinc-950 hover:border-amber-600/60 transition">
                 <div class="text-3xl mb-3">✍️</div>
-                <h2 class="text-lg font-bold text-amber-300">تعديل العبارات</h2>
-                <p class="text-zinc-500 mt-2 text-sm">الترحيب، التتبع، النصوص تحت QR، وغيرها مع موقع كل عبارة</p>
+                <h2 data-key="admin_phrases" class="text-lg font-bold text-amber-300">تعديل العبارات</h2>
+                <p data-key="admin_phrases_desc" class="text-zinc-500 mt-2 text-sm">الترحيب، التتبع، النصوص تحت QR، وغيرها مع موقع كل عبارة</p>
             </a>
             <a href="admin-passwords.html"
                 class="block p-6 rounded-2xl border border-amber-800/30 bg-zinc-950 hover:border-amber-600/60 transition md:col-span-2">
                 <div class="text-3xl mb-3">🔒</div>
-                <h2 class="text-lg font-bold text-amber-300">إدارة الرموز السرية (PIN)</h2>
-                <p class="text-zinc-500 mt-2 text-sm">تعديل وتحديث وتشفير الرموز السرية للمدير العام، المطبخ، والسائقين</p>
+                <h2 data-key="admin_manage_pins" class="text-lg font-bold text-amber-300">إدارة الرموز السرية (PIN)</h2>
+                <p data-key="admin_pins_desc" class="text-zinc-500 mt-2 text-sm">تعديل وتحديث وتشفير الرموز السرية للمدير العام، المطبخ، والسائقين</p>
             </a>
         </div>
     </div>
+    
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderLanguageDropdown === 'function') {
+                renderLanguageDropdown('lang-picker-container');
+            }
+        });
+    </script>
 </body>
 </html>

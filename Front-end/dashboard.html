@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة تحكم العامل</title>
+    <title data-key="worker_hub_title">لوحة تحكم العامل</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="../config-scripts/language.js"></script>
     <script src="../config-scripts/js_auth_config.js"></script>
@@ -17,25 +17,34 @@
         });
     </script>
 </head>
-<body class="bg-gray-50 min-h-screen p-8">
+<body class="bg-gray-50 min-h-screen p-8 relative">
+
+    <div id="lang-picker-container" class="absolute top-4 right-4 z-50"></div>
 
     <div class="max-w-md mx-auto text-center mt-16">
-        <h1 class="text-3xl font-bold text-gray-800 mb-8">لوحة تحكم العامل</h1>
+        <h1 class="text-3xl font-bold text-gray-800 mb-8" data-key="worker_hub_header">لوحة تحكم العامل</h1>
         
         <div class="grid gap-4">
             <a href="menu.html" class="block bg-blue-50 p-6 rounded-2xl shadow-md border border-blue-200 hover:border-blue-500 transition">
                 <span class="text-2xl">☕</span>
-                <h2 class="font-bold text-xl mt-2">تصفح القائمة</h2>
+                <h2 class="font-bold text-xl mt-2" data-key="worker_hub_browse">تصفح القائمة</h2>
             </a>
 
             <a href="kitchen.html" class="block bg-green-50 p-6 rounded-2xl shadow-md border border-green-200 hover:border-green-500 transition">
                 <span class="text-2xl">👨‍🍳</span>
-                <h2 class="font-bold text-xl mt-2">استقبال الطلبات</h2>
+                <h2 class="font-bold text-xl mt-2" data-key="worker_hub_receive">استقبل الطلبات</h2>
             </a>
             
-            <a href="../index.html" class="text-gray-400 hover:text-gray-600 mt-6 underline">العودة للواجهة الرئيسية</a>
+            <a href="../index.html" class="text-gray-400 hover:text-gray-600 mt-6 underline inline-block" data-key="worker_hub_back">العودة للواجهة الرئيسية</a>
         </div>
     </div>
 
+    <script>
+        window.addEventListener("DOMContentLoaded", () => {
+            if (typeof renderLanguageDropdown === "function") {
+                renderLanguageDropdown('lang-picker-container');
+            }
+        });
+    </script>
 </body>
 </html>

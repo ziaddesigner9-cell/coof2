@@ -3,63 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إضافة صنف جديد | لوحة المدير</title>
+    <title data-key="manage_menu_title">إضافة صنف جديد | لوحة المدير</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../config-scripts/dependencies.js?v=6"></script>
     <script src="../config-scripts/js_categories.js"></script>
+    <script src="../config-scripts/language.js"></script>
+    <script src="../config-scripts/js_app_settings.js"></script>
     <script src="../config-scripts/js_auth_config.js"></script>
     <script src="../config-scripts/js_admin.js"></script>
     <script>if (localStorage.getItem("coof2_role") !== "admin") location.href = "admin-login.html";</script>
     <link rel="stylesheet" href="../config-scripts/theme.css" />
 </head>
-<body class="bg-black text-white min-h-screen p-4 md:p-8 flex flex-col items-center">
+<body class="bg-black text-white min-h-screen p-4 md:p-8 flex flex-col items-center relative">
+
+    <div id="lang-picker-container" class="absolute top-4 right-4 z-50"></div>
 
     <!-- واجهة التحميل المركزية -->
     <div id="admin-loader" class="fixed inset-0 bg-black z-[100] flex items-center justify-center hidden">
         <div class="text-center">
             <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500 mx-auto"></div>
-            <p class="mt-4 text-amber-500 font-bold tracking-widest">جاري الحفظ...</p>
+            <p class="mt-4 text-amber-500 font-bold tracking-widest" data-key="saving_loader_text">جاري الحفظ...</p>
         </div>
     </div>
 
     <div class="w-full max-w-2xl">
         <div class="flex justify-between items-center mb-6">
-            <a href="admin-dashboard.html" class="text-amber-500 text-sm hover:text-amber-300 transition">← لوحة المدير</a>
-            <a href="edit-items.html" class="text-zinc-400 text-sm hover:text-amber-400 transition">✏️ تعديل الأصناف</a>
+            <a href="admin-dashboard.html" data-key="back_to_dashboard_link" class="text-amber-500 text-sm hover:text-amber-300 transition">← لوحة المدير</a>
+            <a href="edit-items.html" data-key="edit_items_link" class="text-zinc-400 text-sm hover:text-amber-400 transition">✏️ تعديل الأصناف</a>
         </div>
 
-        <h1 class="text-3xl font-bold text-amber-400 mb-8">➕ إضافة صنف جديد</h1>
+        <h1 class="text-3xl font-bold text-amber-400 mb-8" data-key="add_item_header">➕ إضافة صنف جديد</h1>
         
         <div class="bg-zinc-900 p-6 md:p-8 rounded-[2rem] border border-amber-800/30 shadow-2xl space-y-6">
             <div>
-                <label class="block text-amber-300 text-sm font-bold mb-2">اسم الصنف</label>
-                <input type="text" id="name" placeholder="مثال: كابتشينو" class="w-full p-4 rounded-2xl bg-black border border-amber-800/40 text-white outline-none focus:border-amber-500 transition">
+                <label class="block text-amber-300 text-sm font-bold mb-2" data-key="item_name_label">اسم الصنف</label>
+                <input type="text" id="name" data-key="item_name_placeholder" placeholder="مثال: كابتشينو" class="w-full p-4 rounded-2xl bg-black border border-amber-800/40 text-white outline-none focus:border-amber-500 transition">
             </div>
 
             <div>
-                <label class="block text-amber-300 text-sm font-bold mb-2">السعر (ريال)</label>
+                <label class="block text-amber-300 text-sm font-bold mb-2" id="priceLabel" data-key="price_label_with_currency">السعر (ر.س)</label>
                 <input type="number" id="price" placeholder="0.00" class="w-full p-4 rounded-2xl bg-black border border-amber-800/40 text-white outline-none focus:border-amber-500 transition">
             </div>
 
             <div>
-                <label class="block text-amber-300 text-sm font-bold mb-2">التصنيف</label>
+                <label class="block text-amber-300 text-sm font-bold mb-2" data-key="item_category_label">التصنيف</label>
                 <select id="category" class="w-full p-4 rounded-2xl bg-black border border-amber-800/40 text-white outline-none focus:border-amber-500 transition cursor-pointer">
-                    <option value="hot">مشروبات ساخنة</option>
-                    <option value="cold">مشروبات باردة</option>
-                    <option value="dessert">الحلى</option>
-                    <option value="shisha">شيشة</option>
+                    <option value="hot" data-key="category_hot_label">مشروبات ساخنة</option>
+                    <option value="cold" data-key="category_cold_label">مشروبات باردة</option>
+                    <option value="dessert" data-key="category_dessert_label">الحلى</option>
+                    <option value="shisha" data-key="category_shisha_label">شيشة</option>
                 </select>
             </div>
             
             <div>
-                <label class="block text-amber-300 text-sm font-bold mb-3">اختر صورة من المكتبة</label>
+                <label class="block text-amber-300 text-sm font-bold mb-3" data-key="select_image_from_gallery">اختر صورة من المكتبة</label>
                 <div id="galleryGrid" class="grid grid-cols-3 sm:grid-cols-4 gap-3 border border-amber-800/20 p-4 rounded-2xl h-64 overflow-y-auto bg-black/50">
-                    <p class="col-span-full text-zinc-600 text-center py-10">جاري تحميل الصور...</p>
+                    <p class="col-span-full text-zinc-600 text-center py-10" data-key="loading_images_hint">جاري تحميل الصور...</p>
                 </div>
             </div>
             
-            <button onclick="handleSave()" id="saveBtn" class="w-full bg-amber-600 hover:bg-amber-500 text-black p-4 rounded-2xl font-extrabold text-lg transition shadow-xl shadow-amber-900/20 active:scale-95">
+            <button onclick="handleSave()" id="saveBtn" data-key="save_item_button" class="w-full bg-amber-600 hover:bg-amber-500 text-black p-4 rounded-2xl font-extrabold text-lg transition shadow-xl shadow-amber-900/20 active:scale-95">
                 حفظ الصنف في القائمة ✓
             </button>
         </div>
@@ -79,7 +83,9 @@
                 if (error) throw error;
 
                 if (!data || data.length === 0) {
-                    if (grid) grid.innerHTML = `<p class="col-span-full text-zinc-600 text-center py-10">لا توجد صور. ارفع صوراً أولاً.</p>`;
+                    if (grid) {
+                        grid.innerHTML = `<p class="col-span-full text-zinc-600 text-center py-10">${phrase(null, "no_images_in_gallery", "لا توجد صور. ارفع صوراً أولاً.")}</p>`;
+                    }
                     return;
                 }
 
@@ -111,16 +117,16 @@
             const priceEl = document.getElementById('price');
             const catEl = document.getElementById('category');
 
-            if (!nameEl?.value.trim()) return alert("يرجى إدخال اسم الصنف");
-            if (!priceEl?.value || parseFloat(priceEl.value) < 0) return alert("يرجى إدخال سعر صحيح");
-            if (!selectedImageUrl) return alert("يرجى اختيار صورة من المكتبة أولاً");
+            if (!nameEl?.value.trim()) return alert(phrase(null, "validate_enter_name", "يرجى إدخال اسم الصنف"));
+            if (!priceEl?.value || parseFloat(priceEl.value) < 0) return alert(phrase(null, "validate_enter_price", "يرجى إدخال سعر صحيح"));
+            if (!selectedImageUrl) return alert(phrase(null, "validate_select_image", "يرجى اختيار صورة من المكتبة أولاً"));
 
             const btn = document.getElementById('saveBtn');
             if (typeof window.showAdminLoader === "function") window.showAdminLoader();
 
             try {
                 const client = window.getSupabaseClient?.();
-                if (!client) throw new Error("قاعدة البيانات غير متصلة");
+                if (!client) throw new Error(phrase(null, "db_not_connected", "قاعدة البيانات غير متصلة"));
                 
                 const { data, error } = await client.from("items").insert([{
                     name: nameEl.value.trim(),
@@ -131,9 +137,9 @@
                 }]).select();
 
                 if (error) throw error;
-                if (!data || data.length === 0) throw new Error("فشل الحفظ في قاعدة البيانات. تحقق من سياسات RLS.");
+                if (!data || data.length === 0) throw new Error(phrase(null, "db_save_failed", "فشل الحفظ في قاعدة البيانات. تحقق من سياسات RLS."));
 
-                alert("تمت إضافة «" + nameEl.value + "» بنجاح! ✓");
+                alert(phrase(null, "add_item_success_toast", "تمت إضافة الصنف بنجاح! ✓") + " (" + nameEl.value + ")");
 
                 // تفريغ الحقول للصنف التالي
                 nameEl.value = "";
@@ -146,11 +152,17 @@
 
             } catch (error) {
                 console.error("Save Error:", error);
-                alert("فشل الحفظ: " + error.message);
+                alert(phrase(null, "save_failed_msg", "فشل الحفظ: ") + error.message);
             } finally {
                 if (typeof window.hideAdminLoader === "function") window.hideAdminLoader();
             }
         }
+
+        window.addEventListener("DOMContentLoaded", () => {
+            if (typeof renderLanguageDropdown === "function") {
+                renderLanguageDropdown('lang-picker-container');
+            }
+        });
 
         window.addEventListener("supabaseReady", loadGalleryForMenu);
         if (window.getSupabaseClient?.()) loadGalleryForMenu();

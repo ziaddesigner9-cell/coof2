@@ -111,16 +111,16 @@
     // توليد عناصر القائمة ديناميكياً
     let navContent = `
         <a href="${homeHref}" class="flex flex-col items-center justify-center text-[10px] tracking-wide transition-all duration-300 ${isHome && !currentCat ? activeClass : idleClass}" data-nav="home">
-            ${icons.home}<span>الرئيسية</span>
+            ${icons.home}<span data-key="home">الرئيسية</span>
         </a>
         <a href="${menuBase}?cat=hot" class="flex flex-col items-center justify-center text-[10px] tracking-wide transition-all duration-300 ${currentCat === "hot" ? activeClass : idleClass}" data-nav="hot">
-            ${icons.hot}<span>ساخن</span>
+            ${icons.hot}<span data-key="hot">ساخن</span>
         </a>
         <a href="${menuBase}?cat=cold" class="flex flex-col items-center justify-center text-[10px] tracking-wide transition-all duration-300 ${currentCat === "cold" ? activeClass : idleClass}" data-nav="cold">
-            ${icons.cold}<span>بارد</span>
+            ${icons.cold}<span data-key="cold">بارد</span>
         </a>
         <a href="${menuBase}?cat=dessert" class="flex flex-col items-center justify-center text-[10px] tracking-wide transition-all duration-300 ${currentCat === "dessert" ? activeClass : idleClass}" data-nav="dessert">
-            ${icons.dessert}<span>حلى</span>
+            ${icons.dessert}<span data-key="dessert">حلى</span>
         </a>
     `;
 
@@ -128,7 +128,7 @@
     if (showShisha) {
         navContent += `
         <a href="${menuBase}?cat=shisha" class="flex flex-col items-center justify-center text-[10px] tracking-wide transition-all duration-300 ${currentCat === "shisha" ? activeClass : idleClass}" data-nav="shisha">
-            ${icons.shisha}<span>شيشة</span>
+            ${icons.shisha}<span data-key="shisha">شيشة</span>
         </a>
         `;
     }
@@ -136,16 +136,25 @@
     navContent += `
         <a href="${trackUrl}" id="nav-track-link" class="relative flex flex-col items-center justify-center text-[10px] tracking-wide transition-all duration-300 ${isTracking ? activeClass : (lastOrderId ? idleClass : inactiveTrackClass)}" data-nav="track">
             <div id="order-status-indicator" class="absolute -top-3 left-0 w-full flex justify-center gap-0.5 h-1.5"></div>
-            ${icons.track}<span>طلبي</span>
+            ${icons.track}<span data-key="track">طلبي</span>
         </a>
         <a href="${cartHref}" class="relative flex flex-col items-center justify-center text-[10px] tracking-wide transition-all duration-300 ${pathLower.indexOf("cart.html") !== -1 ? activeClass : idleClass}" data-nav="coof2_cart">
-            ${icons.cart}<span>السلة</span>
+            ${icons.cart}<span data-key="cart">السلة</span>
             <span id="cart-badge" class="absolute -top-1 -right-2 bg-amber-500 text-black text-[9px] font-black rounded-full min-w-[1.2rem] h-[1.2rem] flex items-center justify-center px-1 border border-black shadow-[0_0_8px_rgba(245,215,110,0.5)]">0</span>
         </a>
     `;
 
     nav.innerHTML = navContent;
     document.body.appendChild(nav);
+
+    // تفعيل التحديث المباشر للغة بعد الإضافة للشاشة
+    if (typeof window.applyLanguage === "function") {
+        let savedLang = 'ar';
+        try {
+            savedLang = localStorage.getItem('coof2_userLang') || 'ar';
+        } catch (_) {}
+        window.applyLanguage(savedLang);
+    }
     
     // إضافة تباعد لأسفل الصفحة وتطبيق تصميم البريق الموحد، مع إخفاء النصوص في الشاشات الصغيرة لتفادي الازدحام
     if (!document.getElementById("nav-spacing-style")) {
