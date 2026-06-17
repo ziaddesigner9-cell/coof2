@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS public.orders (
     status text NOT NULL DEFAULT 'pending',
     order_code text,
     table_no text,
+    order_type text DEFAULT 'local' NOT NULL, --  local | delivery :الحقل الجديد لتحديد نوع الطلب
     items jsonb NOT NULL,
     total_price numeric NOT NULL,
     preparing_started_at timestamptz,

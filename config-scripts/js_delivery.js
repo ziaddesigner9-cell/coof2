@@ -148,8 +148,9 @@ async function loadDeliveryOrders() {
     try {
         const { data: orders, error } = await client
             .from("orders")
-            .select("*")
-            .in("status", ["pending", "preparing", "ready", "out_for_delivery"])
+            .select("*") // فلترة مباشرة من قاعدة البيانات لطلبات التوصيل فقط
+            .eq('order_type', 'delivery') 
+            .in("status", ["pending", "preparing", "ready", "out_for_delivery"]) // جلب الحالات التي تهم السائق
             .order("created_at", { ascending: false });
 
         if (error) {
@@ -158,11 +159,11 @@ async function loadDeliveryOrders() {
             return;
         }
 
-        const currentOrders = orders || [];
+        const deliveryOnly = orders || [];
 
         // التحقق من تغير الحالة من ذهبي (preparing/pending) إلى أخضر (ready)
         if (!isFirstLoad) {
-            currentOrders.forEach(function(order) {
+            deliveryOnly.forEach(function(order) {
                 const prevStatus = previousStatuses.get(order.id);
                 if (order.status === 'ready' && (prevStatus === 'pending' || prevStatus === 'preparing')) {
                     playReadyAlert();
@@ -171,10 +172,6 @@ async function loadDeliveryOrders() {
         }
 
         // تصفية الطلبات التي هي "توصيل" فقط
-        const deliveryOnly = currentOrders.filter(function(o) {
-            return o.table_no && (o.table_no.indexOf("توصيل") !== -1 || o.table_no.toLowerCase().indexOf("delivery") !== -1);
-        });
-
         if (deliveryOnly.length === 0) {
             container.innerHTML = `
                 <div class="text-center py-20">
@@ -264,7 +261,7 @@ async function loadDeliveryOrders() {
 
         // تحديث سجل الحالات للمرة القادمة
         previousStatuses.clear();
-        currentOrders.forEach(function(o) { previousStatuses.set(o.id, o.status); });
+        deliveryOnly.forEach(function(o) { previousStatuses.set(o.id, o.status); });
         isFirstLoad = false;
 
     } finally {

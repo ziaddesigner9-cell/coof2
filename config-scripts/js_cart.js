@@ -224,6 +224,7 @@ async function confirmOrder() {
     
     var localSection = document.getElementById("local-section");
     var isLocal = localSection ? !localSection.classList.contains("hidden") : true;
+    var orderType = isLocal ? 'local' : 'delivery'; // تحديد نوع الطلب للحقل الجديد
     var localVal = (isLocal && localEl) ? localEl.value.trim() : "";
 
     var nameVal = (!isLocal && deliveryNameEl) ? deliveryNameEl.value.trim() : "";
@@ -298,6 +299,7 @@ async function confirmOrder() {
             .insert([
                 {
                     table_no: orderLocation.substring(0, 500),
+                    order_type: orderType, // حفظ نوع الطلب في الحقل الجديد
                     items: cart,
                     total_price: total,
                     status: "pending",
