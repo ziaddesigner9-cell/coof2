@@ -126,9 +126,11 @@
         
         let path = original;
 
-        // 3. فصل Query String لمنع كسر الروابط
+        // 3. فصل Query String لمنع كسر الروابط، مع الاحتفاظ به لإعادة إضافته لاحقاً (لمنع مشاكل الكاش)
+        let queryString = "";
         let qIdx = path.indexOf('?');
         if (qIdx !== -1) {
+            queryString = original.substring(qIdx);
             path = path.substring(0, qIdx);
         }
 
@@ -175,11 +177,11 @@
         const client = window.getSupabaseClient();
         if (!client) {
             const encodedPath = path.split('/').map(encodeURIComponent).join('/');
-            return `${DIRECT_SUPABASE_URL}/storage/v1/object/public/${bucket}/${encodedPath}`;
+            return `${DIRECT_SUPABASE_URL}/storage/v1/object/public/${bucket}/${encodedPath}${queryString}`;
         }
 
         const { data } = client.storage.from(bucket).getPublicUrl(path);
-        return data.publicUrl;
+        return data.publicUrl + queryString;
     };
 
     try {
