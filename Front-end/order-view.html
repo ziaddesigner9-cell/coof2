@@ -277,6 +277,7 @@
             }
 
             if (res.error || !res.data || res.data.length === 0) {
+                console.error("خطأ جلب الطلب من قاعدة البيانات:", res.error);
                 document.getElementById("statusBadge").textContent = phrase(appSettings, "order_not_found");
                 document.getElementById("orderItemsList").innerHTML =
                     '<li class="py-6 text-red-400 text-center">' + phrase(appSettings, "order_load_failed") + '</li>';

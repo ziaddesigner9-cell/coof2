@@ -574,6 +574,7 @@
             const { data, error } = await client.rpc('get_customer_order', { target_order_id: orderId });
 
             if (error || !data || data.length === 0) {
+                console.error("خطأ جلب الطلب من قاعدة البيانات:", error);
                 statusText.textContent = phrase(appSettings, "order_load_failed");
                 statusText.classList.remove("text-yellow-400");
                 statusText.classList.add("text-red-400");
