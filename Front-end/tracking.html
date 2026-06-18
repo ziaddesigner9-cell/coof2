@@ -582,11 +582,19 @@
                 return;
             }
 
-            currentOrder = data[0];
-            renderOrderDetails(currentOrder);
-            await renderQr(currentOrder);
-            updateUiForStatus(currentOrder.status);
-            updateQrNetworkUi();
+            const newOrder = data[0];
+            const isFirstLoad = !currentOrder;
+            const statusChanged = isFirstLoad || currentOrder.status !== newOrder.status;
+
+            currentOrder = newOrder;
+
+            if (isFirstLoad) {
+                renderOrderDetails(currentOrder);
+                updateQrNetworkUi();
+            }
+            if (statusChanged) {
+                updateUiForStatus(currentOrder.status);
+            }
         }
 
         let autoRefreshInterval = null;
@@ -617,7 +625,7 @@
             }
             loadOrder();
             if (autoRefreshInterval) clearInterval(autoRefreshInterval);
-            autoRefreshInterval = setInterval(loadOrder, 5000); // تحديث سريع وآمن كل 5 ثوانٍ
+            autoRefreshInterval = setInterval(loadOrder, 2500); // تحديث لحظي سريع كل 2.5 ثانية
         }
 
         window.addEventListener('languageChanged', function(e) {

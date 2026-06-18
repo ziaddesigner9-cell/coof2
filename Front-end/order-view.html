@@ -283,8 +283,14 @@
                 return;
             }
 
-            currentOrder = res.data[0];
-            renderOrder(currentOrder);
+            var newOrder = res.data[0];
+            var isFirstLoad = !currentOrder;
+            var statusChanged = isFirstLoad || currentOrder.status !== newOrder.status;
+            
+            currentOrder = newOrder;
+            if (statusChanged) {
+                renderOrder(currentOrder);
+            }
         }
 
         let autoRefreshInterval = null;
@@ -306,7 +312,7 @@
             applyLayoutSettings();
             loadOrder();
             if (autoRefreshInterval) clearInterval(autoRefreshInterval);
-            autoRefreshInterval = setInterval(loadOrder, 5000); // تحديث سريع آمن كل 5 ثوانٍ
+            autoRefreshInterval = setInterval(loadOrder, 2500); // تحديث لحظي سريع كل 2.5 ثانية
         }
 
         window.addEventListener('languageChanged', function(e) {

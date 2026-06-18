@@ -267,7 +267,11 @@
         const client = typeof window.getSupabaseClient === "function" ? window.getSupabaseClient() : null;
         if (!client) return;
 
+        let lastKnownStatus = null;
         var updateDots = function(status) {
+            if (lastKnownStatus === status) return; // منع التحديث الوهمي لتفادي تقطيع الأنيميشن
+            lastKnownStatus = status;
+            
             const el = document.getElementById("order-status-indicator");
             if (!el) return;
             
@@ -316,7 +320,7 @@
         if (window.navStatusInterval) {
             clearInterval(window.navStatusInterval);
         }
-        window.navStatusInterval = setInterval(fetchStatus, 5000); // تحديث آمن كل 5 ثوانٍ
+        window.navStatusInterval = setInterval(fetchStatus, 2500); // تحديث لحظي سريع كل 2.5 ثانية
     }
 
     updateCartBadge();
