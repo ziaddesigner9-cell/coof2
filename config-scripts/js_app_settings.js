@@ -57,7 +57,7 @@ const DEFAULT_APP_SETTINGS = {
 };
 
 function mergeSettings(raw) {
-    var base = JSON.parse(JSON.stringify(DEFAULT_APP_SETTINGS));
+    const base = JSON.parse(JSON.stringify(DEFAULT_APP_SETTINGS));
     if (!raw || typeof raw !== "object") return base;
     if (raw.background_image) base.background_image = raw.background_image;
     if (raw.logo_image) base.logo_image = raw.logo_image;
@@ -68,31 +68,18 @@ function mergeSettings(raw) {
     
     // ضمان دمج العبارات الجديدة (Feedback) حتى لو لم تكن موجودة في البيانات القادمة
     if (raw.phrases && typeof raw.phrases === "object") {
-        var mergedPhrases = {};
-        for (var k in DEFAULT_APP_SETTINGS.phrases) {
-            mergedPhrases[k] = DEFAULT_APP_SETTINGS.phrases[k];
-        }
-        for (var k in raw.phrases) {
-            mergedPhrases[k] = raw.phrases[k];
-        }
-        for (var i = 1; i <= 6; i++) {
-            var key = "cart_feedback_" + i;
-            if (!mergedPhrases[key] || mergedPhrases[key].trim() === "") {
-                mergedPhrases[key] = DEFAULT_APP_SETTINGS.phrases[key];
+        base.phrases = { ...DEFAULT_APP_SETTINGS.phrases, ...raw.phrases };
+        
+        for (let i = 1; i <= 6; i++) {
+            const key = "cart_feedback_" + i;
+            if (!base.phrases[key] || base.phrases[key].trim() === "") {
+                base.phrases[key] = DEFAULT_APP_SETTINGS.phrases[key];
             }
         }
-        base.phrases = mergedPhrases;
     }
     // merge ui settings
     if (raw.ui && typeof raw.ui === "object") {
-        var mergedUi = {};
-        for (var k in base.ui) {
-            mergedUi[k] = base.ui[k];
-        }
-        for (var k in raw.ui) {
-            mergedUi[k] = raw.ui[k];
-        }
-        base.ui = mergedUi;
+        base.ui = { ...base.ui, ...raw.ui };
     }
     return base;
 }
@@ -164,11 +151,16 @@ async function saveAppSettings(settings) {
     return payload;
 }
 
-function phrase(settings, key, fallback = "") {
-    let currentLang = 'ar';
+function getCurrentLang() {
     try {
-        currentLang = localStorage.getItem('coof2_userLang') || 'ar';
-    } catch (_) {}
+        return localStorage.getItem('coof2_userLang') || 'ar';
+    } catch (_) {
+        return 'ar';
+    }
+}
+
+function phrase(settings, key, fallback = "") {
+    const currentLang = getCurrentLang();
 
     if (!key) return fallback;
     const normalizedKey = String(key).trim().replace(/\s+/g, ' ');
@@ -291,14 +283,14 @@ function applyHomeSettings(settings) {
     }
 
     categoriesList.forEach(function(item) {
-        var cat = item[0];
-        var img = item[1];
-        var labelKey = item[2];
-        var row = document.querySelector('[data-category-cover="' + cat + '"]');
+        const cat = item[0];
+        const img = item[1];
+        const labelKey = item[2];
+        const row = document.querySelector('[data-category-cover="' + cat + '"]');
         if (row && img) setCategoryRowImage(row, img);
-        var labelEl = document.querySelector('[data-category-label="' + cat + '"]');
+        const labelEl = document.querySelector('[data-category-label="' + cat + '"]');
         if (labelEl) labelEl.textContent = phrase(s, labelKey);
-        var hintEl = document.querySelector('[data-category-hint="' + cat + '"]');
+        const hintEl = document.querySelector('[data-category-hint="' + cat + '"]');
         if (hintEl) hintEl.textContent = hint;
     });
 }
