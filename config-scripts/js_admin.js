@@ -14,7 +14,8 @@ async function convertToWebP(file, quality = 0.8) {
                 ctx.drawImage(img, 0, 0);
                 canvas.toBlob((blob) => {
                     if (blob) {
-                        const newFileName = file.name.replace(/\.[^/.]+$/, "") + ".webp";
+                        const safeName = file.name || "image.png";
+                        const newFileName = safeName.replace(/\.[^/.]+$/, "") + ".webp";
                         resolve(new File([blob], newFileName, { type: 'image/webp' }));
                     } else {
                         reject(new Error("فشل معالجة الصورة"));
@@ -82,7 +83,9 @@ async function uploadItemImage(file) {
         }
     }
 
-    const cleanName = fileToUpload.name.replace(/[^a-zA-Z0-9.]/g, "_");
+    // تأمين الاسم وتجنب الأخطاء إذا كانت الصورة بدون اسم
+    const originalName = fileToUpload.name || "image.webp";
+    const cleanName = originalName.replace(/[^a-zA-Z0-9.]/g, "_");
     const filePath = `assets/${Date.now()}_${cleanName}`;
 
     // 1. رفع الملف إلى Bucket 'MENU-IMAGES'
@@ -90,7 +93,8 @@ async function uploadItemImage(file) {
         .from('MENU-IMAGES')
         .upload(filePath, fileToUpload, {
             cacheControl: '3600',
-            upsert: true
+            upsert: true,
+            contentType: fileToUpload.type || 'image/webp' // 💡 الحل: إجبار سوبابيس على التعرف على صيغة WebP
         });
 
     if (error) throw error;
@@ -100,7 +104,8 @@ async function uploadItemImage(file) {
         .from('MENU-IMAGES')
         .getPublicUrl(filePath);
 
-    return { url: urlData.publicUrl };
+    // إضافة رمز منع الكاش (?t=) لضمان ظهور الصورة فور رفعها بدون مشاكل المتصفح
+    return { url: urlData.publicUrl + '?t=' + Date.now() };
 }
 
 let loaderCount = 0;
