@@ -58,17 +58,6 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-
-        /* تأثير ذهبي معدني براق مع إطار أسود وفراغ أبيض */
-        .shiny-gold-code {
-            background: linear-gradient(135deg, #FDF0A6 0%, #D4AF37 50%, #AA7C11 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            color: transparent;
-            -webkit-text-stroke: 1px black;
-            filter: drop-shadow(0 0 2px white) drop-shadow(0 0 2px white);
-        }
     </style>
 </head>
 <body class="bg-black text-white min-h-screen flex items-center justify-center p-4 pb-8 relative">
@@ -80,7 +69,7 @@
                 <canvas id="qrCanvas" style="display:none;"></canvas>
             </div>
         </div>
-        <p id="qrCodeLabel" class="text-center text-3xl font-black mt-3 tracking-widest shiny-gold-code"></p>
+        <p id="qrCodeLabel" class="text-center text-3xl font-black mt-3 tracking-widest transition-colors duration-300"></p>
         <p id="tracking-scan-hint" data-key="scan_hint" class="hidden text-center text-xs text-amber-600/80 mt-1">امسح الرمز لفتح صفحة الطلب</p>
 
         <div class="mt-6 space-y-1">
