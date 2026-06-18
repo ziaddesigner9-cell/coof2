@@ -173,6 +173,12 @@ function phrase(settings, key, fallback = "") {
     if (!key) return fallback;
     const normalizedKey = String(key).trim().replace(/\s+/g, ' ');
 
+    // 1. الأولوية القصوى: العبارات المخصصة من قاعدة البيانات للغة الحالية (تعديلات المدير)
+    if (settings && settings.localized_phrases && settings.localized_phrases[currentLang] && settings.localized_phrases[currentLang][normalizedKey] !== undefined && settings.localized_phrases[currentLang][normalizedKey] !== "") {
+        return settings.localized_phrases[currentLang][normalizedKey];
+    }
+
+    // 2. ملف اللغات الثابت (language.js) كخيار ثاني
     if (window.translations && window.translations[currentLang]) {
         if (window.translations[currentLang][normalizedKey] !== undefined) {
             return window.translations[currentLang][normalizedKey];
@@ -186,11 +192,13 @@ function phrase(settings, key, fallback = "") {
         }
     }
 
-    if (settings && settings.phrases && settings.phrases[key] !== undefined) {
-        return settings.phrases[key];
+    // 3. العبارات القديمة (غير المخصصة بلغة معينة - غالباً عربية) كخيار ثالث
+    if (settings && settings.phrases && settings.phrases[normalizedKey] !== undefined && settings.phrases[normalizedKey] !== "") {
+        return settings.phrases[normalizedKey];
     }
-    if (DEFAULT_APP_SETTINGS.phrases[key] !== undefined) {
-        return DEFAULT_APP_SETTINGS.phrases[key];
+    // 4. القيم الافتراضية
+    if (DEFAULT_APP_SETTINGS.phrases && DEFAULT_APP_SETTINGS.phrases[normalizedKey] !== undefined) {
+        return DEFAULT_APP_SETTINGS.phrases[normalizedKey];
     }
     return fallback;
 }

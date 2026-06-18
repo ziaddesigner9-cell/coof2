@@ -343,7 +343,7 @@
                             <span class="text-[11px] text-zinc-500 bg-zinc-900 px-2 py-1 rounded">${info.location}</span>
                         </div>
                         <div class="flex gap-2" onclick="event.stopPropagation()">
-                            <input type="text" data-phrase-key="${f.key}" value="${(settings.phrases[f.key] || "").replace(/"/g, "&quot;")}"
+                            <input type="text" data-phrase-key="${f.key}" value="${phrase(settings, f.key).replace(/"/g, "&quot;")}"
                                 class="flex-1 p-3 rounded-lg bg-black border border-amber-800/40 text-white text-sm focus:border-amber-500 outline-none" />
                             <button type="button" onclick="openStyleModal()" class="shrink-0 w-11 h-11 flex items-center justify-center rounded-lg bg-zinc-900 border border-amber-700/30 text-amber-400 hover:bg-amber-500 hover:text-black transition" title="${phrase(null, 'edit_btn_text', 'تعديل')}">
                                 🎨
@@ -363,7 +363,7 @@
                         <div>
                             <label class="block text-xs text-zinc-400 mb-1 font-medium">${info.label}</label>
                             <input type="text" data-phrase-key="${cf.key}" placeholder="${info.placeholder}" 
-                                value="${(settings.phrases[cf.key] || "").replace(/"/g, "&quot;")}"
+                                value="${phrase(settings, cf.key).replace(/"/g, "&quot;")}"
                                 class="w-full p-3 rounded-xl bg-black border border-zinc-800 text-amber-100 text-sm outline-none focus:border-amber-500 transition" />
                         </div>`;
                     }
@@ -375,6 +375,7 @@
             settings = await loadAppSettings(true);
             settings.ui = settings.ui || window.DEFAULT_APP_SETTINGS?.ui || {};
             settings.phrases = settings.phrases || {};
+            settings.localized_phrases = settings.localized_phrases || {};
             renderForm();
             populateUiControls();
         }
@@ -398,9 +399,17 @@
         async function saveAll(source) {
             const isModal = source === 'modal';
             
+            let currentLang = localStorage.getItem("coof2_userLang") || "ar";
+            settings.localized_phrases = settings.localized_phrases || {};
+            settings.localized_phrases[currentLang] = settings.localized_phrases[currentLang] || {};
+
             // مزامنة العبارات من كافة حقول الإدخال في الصفحة
             document.querySelectorAll("[data-phrase-key]").forEach((input) => {
-                settings.phrases[input.dataset.phraseKey] = input.value;
+                settings.localized_phrases[currentLang][input.dataset.phraseKey] = input.value;
+                // للحفاظ على التوافقية القديمة للغة العربية
+                if (currentLang === 'ar') {
+                    settings.phrases[input.dataset.phraseKey] = input.value;
+                }
             });
 
             // مزامنة إعدادات المظهر
