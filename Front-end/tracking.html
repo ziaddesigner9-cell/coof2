@@ -356,7 +356,8 @@
             const fillColor = getQrFillColor(order.status);
 
             const priceText = typeof formatPrice === 'function' ? formatPrice(order.total_price || 0) : (parseFloat(order.total_price || 0) + " ريال");
-            document.getElementById("qrCodeLabel").textContent = priceText;
+            const displayCode = order.order_code ? order.order_code : ("#" + String(order.id).substring(0, 5).toUpperCase());
+            document.getElementById("qrCodeLabel").textContent = displayCode;
             applyQrLabelStyle(order.status);
 
             const hex = fillColor.replace("#", "").toLowerCase();
