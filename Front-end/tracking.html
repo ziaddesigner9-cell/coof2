@@ -570,13 +570,10 @@
                 return;
             }
 
-            const { data, error } = await client
-                .from("orders")
-                .select("id, status, order_code, table_no, items, total_price, created_at")
-                .eq("id", orderId)
-                .single();
+            // استخدام الدالة الآمنة لضمان عملها للزبون المجهول
+            const { data, error } = await client.rpc('get_customer_order', { target_order_id: orderId });
 
-            if (error || !data) {
+            if (error || !data || data.length === 0) {
                 statusText.textContent = phrase(appSettings, "order_load_failed");
                 statusText.classList.remove("text-yellow-400");
                 statusText.classList.add("text-red-400");
@@ -585,53 +582,14 @@
                 return;
             }
 
-            currentOrder = data;
-            renderOrderDetails(data);
-            await renderQr(data);
-            updateUiForStatus(data.status);
+            currentOrder = data[0];
+            renderOrderDetails(currentOrder);
+            await renderQr(currentOrder);
+            updateUiForStatus(currentOrder.status);
             updateQrNetworkUi();
         }
 
-        var orderChannel = null;
-        function subscribeToOrder() {
-            const client = window.getSupabaseClient ? window.getSupabaseClient() : null;
-            if (!orderId || !client) return;
-
-            try {
-                if (orderChannel) {
-                    client.removeChannel(orderChannel);
-                    orderChannel = null;
-                }
-            } catch (err) {
-                console.error("خطأ أثناء إزالة القناة السابقة:", err);
-            }
-
-            orderChannel = client.channel('order_track_' + orderId + '_' + Date.now());
-            orderChannel.on(
-                    "postgres_changes",
-                    {
-                        event: "UPDATE",
-                        schema: "public",
-                        table: "orders",
-                        filter: "id=eq." + orderId,
-                    },
-                    function(payload) {
-                        var next = payload.new;
-                        if (next) {
-                            if (!currentOrder) currentOrder = {};
-                            for (var key in next) {
-                                if (next.hasOwnProperty(key)) {
-                                    currentOrder[key] = next[key];
-                                }
-                            }
-                            renderOrderDetails(currentOrder);
-                            updateUiForStatus(next.status);
-                        }
-                    }
-                )
-                .subscribe();
-        }
-
+        let autoRefreshInterval = null;
         var isTrackingInit = false;
         async function init() {
             if (isTrackingInit) return;
@@ -658,7 +616,8 @@
                 saveBtn.addEventListener("click", savePublicBaseAndRefreshQr);
             }
             loadOrder();
-            subscribeToOrder();
+            if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+            autoRefreshInterval = setInterval(loadOrder, 5000); // تحديث سريع وآمن كل 5 ثوانٍ
         }
 
         window.addEventListener('languageChanged', function(e) {
@@ -683,7 +642,6 @@
             if (document.visibilityState === "visible") {
                 console.log("العودة للمتصفح، إعادة جلب تفاصيل الطلب وتحديث الاشتراك...");
                 loadOrder();
-                subscribeToOrder();
             }
         });
     </script>

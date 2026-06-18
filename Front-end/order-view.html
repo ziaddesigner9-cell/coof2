@@ -268,48 +268,26 @@
             var client = window.getSupabaseClient ? window.getSupabaseClient() : null;
             if (!orderId && !orderCode) return;
             if (!client) return;
-            var req = client.from("orders").select("id, status, order_code, table_no, items, total_price, created_at");
-            var res = await (orderCode ? req.eq("order_code", orderCode) : req.eq("id", orderId)).single();
-            if (res.error || !res.data) {
+            
+            var res;
+            if (orderCode) {
+                res = await client.rpc('get_order_by_code', { target_code: orderCode });
+            } else {
+                res = await client.rpc('get_customer_order', { target_order_id: orderId });
+            }
+
+            if (res.error || !res.data || res.data.length === 0) {
                 document.getElementById("statusBadge").textContent = phrase(appSettings, "order_not_found");
                 document.getElementById("orderItemsList").innerHTML =
                     '<li class="py-6 text-red-400 text-center">' + phrase(appSettings, "order_load_failed") + '</li>';
                 return;
             }
 
-            currentOrder = res.data;
+            currentOrder = res.data[0];
             renderOrder(currentOrder);
-
-            var resolvedId = currentOrder.id;
-            try {
-                if (orderViewChannel) {
-                    client.removeChannel(orderViewChannel);
-                    orderViewChannel = null;
-                }
-            } catch (err) {
-                console.error("خطأ أثناء إزالة قناة عرض الطلب السابقة:", err);
-            }
-
-            orderViewChannel = client
-                .channel('order_view_' + resolvedId + '_' + Date.now())
-                .on(
-                    "postgres_changes",
-                    {
-                        event: "UPDATE",
-                        schema: "public",
-                        table: "orders",
-                        filter: "id=eq." + resolvedId,
-                    },
-                    function(payload) {
-                        if (payload.new) {
-                            currentOrder = payload.new;
-                            renderOrder(currentOrder);
-                        }
-                    }
-                );
-            orderViewChannel.subscribe();
         }
 
+        let autoRefreshInterval = null;
         var isOrderViewInit = false;
         async function init() {
             if (isOrderViewInit) return;
@@ -327,6 +305,8 @@
             applyOrderViewBranding();
             applyLayoutSettings();
             loadOrder();
+            if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+            autoRefreshInterval = setInterval(loadOrder, 5000); // تحديث سريع آمن كل 5 ثوانٍ
         }
 
         window.addEventListener('languageChanged', function(e) {

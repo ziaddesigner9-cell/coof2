@@ -115,6 +115,17 @@ BEGIN
 END;
 $$;
 
+-- و-2. دالة تتبع الطلب عبر الكود السري (للزبائن)
+CREATE OR REPLACE FUNCTION public.get_order_by_code(target_code text)
+RETURNS SETOF public.orders
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+    RETURN QUERY SELECT * FROM public.orders WHERE order_code = target_code;
+END;
+$$;
+
 -- ز. إضافة قيد التحقق من الحالات لضمان جودة البيانات
 ALTER TABLE public.orders DROP CONSTRAINT IF EXISTS orders_status_check;
 ALTER TABLE public.orders ADD CONSTRAINT orders_status_check

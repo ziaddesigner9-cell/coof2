@@ -301,37 +301,22 @@
             }
         };
 
-        try {
-            const { data } = await client.from("orders").select("status").eq("id", currentOrderId).maybeSingle();
-            if (data) {
-                updateDots(data.status);
-            } else {
-                try {
-                    localStorage.removeItem("coof2_lastOrderId");
-                } catch (e) {}
-                const link = document.getElementById("nav-track-link");
-                if (link && !link.classList.contains("active-nav-item")) {
-                    link.classList.remove("idle-nav-item");
-                    link.classList.add("inactive-track-item");
+        var fetchStatus = async function() {
+            try {
+                const { data, error } = await client.rpc('get_customer_order', { target_order_id: currentOrderId });
+                if (!error && data && data.length > 0) {
+                    updateDots(data[0].status);
+                } else {
+                    updateDots(null);
                 }
-            }
-        } catch (err) {
-            console.error("فشل قراءة حالة الطلب في القائمة:", err);
+            } catch (err) {}
+        };
+
+        fetchStatus();
+        if (window.navStatusInterval) {
+            clearInterval(window.navStatusInterval);
         }
-
-        try {
-            if (navChannel) {
-                client.removeChannel(navChannel);
-                navChannel = null;
-            }
-        } catch (e) {}
-
-        navChannel = client.channel(`nav_order_status`).on('postgres_changes', {
-            event: 'UPDATE', schema: 'public', table: 'orders', filter: `id=eq.${currentOrderId}`
-        }, function(payload) {
-            if (payload.new) updateDots(payload.new.status);
-        });
-        navChannel.subscribe();
+        window.navStatusInterval = setInterval(fetchStatus, 5000); // تحديث آمن كل 5 ثوانٍ
     }
 
     updateCartBadge();
