@@ -113,11 +113,14 @@ const DIRECT_SUPABASE_URL = "https://jdaggrzdaxcnnfmdyvic.supabase.co";    const
         
         // تنظيف المسار لضمان الحصول على الرابط العام الصافي دائماً أونلاين
         let path = urlOrPath;
-        const markers = ["/MENU-IMAGES/", "/object/public/MENU-IMAGES/"];
+        // تحويل الرابط لحروف صغيرة للمقارنة فقط، لتجاهل مشكلة حالة الأحرف
+        const lowerUrl = urlOrPath.toLowerCase();
+        const markers = ["/menu-images/", "/object/public/menu-images/"];
         for (var i = 0; i < markers.length; i++) {
             var marker = markers[i];
-            const idx = urlOrPath.indexOf(marker);
+            const idx = lowerUrl.indexOf(marker);
             if (idx !== -1) {
+                // نقتطع من الرابط الأصلي للحفاظ على المجلد (assets/) وحالة أحرف اسم الصورة
                 path = urlOrPath.slice(idx + marker.length);
                 break;
             }

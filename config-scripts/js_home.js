@@ -48,7 +48,8 @@ async function fillMissingCategoryImages() {
                 break;
             }
         }
-        setCategoryRowImage(row, found ? found.image_url : CATEGORY_FALLBACK[cat]);
+        var finalImage = (found && found.image_url) ? window.getSafeImageUrl(found.image_url) : CATEGORY_FALLBACK[cat];
+        setCategoryRowImage(row, finalImage);
     }
 }
 

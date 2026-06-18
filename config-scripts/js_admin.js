@@ -33,9 +33,10 @@ async function convertToWebP(file, quality = 0.8) {
 function storagePathFromPublicUrl(url) {
     try {
         const u = new URL(url);
-        const markers = ["/MENU-IMAGES/", "/object/public/MENU-IMAGES/"];
+        const lowerPath = u.pathname.toLowerCase();
+        const markers = ["/menu-images/", "/object/public/menu-images/"];
         for (const marker of markers) {
-            const idx = u.pathname.indexOf(marker);
+            const idx = lowerPath.indexOf(marker);
             if (idx !== -1) return decodeURIComponent(u.pathname.slice(idx + marker.length));
         }
     } catch (_) {}
@@ -112,7 +113,10 @@ async function fetchItems() {
 
         list.innerHTML = data.map(item => `
             <tr class="border-b">
-                <td class="p-2">${item.name}</td>
+                <td class="p-2 flex items-center gap-3">
+                    <img src="${window.getSafeImageUrl(item.image_url)}" alt="صورة الصنف" class="w-10 h-10 rounded bg-zinc-800 object-cover" onerror="this.src='https://via.placeholder.com/150?text=No+Image'">
+                    <span>${item.name}</span>
+                </td>
                 <td class="p-2">${item.price} ريال</td>
             </tr>
         `).join('');
