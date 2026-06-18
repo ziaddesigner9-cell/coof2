@@ -33,10 +33,14 @@ async function convertToWebP(file, quality = 0.8) {
 function storagePathFromPublicUrl(url) {
     try {
         const u = new URL(url);
-        const lowerPath = u.pathname.toLowerCase();
-        const marker = "/menu-images/";
-        const idx = lowerPath.indexOf(marker);
-        if (idx !== -1) return decodeURIComponent(u.pathname.slice(idx + marker.length));
+        const pathname = u.pathname;
+        const publicMarker = "/object/public/";
+        const pubIdx = pathname.toLowerCase().indexOf(publicMarker);
+        if (pubIdx !== -1) {
+            let afterPublic = pathname.substring(pubIdx + publicMarker.length);
+            let slashIdx = afterPublic.indexOf('/');
+            if (slashIdx !== -1) return decodeURIComponent(afterPublic.substring(slashIdx + 1));
+        }
     } catch (_) {}
     return null;
 }

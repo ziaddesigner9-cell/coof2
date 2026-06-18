@@ -112,23 +112,34 @@
     window.getSafeImageUrl = function(urlOrPath, bucket = 'MENU-IMAGES') {
         if (!urlOrPath) return "https://via.placeholder.com/300?text=No+Image";
         
-        let path = urlOrPath;
-        const lowerUrl = urlOrPath.toLowerCase();
+        let path = String(urlOrPath).trim();
+        const lowerUrl = path.toLowerCase();
         
-        // إذا كان الرابط خارجياً (مثل Unsplash) نرجعه مباشرة ولا نعالجه كصورة في سوبابيس
+        // إذا كان الرابط خارجياً (مثل Unsplash) نرجعه مباشرة
         if (lowerUrl.startsWith('http') && lowerUrl.indexOf('supabase.co') === -1) {
-            return urlOrPath;
+            return path;
         }
 
-        // تنظيف الرابط من اسم المجلد للحصول على المسار الصافي (مثل assets/image.webp)
-        const bucketLower = bucket.toLowerCase();
-        const marker = "/" + bucketLower + "/";
-        let idx = lowerUrl.indexOf(marker);
+        // فصل Query String (مثل ?t=123) لمنع تلف الرابط عند استخدام getPublicUrl
+        let queryString = "";
+        const qIdx = path.indexOf('?');
+        if (qIdx !== -1) {
+            queryString = path.substring(qIdx);
+            path = path.substring(0, qIdx);
+        }
         
-        if (idx !== -1) {
-            path = urlOrPath.slice(idx + marker.length);
-        } else if (lowerUrl.startsWith(bucketLower + "/")) {
-            path = urlOrPath.slice(bucketLower.length + 1);
+        // استخراج المسار الصافي للصورة بذكاء للبحث عن /object/public/
+        const publicMarker = "/object/public/";
+        const pubIdx = lowerUrl.indexOf(publicMarker);
+        if (pubIdx !== -1) {
+            let afterPublic = path.substring(pubIdx + publicMarker.length);
+            let slashIdx = afterPublic.indexOf('/');
+            path = slashIdx !== -1 ? afterPublic.substring(slashIdx + 1) : afterPublic;
+        } else {
+            const bucketLower = bucket.toLowerCase();
+            if (path.toLowerCase().startsWith(bucketLower + "/")) {
+                path = path.substring(bucketLower.length + 1);
+            }
         }
 
         // إزالة أي شرطة زائدة في البداية إن وجدت
@@ -138,12 +149,12 @@
 
         const client = window.getSupabaseClient();
         if (!client) {
-            // إذا لم يتم تهيئة العميل بعد، نرجع رابطاً تقريبياً مباشراً بناءً على الإعدادات الثابتة
-            return `${DIRECT_SUPABASE_URL}/storage/v1/object/public/${bucket}/${path}`;
+            const encodedPath = path.split('/').map(encodeURIComponent).join('/');
+            return `${DIRECT_SUPABASE_URL}/storage/v1/object/public/${bucket}/${encodedPath}${queryString}`;
         }
 
         const { data } = client.storage.from(bucket).getPublicUrl(path);
-        return data.publicUrl;
+        return data.publicUrl + queryString;
     };
 
     try {
