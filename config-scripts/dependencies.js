@@ -114,17 +114,44 @@
         
         let original = String(urlOrPath).trim();
         
-        // 💡 السر هنا: إذا كان الرابط كاملاً (سواء من سوبابيس أو خارجي)، نعيده مباشرة دون تلاعب!
-        // هذا يمنع التشفير المزدوج للأسماء العربية والمسافات ويطابق عمل النسخة القديمة المستقرة.
-        if (original.startsWith('http')) {
+        // إذا كان الرابط خارجياً تماماً (لا يتبع لـ Supabase)، نرجعه كما هو
+        if (original.startsWith('http') && original.indexOf('supabase.co') === -1) {
             return original;
         }
         
-        // معالجة المسارات المحلية القصيرة فقط (مثل assets/image.png)
         let path = original;
+
+        // فصل الرابط واستخراج المسار الصافي فقط لمنع أي تعارضات
+        if (path.startsWith('http')) {
+            try {
+                path = new URL(path).pathname;
+            } catch(e) {}
+        }
+        
+        // استخراج المسار بعد مجلد object/public/ أو اسم المجلد
+        const pubMarker = "/object/public/";
+        const pubIdx = path.toLowerCase().indexOf(pubMarker);
+        if (pubIdx !== -1) {
+            let afterPublic = path.substring(pubIdx + pubMarker.length);
+            let slashIdx = afterPublic.indexOf('/');
+            path = slashIdx !== -1 ? afterPublic.substring(slashIdx + 1) : afterPublic;
+        } else {
+            const bucketLower = bucket.toLowerCase();
+            if (path.toLowerCase().startsWith("/" + bucketLower + "/")) {
+                path = path.substring(bucketLower.length + 2);
+            } else if (path.toLowerCase().startsWith(bucketLower + "/")) {
+                path = path.substring(bucketLower.length + 1);
+            }
+        }
+        
         if (path.startsWith('/')) {
             path = path.substring(1);
         }
+        
+        // 💡 [الحل الجذري]: فك التشفير الصافي للمسار لمنع مشكلة Double-Encoding التي تكسر الروابط
+        try {
+            path = decodeURIComponent(path);
+        } catch(e) {}
 
         const client = window.getSupabaseClient();
         if (!client) {
