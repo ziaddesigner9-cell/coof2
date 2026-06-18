@@ -141,7 +141,7 @@
                 .map(
                     (item) => `
                 <div class="flex gap-3 items-center p-4 rounded-2xl border border-amber-800/30 bg-zinc-950 ${item.is_available === false ? "opacity-60" : ""}">
-                    <img src="${escapeHtml(item.image_url || "")}" alt="" class="w-16 h-16 rounded-xl object-cover border border-amber-800/30 shrink-0 bg-zinc-900" />
+                    <img src="${escapeHtml(item.image_url ? window.getSafeImageUrl(item.image_url) : "")}" alt="" class="w-16 h-16 rounded-xl object-cover border border-amber-800/30 shrink-0 bg-zinc-900" />
                     <div class="flex-1 min-w-0 text-right">
                         <p class="font-bold text-amber-100 truncate">${escapeHtml(item.name || "—")}</p>
                         <p class="text-amber-400 text-sm font-bold mt-0.5">${formatPrice(item.price || 0)}</p>
@@ -183,7 +183,7 @@
             grid.innerHTML = galleryImages
                 .map(
                     (g) => `
-                <img src="${escapeHtml(g.image_url)}" data-url="${escapeHtml(g.image_url)}"
+                <img src="${escapeHtml(window.getSafeImageUrl(g.image_url))}" data-url="${escapeHtml(g.image_url)}"
                     class="gallery-pick w-full h-14 object-cover rounded cursor-pointer border-2 ${g.image_url === selectedUrl ? "border-amber-500" : "border-transparent hover:border-amber-600/60"}" />`
                 )
                 .join("");
@@ -191,7 +191,7 @@
             grid.querySelectorAll(".gallery-pick").forEach((img) => {
                 img.addEventListener("click", () => {
                     selectedEditImage = img.dataset.url;
-                    document.getElementById("edit-current-img").src = selectedEditImage;
+                document.getElementById("edit-current-img").src = window.getSafeImageUrl(selectedEditImage);
                     grid.querySelectorAll(".gallery-pick").forEach((el) => {
                         el.classList.toggle("border-amber-500", el.dataset.url === selectedEditImage);
                         el.classList.toggle("border-transparent", el.dataset.url !== selectedEditImage);
@@ -215,7 +215,7 @@
             if (catEl) catEl.value = categoryKey(editingItem) || "hot";
 
             const currentImg = document.getElementById("edit-current-img");
-            if (currentImg) currentImg.src = selectedEditImage; 
+        if (currentImg) currentImg.src = window.getSafeImageUrl(selectedEditImage); 
 
             const availEl = document.getElementById("edit-available");
             if (availEl) availEl.checked = editingItem.is_available !== false;

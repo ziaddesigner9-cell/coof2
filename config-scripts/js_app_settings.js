@@ -237,7 +237,7 @@ function applyHomeSettings(settings) {
     const s = mergeSettings(settings);
     const bg = document.getElementById("app-bg-layer");
     if (bg && s.background_image) {
-        bg.style.backgroundImage = `url('${s.background_image}')`;
+        bg.style.backgroundImage = `url('${window.getSafeImageUrl(s.background_image)}')`;
         bg.style.backgroundSize = "contain";
         bg.style.backgroundRepeat = "no-repeat";
         bg.style.backgroundPosition = "center";
@@ -246,7 +246,7 @@ function applyHomeSettings(settings) {
 
     const logo = document.getElementById("app-logo");
     if (logo && s.logo_image) {
-        logo.src = s.logo_image;
+        logo.src = window.getSafeImageUrl(s.logo_image);
         logo.classList.remove("hidden");
         const emoji = document.getElementById("app-logo-emoji");
         if (emoji) emoji.classList.add("hidden");
@@ -287,7 +287,7 @@ function applyHomeSettings(settings) {
         const img = item[1];
         const labelKey = item[2];
         const row = document.querySelector('[data-category-cover="' + cat + '"]');
-        if (row && img) setCategoryRowImage(row, img);
+        if (row && img) setCategoryRowImage(row, window.getSafeImageUrl(img));
         const labelEl = document.querySelector('[data-category-label="' + cat + '"]');
         if (labelEl) labelEl.textContent = phrase(s, labelKey);
         const hintEl = document.querySelector('[data-category-hint="' + cat + '"]');
