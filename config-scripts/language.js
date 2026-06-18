@@ -1,6 +1,6 @@
 const translations = {
     'ar': {
-        'welcome': 'أهلاً بك في COOF2',
+        'welcome': 'أهلاً بك في القهوة السعيدة',
         'browse': 'تصفح القائمة',
         'admin_btn': '⚙️ بوابة الموظفين',
         'worker_btn': 'عامل',
@@ -12,10 +12,10 @@ const translations = {
         'track': 'طلبي',
         'cart': 'السلة',
         'loading': 'جاري التحميل...',
-        'brand_tagline': 'COOF2',
+        'brand_tagline': 'منيو القهوة السعيدة',
         'home_slogan': 'استمتع بمشروبك المفضل',
         'home_welcome_title': 'أهلاً بك',
-        'home_welcome_sub': 'استمتع بمشروبك المفضل من COOF2',
+        'home_welcome_sub': 'استمتع بمشروبك المفضل من منيو القهوة السعيدة',
         'category_hot_label': 'المشروبات الساخنة',
         'category_cold_label': 'المشروبات الباردة',
         'category_dessert_label': 'الحلى',
@@ -118,7 +118,7 @@ const translations = {
         'order_not_found': 'الطلب غير موجود',
         'your_order': 'طلبك',
         'rating_hint_google': 'ننتظر تقييمك على جوجل',
-        'order_view_title': 'تفاصيل الطلب | مقهى السعادة',
+        'order_view_title': 'تفاصيل الطلب | منيو القهوة السعيدة',
         // Bidirectional translations for database items (English to Arabic)
         'Turkish Coffee': 'كوفي تركي',
         'Cappuccino': 'كابتشينو',
@@ -341,7 +341,7 @@ const translations = {
         'kitchen_update_no_result': 'لم يتم التحديث (قد تكون الحالة تغيرت أو الجلسة انتهت)'
     },
     'en': {
-        'welcome': 'Welcome to COOF2',
+        'welcome': 'Welcome to Happy Coffee Menu',
         'browse': 'Browse Menu',
         'admin_btn': '⚙️ Staff Portal',
         'worker_btn': 'Staff',
@@ -353,10 +353,10 @@ const translations = {
         'track': 'My Order',
         'cart': 'Cart',
         'loading': 'Loading...',
-        'brand_tagline': 'COOF2',
+        'brand_tagline': 'Happy Coffee Menu',
         'home_slogan': 'Enjoy your favorite drink',
         'home_welcome_title': 'Welcome',
-        'home_welcome_sub': 'Enjoy your favorite drink from COOF2',
+        'home_welcome_sub': 'Enjoy your favorite drink from Happy Coffee Menu',
         'category_hot_label': 'Hot Drinks',
         'category_cold_label': 'Cold Drinks',
         'category_dessert_label': 'Desserts',
@@ -478,7 +478,7 @@ const translations = {
         'order_not_found': 'Order not found',
         'your_order': 'Your Order',
         'rating_hint_google': 'We look forward to your review on Google',
-        'order_view_title': 'Order Details | Happy Cafe',
+        'order_view_title': 'Order Details | Happy Coffee Menu',
         // Bidirectional translations for database items (Arabic to English)
         'كوفي تركي': 'Turkish Coffee',
         'كابتشينو': 'Cappuccino',
@@ -701,7 +701,7 @@ const translations = {
         'kitchen_update_no_result': 'Update failed (status may have changed or session expired)'
     },
     'en-AU': {
-        'welcome': 'Welcome to COOF2',
+        'welcome': 'Welcome to Happy Coffee Menu',
         'browse': 'Browse Menu',
         'admin_btn': '⚙️ Staff Portal',
         'worker_btn': 'Staff',
@@ -713,10 +713,10 @@ const translations = {
         'track': 'My Order',
         'cart': 'Cart',
         'loading': 'Loading...',
-        'brand_tagline': 'COOF2',
+        'brand_tagline': 'Happy Coffee Menu',
         'home_slogan': 'Enjoy your favorite drink',
         'home_welcome_title': 'G\'day!',
-        'home_welcome_sub': 'Enjoy your favorite drink from COOF2',
+        'home_welcome_sub': 'Enjoy your favorite drink from Happy Coffee Menu',
         'category_hot_label': 'Hot Drinks',
         'category_cold_label': 'Cold Drinks',
         'category_dessert_label': 'Desserts',
@@ -838,7 +838,7 @@ const translations = {
         'order_not_found': 'Order not found',
         'your_order': 'Your Order',
         'rating_hint_google': 'We look forward to your review on Google',
-        'order_view_title': 'Order Details | Happy Cafe',
+        'order_view_title': 'Order Details | Happy Coffee Menu',
         // Bidirectional translations for database items (Arabic to English)
         'كوفي تركي': 'Turkish Coffee',
         'كابتشينو': 'Cappuccino',
@@ -1061,7 +1061,7 @@ const translations = {
         'kitchen_update_no_result': 'Update failed (status may have changed or session expired)'
     },
     'de': {
-        'welcome': 'Willkommen bei COOF2',
+        'welcome': 'Willkommen bei Happy Coffee Menu',
         'browse': 'Menü durchsuchen',
         'admin_btn': '⚙️ Mitarbeiter-Portal',
         'worker_btn': 'Personal',
@@ -1073,10 +1073,10 @@ const translations = {
         'track': 'Meine Bestellung',
         'cart': 'Warenkorb',
         'loading': 'Wird geladen...',
-        'brand_tagline': 'COOF2',
+        'brand_tagline': 'Happy Coffee Menu',
         'home_slogan': 'Genießen Sie Ihr Lieblingsgetränk',
         'home_welcome_title': 'Willkommen',
-        'home_welcome_sub': 'Genießen Sie Ihr Lieblingsgetränk von COOF2',
+        'home_welcome_sub': 'Genießen Sie Ihr Lieblingsgetränk von Happy Coffee Menu',
         'category_hot_label': 'Heiße Getränke',
         'category_cold_label': 'Kalte Getränke',
         'category_dessert_label': 'Desserts',
@@ -1198,7 +1198,7 @@ const translations = {
         'order_not_found': 'Bestellung nicht gefunden',
         'your_order': 'Ihre Bestellung',
         'rating_hint_google': 'Wir freuen uns auf Ihre Google-Bewertung',
-        'order_view_title': 'Bestelldetails | Café der Freude',
+        'order_view_title': 'Bestelldetails | Happy Coffee Menu',
         // Bidirectional translations for database items (Arabic/English to German)
         'كوفي تركي': 'Türkischer Kaffee',
         'Turkish Coffee': 'Türkischer Kaffee',
@@ -1442,7 +1442,7 @@ const translations = {
         'kitchen_update_no_result': 'Aktualisierung fehlgeschlagen (Status kann sich geändert haben oder Sitzung abgelaufen)'
     },
     'fr': {
-        'welcome': 'Bienvenue chez COOF2',
+        'welcome': 'Bienvenue chez Happy Coffee Menu',
         'browse': 'Parcourir le menu',
         'admin_btn': '⚙️ Portail Employés',
         'worker_btn': 'Personnel',
@@ -1454,10 +1454,10 @@ const translations = {
         'track': 'Ma Commande',
         'cart': 'Panier',
         'loading': 'Chargement...',
-        'brand_tagline': 'COOF2',
+        'brand_tagline': 'Happy Coffee Menu',
         'home_slogan': 'Savourez votre boisson préférée',
         'home_welcome_title': 'Bienvenue',
-        'home_welcome_sub': 'Savourez votre boisson préférée de COOF2',
+        'home_welcome_sub': 'Savourez votre boisson préférée de Happy Coffee Menu',
         'category_hot_label': 'Boissons Chaudes',
         'category_cold_label': 'Boissons Froides',
         'category_dessert_label': 'Desserts',
@@ -1579,7 +1579,7 @@ const translations = {
         'order_not_found': 'Commande non trouvée',
         'your_order': 'Votre Commande',
         'rating_hint_google': 'Nous attendons votre avis sur Google',
-        'order_view_title': 'Détails de la commande | Café de la Joie',
+        'order_view_title': 'Détails de la commande | Happy Coffee Menu',
         // Bidirectional translations for database items (Arabic/English to French)
         'كوفي تركي': 'Café Turc',
         'Turkish Coffee': 'Café Turc',
