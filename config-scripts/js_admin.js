@@ -33,7 +33,7 @@ async function convertToWebP(file, quality = 0.8) {
 function storagePathFromPublicUrl(url) {
     try {
         const u = new URL(url);
-        const markers = ["/menu-images/", "/object/public/menu-images/"];
+        const markers = ["/MENU-IMAGES/", "/object/public/MENU-IMAGES/"];
         for (const marker of markers) {
             const idx = u.pathname.indexOf(marker);
             if (idx !== -1) return decodeURIComponent(u.pathname.slice(idx + marker.length));
@@ -63,9 +63,9 @@ async function uploadItemImage(file) {
     const cleanName = fileToUpload.name.replace(/[^a-zA-Z0-9.]/g, "_");
     const filePath = `assets/${Date.now()}_${cleanName}`;
 
-    // 1. رفع الملف إلى Bucket 'menu-images'
+    // 1. رفع الملف إلى Bucket 'MENU-IMAGES'
     const { data, error } = await supabase.storage
-        .from('menu-images')
+        .from('MENU-IMAGES')
         .upload(filePath, fileToUpload, {
             cacheControl: '3600',
             upsert: true
@@ -75,7 +75,7 @@ async function uploadItemImage(file) {
 
     // 2. الحصول على الرابط العام للصورة
     const { data: urlData } = supabase.storage
-        .from('menu-images')
+        .from('MENU-IMAGES')
         .getPublicUrl(filePath);
 
     return { url: urlData.publicUrl };
@@ -178,7 +178,7 @@ async function deleteGalleryItem(id, url) {
         // 2. محاولة الحذف من Storage
         const path = storagePathFromPublicUrl(url);
         if (path) {
-            const { error: storageErr } = await supabase.storage.from('menu-images').remove([path]);
+            const { error: storageErr } = await supabase.storage.from('MENU-IMAGES').remove([path]);
             if (storageErr) console.warn("تنبيه: تم حذف السجل ولكن تعذر حذف الملف الفيزيائي:", storageErr.message);
         }
 

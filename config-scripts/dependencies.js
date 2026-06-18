@@ -108,12 +108,12 @@ const DIRECT_SUPABASE_URL = "https://jdaggrzdaxcnnfmdyvic.supabase.co";    const
      * دالة ذكية لجلب رابط الصورة العام.
      * تحل مشكلة الروابط المحلية وتضمن استخدام getPublicUrl الصافي دائماً أونلاين
      */
-    window.getSafeImageUrl = function(urlOrPath, bucket = 'menu-images') {
+    window.getSafeImageUrl = function(urlOrPath, bucket = 'MENU-IMAGES') {
         if (!urlOrPath) return "https://via.placeholder.com/300?text=No+Image";
         
         // تنظيف المسار لضمان الحصول على الرابط العام الصافي دائماً أونلاين
         let path = urlOrPath;
-        const markers = ["/menu-images/", "/object/public/menu-images/"];
+        const markers = ["/MENU-IMAGES/", "/object/public/MENU-IMAGES/"];
         for (var i = 0; i < markers.length; i++) {
             var marker = markers[i];
             const idx = urlOrPath.indexOf(marker);
