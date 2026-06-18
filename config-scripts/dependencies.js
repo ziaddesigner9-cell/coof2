@@ -113,64 +113,27 @@
         if (!urlOrPath) return "https://via.placeholder.com/300?text=No+Image";
         
         let original = String(urlOrPath).trim();
-        let lowerUrl = original.toLowerCase();
         
-        // 1. الروابط الخارجية المستقلة (مثل Unsplash) تُعاد كما هي
-        if (lowerUrl.startsWith('http') && lowerUrl.indexOf('supabase.co') === -1) {
+        // 💡 السر هنا: إذا كان الرابط كاملاً (سواء من سوبابيس أو خارجي)، نعيده مباشرة دون تلاعب!
+        // هذا يمنع التشفير المزدوج للأسماء العربية والمسافات ويطابق عمل النسخة القديمة المستقرة.
+        if (original.startsWith('http')) {
             return original;
         }
-
-        // 2. فصل Query String لمنع كسر الرابط
-        let queryString = "";
+        
+        // معالجة المسارات المحلية القصيرة فقط (مثل assets/image.png)
         let path = original;
-        const qIdx = path.indexOf('?');
-        if (qIdx !== -1) {
-            queryString = path.substring(qIdx);
-            path = path.substring(0, qIdx);
-        }
-
-        // 3. ✅ [الحل السحري] إذا كان الرابط صالحاً ويعمل مسبقاً، نتركه كما هو تماماً!
-        const targetPrefix = `/object/public/${bucket}/`.toLowerCase();
-        if (path.toLowerCase().startsWith('http') && path.toLowerCase().indexOf(targetPrefix) !== -1) {
-            return original; 
-        }
-        
-        // 4. معالجة وتصحيح المسارات المحلية أو المكسورة فقط
-        const bucketLower = bucket.toLowerCase();
-        const bucketMarker = "/" + bucketLower + "/";
-        const bucketMarkerIdx = path.toLowerCase().indexOf(bucketMarker);
-        
-        if (bucketMarkerIdx !== -1) {
-            path = path.substring(bucketMarkerIdx + bucketMarker.length);
-        } else if (path.toLowerCase().startsWith(bucketLower + "/")) {
-            path = path.substring(bucketLower.length + 1);
-        } else {
-            const pubIdx = path.toLowerCase().indexOf("/object/public/");
-            if (pubIdx !== -1) {
-                let afterPublic = path.substring(pubIdx + 15);
-                let slashIdx = afterPublic.indexOf('/');
-                path = slashIdx !== -1 ? afterPublic.substring(slashIdx + 1) : afterPublic;
-            }
-        }
-
         if (path.startsWith('/')) {
             path = path.substring(1);
         }
 
-        try {
-            if (path.indexOf('%') !== -1) {
-                path = decodeURIComponent(path);
-            }
-        } catch(e) {}
-
         const client = window.getSupabaseClient();
         if (!client) {
             const encodedPath = path.split('/').map(encodeURIComponent).join('/');
-            return `${DIRECT_SUPABASE_URL}/storage/v1/object/public/${bucket}/${encodedPath}${queryString}`;
+            return `${DIRECT_SUPABASE_URL}/storage/v1/object/public/${bucket}/${encodedPath}`;
         }
 
         const { data } = client.storage.from(bucket).getPublicUrl(path);
-        return data.publicUrl + queryString;
+        return data.publicUrl;
     };
 
     try {
