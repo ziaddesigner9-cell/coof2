@@ -34,11 +34,9 @@ function storagePathFromPublicUrl(url) {
     try {
         const u = new URL(url);
         const lowerPath = u.pathname.toLowerCase();
-        const markers = ["/menu-images/", "/object/public/menu-images/"];
-        for (const marker of markers) {
-            const idx = lowerPath.indexOf(marker);
-            if (idx !== -1) return decodeURIComponent(u.pathname.slice(idx + marker.length));
-        }
+        const marker = "/menu-images/";
+        const idx = lowerPath.indexOf(marker);
+        if (idx !== -1) return decodeURIComponent(u.pathname.slice(idx + marker.length));
     } catch (_) {}
     return null;
 }

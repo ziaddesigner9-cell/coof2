@@ -4,7 +4,8 @@
  */
 (function initSupabaseClient() {
     // 🔴 ضع بياناتك الحقيقية هنا مباشرة لحل مشكلة قراءة المفاتيح أونلاين
-const DIRECT_SUPABASE_URL = "https://jdaggrzdaxcnnfmdyvic.supabase.co";    const DIRECT_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkYWdncnpkYXhjbm5mbWR5dmljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1ODMyMzgsImV4cCI6MjA5NjE1OTIzOH0.75Pcz12Jp0WkZ3_NUVt8D78BH0KgdDd1krjt-oxQoT8"; //  مفتاح الأنون الخاص بك هنا
+    const DIRECT_SUPABASE_URL = "https://jdaggrzdaxcnnfmdyvic.supabase.co";
+    const DIRECT_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkYWdncnpkYXhjbm5mbWR5dmljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1ODMyMzgsImV4cCI6MjA5NjE1OTIzOH0.75Pcz12Jp0WkZ3_NUVt8D78BH0KgdDd1krjt-oxQoT8"; // مفتاح الأنون
 
     const SITE_BASE_URL = "";
     const PUBLIC_BASE_STORAGE_KEY = "COOF2_PUBLIC_BASE";
@@ -111,24 +112,28 @@ const DIRECT_SUPABASE_URL = "https://jdaggrzdaxcnnfmdyvic.supabase.co";    const
     window.getSafeImageUrl = function(urlOrPath, bucket = 'MENU-IMAGES') {
         if (!urlOrPath) return "https://via.placeholder.com/300?text=No+Image";
         
-        // تنظيف المسار لضمان الحصول على الرابط العام الصافي دائماً أونلاين
         let path = urlOrPath;
-        // تحويل الرابط لحروف صغيرة للمقارنة فقط، لتجاهل مشكلة حالة الأحرف
         const lowerUrl = urlOrPath.toLowerCase();
-        const markers = ["/menu-images/", "/object/public/menu-images/"];
-        for (var i = 0; i < markers.length; i++) {
-            var marker = markers[i];
-            const idx = lowerUrl.indexOf(marker);
-            if (idx !== -1) {
-                // نقتطع من الرابط الأصلي للحفاظ على المجلد (assets/) وحالة أحرف اسم الصورة
-                path = urlOrPath.slice(idx + marker.length);
-                break;
-            }
-        }
         
-        // إذا كان الرابط خارجياً يبدأ بـ http ولم يتم اكتشافه كمسار داخل سوبابيس (مثل صور Unsplash)، نُعيده كما هو
-        if (path === urlOrPath && path.indexOf('http') === 0) {
-            return path;
+        // إذا كان الرابط خارجياً (مثل Unsplash) نرجعه مباشرة ولا نعالجه كصورة في سوبابيس
+        if (lowerUrl.startsWith('http') && lowerUrl.indexOf('supabase.co') === -1) {
+            return urlOrPath;
+        }
+
+        // تنظيف الرابط من اسم المجلد للحصول على المسار الصافي (مثل assets/image.webp)
+        const bucketLower = bucket.toLowerCase();
+        const marker = "/" + bucketLower + "/";
+        let idx = lowerUrl.indexOf(marker);
+        
+        if (idx !== -1) {
+            path = urlOrPath.slice(idx + marker.length);
+        } else if (lowerUrl.startsWith(bucketLower + "/")) {
+            path = urlOrPath.slice(bucketLower.length + 1);
+        }
+
+        // إزالة أي شرطة زائدة في البداية إن وجدت
+        if (path.startsWith('/')) {
+            path = path.slice(1);
         }
 
         const client = window.getSupabaseClient();
