@@ -6,6 +6,7 @@ let isFetching = false;
 let previousStatuses = new Map();
 let isFirstLoad = true;
 let audioContext = null;
+let lastDeliveryDrawState = "";
 
 function initAudio() {
     try {
@@ -174,6 +175,14 @@ async function loadDeliveryOrders() {
         const deliveryOnly = currentOrders.filter(function(o) {
             return o.order_type === 'delivery';
         });
+
+        // منع إعادة الرسم إذا لم تتغير البيانات لتسريع الصفحة ومنع التقطيع
+        const currentStateString = JSON.stringify(deliveryOnly);
+        if (currentStateString === lastDeliveryDrawState && !isFirstLoad) {
+            isFetching = false;
+            return;
+        }
+        lastDeliveryDrawState = currentStateString;
 
         // التحقق من تغير الحالة من ذهبي (preparing/pending) إلى أخضر (ready)
         if (!isFirstLoad) {
@@ -370,13 +379,15 @@ function initDelivery() {
 
     applyDirection();
     loadDeliveryOrders();
-    setInterval(loadDeliveryOrders, 60000);
+    if (window.deliveryRefreshInterval) clearInterval(window.deliveryRefreshInterval);
+    window.deliveryRefreshInterval = setInterval(loadDeliveryOrders, 3000); // تحديث سريع جداً كل 3 ثوانٍ
 
     subscribeDeliveryRealtime();
 }
 
 window.addEventListener('languageChanged', function() {
     applyDirection();
+    lastDeliveryDrawState = ""; // إجبار إعادة الرسم باللغة الجديدة
     loadDeliveryOrders();
 });
 

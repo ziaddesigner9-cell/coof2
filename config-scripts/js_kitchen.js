@@ -11,6 +11,7 @@ let firstLoad = true;
 let audioContext = null;
 let isFetching = false;
 let ordersCache = []; 
+let lastDrawState = "";
 
 const LOCAL_PREP_KEY = "kitchen_local_preparing";
 const LOCAL_OPENED_KEY = "coof2_kitchen_opened_at";
@@ -554,6 +555,14 @@ async function loadOrders() {
         let finishedList = Array.isArray(finishedRes.data) ? finishedRes.data : [];
         ordersCache = activeOrders;
 
+        // منع إعادة الرسم إذا لم تتغير البيانات لتسريع الصفحة ومنع التقطيع
+        const currentStateString = JSON.stringify(activeOrders) + JSON.stringify(finishedList) + "_" + activeOrderId;
+        if (currentStateString === lastDrawState && !firstLoad) {
+            isFetching = false;
+            return;
+        }
+        lastDrawState = currentStateString;
+
         if (!firstLoad) {
             activeOrders.forEach(function(o) {
                 if (o.status === "pending" && !knownOrderIds.has(o.id)) playNewOrderSound();
@@ -722,7 +731,8 @@ function initKitchen() {
 
     applyDirection();
     loadOrders();
-    setInterval(loadOrders, 15000);
+    if (window.kitchenRefreshInterval) clearInterval(window.kitchenRefreshInterval);
+    window.kitchenRefreshInterval = setInterval(loadOrders, 3000); // تحديث سريع جداً كل 3 ثوانٍ
 
     subscribeKitchenRealtime();
 }
@@ -735,6 +745,7 @@ window.closeActive = closeActive;
 
 window.addEventListener('languageChanged', function() {
     applyDirection();
+    lastDrawState = ""; // إجبار إعادة الرسم باللغة الجديدة
     loadOrders();
 });
 
