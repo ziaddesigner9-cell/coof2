@@ -55,7 +55,7 @@ ALTER TABLE public.app_settings ENABLE ROW LEVEL SECURITY;
 
 -- إعداد التخزين (Storage) لصور الأصناف
 INSERT INTO storage.buckets (id, name, public)
-VALUES ('MENU-IMAGES', 'MENU-IMAGES', true)
+VALUES ('menu-images', 'menu-images', true)
 ON CONFLICT (id) DO NOTHING;
 
 -- 4. إنشاء سياسات الأمان (RLS Policies)
@@ -96,13 +96,13 @@ DROP POLICY IF EXISTS "menu_images_select" ON storage.objects;
 CREATE POLICY "menu_images_select" ON storage.objects FOR SELECT TO anon, authenticated USING (true);
 
 DROP POLICY IF EXISTS "menu_images_insert" ON storage.objects;
-CREATE POLICY "menu_images_insert" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'MENU-IMAGES');
+CREATE POLICY "menu_images_insert" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'menu-images');
 
 DROP POLICY IF EXISTS "menu_images_update" ON storage.objects;
-CREATE POLICY "menu_images_update" ON storage.objects FOR UPDATE TO authenticated USING (bucket_id = 'MENU-IMAGES') WITH CHECK (bucket_id = 'MENU-IMAGES');
+CREATE POLICY "menu_images_update" ON storage.objects FOR UPDATE TO authenticated USING (bucket_id = 'menu-images') WITH CHECK (bucket_id = 'menu-images');
 
 DROP POLICY IF EXISTS "menu_images_delete" ON storage.objects;
-CREATE POLICY "menu_images_delete" ON storage.objects FOR DELETE TO authenticated USING (bucket_id = 'MENU-IMAGES');
+CREATE POLICY "menu_images_delete" ON storage.objects FOR DELETE TO authenticated USING (bucket_id = 'menu-images');
 
 -- و. دالة تتبع الطلب الخاصة بالزبائن (آمنة ولا تسرب بقية الطلبات)
 CREATE OR REPLACE FUNCTION public.get_customer_order(target_order_id uuid)

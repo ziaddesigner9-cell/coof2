@@ -88,9 +88,9 @@ async function uploadItemImage(file) {
     const cleanName = originalName.replace(/[^a-zA-Z0-9.]/g, "_");
     const filePath = `assets/${Date.now()}_${cleanName}`;
 
-    // 1. رفع الملف إلى Bucket 'MENU-IMAGES'
+    // 1. رفع الملف إلى Bucket 'menu-images'
     const { data, error } = await supabase.storage
-        .from('MENU-IMAGES')
+        .from('menu-images')
         .upload(filePath, fileToUpload, {
             cacheControl: '3600',
             upsert: true,
@@ -101,7 +101,7 @@ async function uploadItemImage(file) {
 
     // 2. الحصول على الرابط العام للصورة
     const { data: urlData } = supabase.storage
-        .from('MENU-IMAGES')
+        .from('menu-images')
         .getPublicUrl(filePath);
 
     // إضافة رمز منع الكاش (?t=) لضمان ظهور الصورة فور رفعها بدون مشاكل المتصفح
@@ -208,7 +208,7 @@ async function deleteGalleryItem(id, url) {
         // 2. محاولة الحذف من Storage
         const path = storagePathFromPublicUrl(url);
         if (path) {
-            const { error: storageErr } = await supabase.storage.from('MENU-IMAGES').remove([path]);
+            const { error: storageErr } = await supabase.storage.from('menu-images').remove([path]);
             if (storageErr) console.warn("تنبيه: تم حذف السجل ولكن تعذر حذف الملف الفيزيائي:", storageErr.message);
         }
 

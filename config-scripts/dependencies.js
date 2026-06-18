@@ -109,7 +109,7 @@
      * دالة ذكية لجلب رابط الصورة العام.
      * تحل مشكلة الروابط المحلية وتضمن استخدام getPublicUrl الصافي دائماً أونلاين
      */
-    window.getSafeImageUrl = function(urlOrPath, bucket = 'MENU-IMAGES') {
+    window.getSafeImageUrl = function(urlOrPath, bucket = 'menu-images') {
         if (!urlOrPath) return "https://via.placeholder.com/300?text=No+Image";
         
         let original = String(urlOrPath).trim();
