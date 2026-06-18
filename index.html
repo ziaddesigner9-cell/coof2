@@ -175,8 +175,8 @@
                 </div>
                 <div class="category-row-content">
                     <div class="text-right w-full">
-                        <p data-category-hint="hot" class="category-label-hint gold-text-soft mb-1">تصفح</p>
-                        <h2 data-category-label="hot" class="category-label-title gold-title">المشروبات الساخنة</h2>
+                        <p data-category-hint="hot" data-key="category_row_hint" class="category-label-hint gold-text-soft mb-1">تصفح</p>
+                        <h2 data-category-label="hot" data-key="category_hot_label" class="category-label-title gold-title">المشروبات الساخنة</h2>
                     </div>
                 </div>
             </a>
@@ -186,8 +186,8 @@
                 </div>
                 <div class="category-row-content">
                     <div class="text-right w-full">
-                        <p data-category-hint="cold" class="category-label-hint gold-text-soft mb-1">تصفح</p>
-                        <h2 data-category-label="cold" class="category-label-title gold-title">المشروبات الباردة</h2>
+                        <p data-category-hint="cold" data-key="category_row_hint" class="category-label-hint gold-text-soft mb-1">تصفح</p>
+                        <h2 data-category-label="cold" data-key="category_cold_label" class="category-label-title gold-title">المشروبات الباردة</h2>
                     </div>
                 </div>
             </a>
@@ -197,8 +197,8 @@
                 </div>
                 <div class="category-row-content">
                     <div class="text-right w-full">
-                        <p data-category-hint="dessert" class="category-label-hint gold-text-soft mb-1">تصفح</p>
-                        <h2 data-category-label="dessert" class="category-label-title gold-title">الحلى</h2>
+                        <p data-category-hint="dessert" data-key="category_row_hint" class="category-label-hint gold-text-soft mb-1">تصفح</p>
+                        <h2 data-category-label="dessert" data-key="category_dessert_label" class="category-label-title gold-title">الحلى</h2>
                     </div>
                 </div>
             </a>
@@ -208,8 +208,8 @@
                 </div>
                 <div class="category-row-content">
                     <div class="text-right w-full">
-                        <p data-category-hint="shisha" class="category-label-hint gold-text-soft mb-1">تصفح</p>
-                        <h2 data-category-label="shisha" class="category-label-title gold-title">شيشة</h2>
+                        <p data-category-hint="shisha" data-key="category_row_hint" class="category-label-hint gold-text-soft mb-1">تصفح</p>
+                        <h2 data-category-label="shisha" data-key="category_shisha_label" class="category-label-title gold-title">شيشة</h2>
                     </div>
                 </div>
             </a>
@@ -236,6 +236,14 @@
             }
         });
         window.addEventListener("supabaseReady", bootHome); // Already safe
+
+        // الاستماع لتغيير اللغة لتحديث المظهر فوراً دون تحديث الصفحة
+        window.addEventListener('languageChanged', async function() {
+            const s = await loadAppSettings();
+            applyHomeSettings(s);
+            if (typeof window.updateHomeState === "function") window.updateHomeState();
+        });
     </script>
+    <script>if (typeof applyLanguage === "function") applyLanguage(localStorage.getItem("coof2_userLang") || "ar");</script>
 </body>
 </html>
