@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://coof2.vercel.app/sitemap.xml
+Sitemap: https://ziaddesigner9-cell.github.io/coof2/sitemap.xml
