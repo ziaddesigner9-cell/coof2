@@ -33,20 +33,31 @@ async function convertToWebP(file, quality = 0.8) {
 function storagePathFromPublicUrl(url) {
     try {
         const u = new URL(url);
-        const pathname = u.pathname;
+        let path = u.pathname;
         
-        const bucketMarker = "/menu-images/";
-        const bucketIdx = pathname.toLowerCase().indexOf(bucketMarker);
-        if (bucketIdx !== -1) {
-            return decodeURIComponent(pathname.substring(bucketIdx + bucketMarker.length));
+        const bucketLower = "menu-images";
+        const marker = "/" + bucketLower + "/";
+        const idx = path.toLowerCase().indexOf(marker);
+        
+        if (idx !== -1) {
+            path = path.substring(idx + marker.length);
+        } else {
+            const pubMarker = "/object/public/";
+            const pubIdx = path.toLowerCase().indexOf(pubMarker);
+            if (pubIdx !== -1) {
+                let afterPublic = path.substring(pubIdx + pubMarker.length);
+                let slashIdx = afterPublic.indexOf('/');
+                if (slashIdx !== -1) path = afterPublic.substring(slashIdx + 1);
+            }
+        }
+
+        while (path.startsWith('/')) path = path.substring(1);
+        while (path.toLowerCase().startsWith(bucketLower + "/")) {
+            path = path.substring(bucketLower.length + 1);
+            while (path.startsWith('/')) path = path.substring(1);
         }
         
-        const pubIdx = pathname.toLowerCase().indexOf("/object/public/");
-        if (pubIdx !== -1) {
-            let afterPublic = pathname.substring(pubIdx + 15);
-            let slashIdx = afterPublic.indexOf('/');
-            if (slashIdx !== -1) return decodeURIComponent(afterPublic.substring(slashIdx + 1));
-        }
+        return decodeURIComponent(path);
     } catch (_) {
         return decodeURIComponent(url);
     }

@@ -114,43 +114,62 @@
         
         let original = String(urlOrPath).trim();
         
-        // إذا كان الرابط خارجياً تماماً (لا يتبع لـ Supabase)، نرجعه كما هو
+        // 1. دعم صور Base64 المباشرة (مثل بعض الشعارات)
+        if (original.startsWith('data:image')) {
+            return original;
+        }
+        
+        // 2. الروابط الخارجية المستقلة (مثل Unsplash) تُعاد كما هي
         if (original.startsWith('http') && original.indexOf('supabase.co') === -1) {
             return original;
         }
         
         let path = original;
 
-        // فصل الرابط واستخراج المسار الصافي فقط لمنع أي تعارضات
+        // 3. فصل Query String لمنع كسر الروابط
+        let qIdx = path.indexOf('?');
+        if (qIdx !== -1) {
+            path = path.substring(0, qIdx);
+        }
+
+        // 4. استخراج المسار من الروابط الكاملة
         if (path.startsWith('http')) {
             try {
                 path = new URL(path).pathname;
             } catch(e) {}
         }
         
-        // استخراج المسار بعد مجلد object/public/ أو اسم المجلد
-        const pubMarker = "/object/public/";
-        const pubIdx = path.toLowerCase().indexOf(pubMarker);
-        if (pubIdx !== -1) {
-            let afterPublic = path.substring(pubIdx + pubMarker.length);
-            let slashIdx = afterPublic.indexOf('/');
-            path = slashIdx !== -1 ? afterPublic.substring(slashIdx + 1) : afterPublic;
+        // 5. استخراج المسار الصافي بذكاء شديد لتجنب تكرار اسم المجلد (Double-Bucket)
+        const bucketLower = bucket.toLowerCase();
+        const marker = "/" + bucketLower + "/";
+        const idx = path.toLowerCase().indexOf(marker);
+        
+        if (idx !== -1) {
+            path = path.substring(idx + marker.length);
         } else {
-            const bucketLower = bucket.toLowerCase();
-            if (path.toLowerCase().startsWith("/" + bucketLower + "/")) {
-                path = path.substring(bucketLower.length + 2);
-            } else if (path.toLowerCase().startsWith(bucketLower + "/")) {
-                path = path.substring(bucketLower.length + 1);
+            const pubMarker = "/object/public/";
+            const pubIdx = path.toLowerCase().indexOf(pubMarker);
+            if (pubIdx !== -1) {
+                let afterPublic = path.substring(pubIdx + pubMarker.length);
+                let slashIdx = afterPublic.indexOf('/');
+                if (slashIdx !== -1) path = afterPublic.substring(slashIdx + 1);
             }
         }
         
-        if (path.startsWith('/')) {
-            path = path.substring(1);
+        // التنظيف المتكرر للشرطات وأسماء المجلدات المكررة (إصلاح قواعد البيانات التالفة)
+        while (path.startsWith('/')) path = path.substring(1);
+        while (path.toLowerCase().startsWith(bucketLower + "/")) {
+            path = path.substring(bucketLower.length + 1);
+            while (path.startsWith('/')) path = path.substring(1);
         }
         
-        // 💡 [الحل الجذري]: فك التشفير الصافي للمسار لمنع مشكلة Double-Encoding التي تكسر الروابط
+        // 6. فك التشفير بالكامل لمنع Double-Encoding المتكرر
         try {
-            path = decodeURIComponent(path);
+            while (path.indexOf('%') !== -1) {
+                let decoded = decodeURIComponent(path);
+                if (decoded === path) break;
+                path = decoded;
+            }
         } catch(e) {}
 
         const client = window.getSupabaseClient();
