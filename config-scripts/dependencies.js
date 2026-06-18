@@ -112,23 +112,30 @@
     window.getSafeImageUrl = function(urlOrPath, bucket = 'MENU-IMAGES') {
         if (!urlOrPath) return "https://via.placeholder.com/300?text=No+Image";
         
-        let path = String(urlOrPath).trim();
-        const lowerUrl = path.toLowerCase();
+        let original = String(urlOrPath).trim();
+        let lowerUrl = original.toLowerCase();
         
-        // إذا كان الرابط خارجياً (مثل Unsplash) نرجعه مباشرة
+        // 1. الروابط الخارجية المستقلة (مثل Unsplash) تُعاد كما هي
         if (lowerUrl.startsWith('http') && lowerUrl.indexOf('supabase.co') === -1) {
-            return path;
+            return original;
         }
 
-        // فصل Query String (مثل ?t=123) لمنع تلف الرابط عند استخدام getPublicUrl
+        // 2. فصل Query String لمنع كسر الرابط
         let queryString = "";
+        let path = original;
         const qIdx = path.indexOf('?');
         if (qIdx !== -1) {
             queryString = path.substring(qIdx);
             path = path.substring(0, qIdx);
         }
+
+        // 3. ✅ [الحل السحري] إذا كان الرابط صالحاً ويعمل مسبقاً، نتركه كما هو تماماً!
+        const targetPrefix = `/object/public/${bucket}/`.toLowerCase();
+        if (path.toLowerCase().startsWith('http') && path.toLowerCase().indexOf(targetPrefix) !== -1) {
+            return original; 
+        }
         
-        // استخراج المسار الصافي للصورة بطريقة لا تقهر (Bulletproof Extraction)
+        // 4. معالجة وتصحيح المسارات المحلية أو المكسورة فقط
         const bucketLower = bucket.toLowerCase();
         const bucketMarker = "/" + bucketLower + "/";
         const bucketMarkerIdx = path.toLowerCase().indexOf(bucketMarker);
@@ -138,7 +145,6 @@
         } else if (path.toLowerCase().startsWith(bucketLower + "/")) {
             path = path.substring(bucketLower.length + 1);
         } else {
-            // كإجراء احتياطي إذا تم تغيير اسم المجلد، نبحث عن object/public/
             const pubIdx = path.toLowerCase().indexOf("/object/public/");
             if (pubIdx !== -1) {
                 let afterPublic = path.substring(pubIdx + 15);
@@ -147,14 +153,14 @@
             }
         }
 
-        // إزالة أي شرطة زائدة في البداية إن وجدت
         if (path.startsWith('/')) {
-            path = path.slice(1);
+            path = path.substring(1);
         }
 
-        // فك تشفير الرابط لمنع (Double-Encoding) عند تمريره لدالة سوبابيس
         try {
-            path = decodeURIComponent(path);
+            if (path.indexOf('%') !== -1) {
+                path = decodeURIComponent(path);
+            }
         } catch(e) {}
 
         const client = window.getSupabaseClient();

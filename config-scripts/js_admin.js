@@ -47,7 +47,9 @@ function storagePathFromPublicUrl(url) {
             let slashIdx = afterPublic.indexOf('/');
             if (slashIdx !== -1) return decodeURIComponent(afterPublic.substring(slashIdx + 1));
         }
-    } catch (_) {}
+    } catch (_) {
+        return decodeURIComponent(url);
+    }
     return null;
 }
 
