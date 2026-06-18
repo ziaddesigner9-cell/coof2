@@ -128,17 +128,22 @@
             path = path.substring(0, qIdx);
         }
         
-        // استخراج المسار الصافي للصورة بذكاء للبحث عن /object/public/
-        const publicMarker = "/object/public/";
-        const pubIdx = lowerUrl.indexOf(publicMarker);
-        if (pubIdx !== -1) {
-            let afterPublic = path.substring(pubIdx + publicMarker.length);
-            let slashIdx = afterPublic.indexOf('/');
-            path = slashIdx !== -1 ? afterPublic.substring(slashIdx + 1) : afterPublic;
+        // استخراج المسار الصافي للصورة بطريقة لا تقهر (Bulletproof Extraction)
+        const bucketLower = bucket.toLowerCase();
+        const bucketMarker = "/" + bucketLower + "/";
+        const bucketMarkerIdx = path.toLowerCase().indexOf(bucketMarker);
+        
+        if (bucketMarkerIdx !== -1) {
+            path = path.substring(bucketMarkerIdx + bucketMarker.length);
+        } else if (path.toLowerCase().startsWith(bucketLower + "/")) {
+            path = path.substring(bucketLower.length + 1);
         } else {
-            const bucketLower = bucket.toLowerCase();
-            if (path.toLowerCase().startsWith(bucketLower + "/")) {
-                path = path.substring(bucketLower.length + 1);
+            // كإجراء احتياطي إذا تم تغيير اسم المجلد، نبحث عن object/public/
+            const pubIdx = path.toLowerCase().indexOf("/object/public/");
+            if (pubIdx !== -1) {
+                let afterPublic = path.substring(pubIdx + 15);
+                let slashIdx = afterPublic.indexOf('/');
+                path = slashIdx !== -1 ? afterPublic.substring(slashIdx + 1) : afterPublic;
             }
         }
 
@@ -146,6 +151,11 @@
         if (path.startsWith('/')) {
             path = path.slice(1);
         }
+
+        // فك تشفير الرابط لمنع (Double-Encoding) عند تمريره لدالة سوبابيس
+        try {
+            path = decodeURIComponent(path);
+        } catch(e) {}
 
         const client = window.getSupabaseClient();
         if (!client) {

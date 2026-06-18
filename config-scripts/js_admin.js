@@ -34,10 +34,16 @@ function storagePathFromPublicUrl(url) {
     try {
         const u = new URL(url);
         const pathname = u.pathname;
-        const publicMarker = "/object/public/";
-        const pubIdx = pathname.toLowerCase().indexOf(publicMarker);
+        
+        const bucketMarker = "/menu-images/";
+        const bucketIdx = pathname.toLowerCase().indexOf(bucketMarker);
+        if (bucketIdx !== -1) {
+            return decodeURIComponent(pathname.substring(bucketIdx + bucketMarker.length));
+        }
+        
+        const pubIdx = pathname.toLowerCase().indexOf("/object/public/");
         if (pubIdx !== -1) {
-            let afterPublic = pathname.substring(pubIdx + publicMarker.length);
+            let afterPublic = pathname.substring(pubIdx + 15);
             let slashIdx = afterPublic.indexOf('/');
             if (slashIdx !== -1) return decodeURIComponent(afterPublic.substring(slashIdx + 1));
         }
