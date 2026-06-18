@@ -126,12 +126,9 @@ const DIRECT_SUPABASE_URL = "https://jdaggrzdaxcnnfmdyvic.supabase.co";    const
             }
         }
         
-        // إذا كان الرابط لا يزال يحتوي على نطاق كامل (مثال جلب قديم من لوكال هوست)، نأخذ اسم الملف الأخير فقط
-        if (path.indexOf('http') === 0) {
-            try {
-                const segments = path.split('/');
-                path = segments[segments.length - 1];
-            } catch(e) {}
+        // إذا كان الرابط خارجياً يبدأ بـ http ولم يتم اكتشافه كمسار داخل سوبابيس (مثل صور Unsplash)، نُعيده كما هو
+        if (path === urlOrPath && path.indexOf('http') === 0) {
+            return path;
         }
 
         const client = window.getSupabaseClient();
